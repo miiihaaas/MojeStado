@@ -19,9 +19,9 @@ class User(db.Model, UserMixin):
     address = db.Column(db.String(20), unique=False, nullable=False)
     city = db.Column(db.String(20), unique=False, nullable=False)
     zip_code = db.Column(db.String(5), unique=False, nullable=False)
-    phone = db.Column(db.String(20), unique=True, nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=False) #! samo za farm
     PBG = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
-    JMBG = db.Column(db.String(13), unique=True, nullable=True) #! samo za farm
+    JMBG = db.Column(db.String(13), unique=True, nullable=True)
     MB = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
     user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm, user, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
     farms = db.relationship('Farm', backref='user_farm', lazy=True) #! 
@@ -71,8 +71,6 @@ class Animal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_id = db.Column(db.String(12), nullable=False) #! Svako grlo stoke odnosno živine ima minđušu odnosno nanogicu. Na minđuši je ispisan jedinstveni broj koji se sastoji od dva bloka cifara. Prvi petocifreni blok označava PG, a drugi petocifreni ili šestocifreni broj označava redni broj grla.
     animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False) #!
-    animal_subcategory_id = db.Column(db.Integer, db.ForeignKey('animal_subcategory.id'), nullable=False) #!
-    animal_race_id = db.Column(db.Integer, db.ForeignKey('animal_race.id'), nullable=False) #!
     animal_gender = db.Column(db.String(20), nullable=False) #! pol
     measured_weight = db.Column(db.String(20), nullable=False) #! izmerena težina
     measured_date = db.Column(db.String(20), nullable=False) #! datum merenja
@@ -89,6 +87,8 @@ class Animal(db.Model):
 class AnimalCategory (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_category_name = db.Column(db.String(20), nullable=False)
+    animal_subcategory_id = db.Column(db.Integer, db.ForeignKey('animal_subcategory.id'), nullable=False) #!
+    animal_race_id = db.Column(db.Integer, db.ForeignKey('animal_race.id'), nullable=False) #!
     animals = db.relationship('Animal', backref='animal_category', lazy=True) #!
     pass
 
@@ -112,7 +112,6 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_image = db.Column(db.String(20), nullable=False) #! slika proizvoda
     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
-    product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
     product_name = db.Column(db.String(20), nullable=False)
     product_price_per_kg = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
     #! razraditi konverziju pakovanje (npr kajmak 1kom = 400g)
@@ -125,6 +124,7 @@ class Product(db.Model):
 
 class ProductCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
     products = db.relationship('Product', backref='product_category_product', lazy=True) #!
     pass
 

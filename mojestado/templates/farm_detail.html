@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>{{farm.farm_name}}</h1>
+<h2>{{farm.farm_city}}</h2>
+<div class="row">
+    <div class="col-md-3">
+        <img src="/static/farm_image/{{farm.farm_image}}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
+    </div>
+    <div class="col-md-9">
+        <p>{{farm.farm_description}}</p>
+    </div>
+</div>
+<div class="card-body">
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="organik">
+        <label class="form-check-label" for="organik">Organski</label>
+        <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Šta se podrazumeva pod organskom proizvodnjom?">
+            <i class="fas fa-question-circle"></i>
+        </a>
+        <a href="#">Detaljnije o organskoj proizvodnji</a>
+    </div>
+</div>
+<div>U nastavku dodati ponudu žive vage i gotovih proizvoda</div>
+{% endblock content%}

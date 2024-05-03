@@ -1,191 +1,143 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="h1">Početna strana</div>
-<p>kratak tekst o portalu</p>
-<a class="btn btn-primary" href="{{ url_for('main.about') }}">Opširnije</a>
-<div class="container">
-    <div class="h2">Živa vaga</div>
-    <p>kratak tekst sa objašnjenjem</p>
-    <a href="">
-        <i class="fa-solid fa-cow"></i>
-    </a>
-    <a href="">
-        <i class="fa-solid fa-piggy-bank"></i>
-    </a>
-    <a href="">
-        <i class="fa-solid fa-drumstick-bite"></i>
-    </a>
-</div>
-<div class="container">
-    <div class="h2">Gotovi proizvodi</div>
-    <p>kratak tekst sa objašnjenjem</p>
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">Kajmak</h5>
-            <p class="card-text">Opisni tekst proizvoda</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-    </div>
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">Jaja</h5>
-            <p class="card-text">Opisni tekst proizvoda</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-    </div>
-    <a class="btn btn-primary" href="{{ url_for('main.about') }}">Vidi sve</a>
-</div>
-<div class="container">
-    <div class="h2">Poljoprivredna gazdinstva</div>
-    <p>kratak tekst sa objašnjenjem</p>
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">Farma Simović</h5>
-            <p class="card-text">Kratak opis poljoprivrednog gazdinstva</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-    </div>
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">Farma Panić</h5>
-            <p class="card-text">Kratak opis poljoprivrednog gazdinstva</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-    </div>
-    <a class="btn btn-primary" href="{{ url_for('main.about') }}">Vidi sve</a>
-</div>
-<div class="container">
-    <div class="h2">Najčešće postavljena pitanja</div>
-    <p>pitanje 1?</p>
-    <p>pitanje 2?</p>
-    <p>pitanje 3?</p>
-    <a class="btn btn-primary" href="{{ url_for('main.about') }}">Vidi sve</a>
-</div>
-<div class="container mb-4">
-    <div class="row">
-        <div class="col">
-            <dif class="h2">Upustvo za registraciju korisnika</dif>
-            <p>upustvo</p>
-            <a class="btn btn-primary" href="{{ url_for('main.about') }}">Registruj se</a>
-        </div>
-        <div class="col">
-            <div class="h2">Upustvo za registraciju poljoprivrednog gazdinstva</div>
-            <p>upustvo</p>
-            <a class="btn btn-primary" href="{{ url_for('main.about') }}">Registruj gazdinstvo</a>
-        </div>
-    </div>
-</div>
-<hr>
-<hr>
 <header>
     <h1 class="text-center">Početna strana</h1>
-  </header>
-  <main class="container mt-5">
+</header>
+<main class="container mt-5">
     <section class="mb-5">
         <section class="mb-5">
             <h1 class="text-center">Povezujemo poljoprivrednike sa direktnim kupcima</h1>
             <p class="lead text-center">Tražite sveže, domaće i kvalitetne poljoprivredne proizvode? Želite kupovati direktno od proizvođača i podržati lokalnu poljoprivredu? Na našem portalu smo vam omogućili upravo to!</p>
             <div class="row justify-content-center mt-5">
-              <div class="col-md-4">
-                <h2>Za poljoprivredna gazdinstva</h2>
-                <ul>
-                  <li>Prodajte svoju stoku, živinu i stočne proizvode direktno kupcima.</li>
-                  <li>Povećajte profit i skratite lanac posrednika.</li>
-                  <li>Besplatno promovišete svoje gazdinstvo i proizvode velikom broju kupaca.</li>
-                </ul>
-              </div>
-              <div class="col-md-4">
-                <h2>Za kupce</h2>
-                <ul>
-                  <li>Pratite ponudu svežih, domaćih i kvalitetnih poljoprivrednih proizvoda.</li>
-                  <li>Kupujte direktno od proizvođača po povoljnim cenama.</li>
-                  <li>Podržite lokalnu poljoprivredu i kupovinom doprinesite zdravoj životnoj sredini.</li>
-                </ul>
-              </div>
+                <div class="col-md-4">
+                    <h2>Za poljoprivredna gazdinstva</h2>
+                    <ul>
+                        <li>Prodajte svoju stoku, živinu i stočne proizvode direktno kupcima.</li>
+                        <li>Povećajte profit i skratite lanac posrednika.</li>
+                        <li>Besplatno promovišete svoje gazdinstvo i proizvode velikom broju kupaca.</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h2>Za kupce</h2>
+                    <ul>
+                        <li>Pratite ponudu svežih, domaćih i kvalitetnih poljoprivrednih proizvoda.</li>
+                        <li>Kupujte direktno od proizvođača po povoljnim cenama.</li>
+                        <li>Podržite lokalnu poljoprivredu i kupovinom doprinesite zdravoj životnoj sredini.</li>
+                    </ul>
+                </div>
             </div>
-            <a class="btn btn-primary d-block mx-auto mt-5" href="#">Registrujte se danas!</a>
-          </section>
-      <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Opširnije</a>
+            <a class="btn btn-primary d-block mx-auto mt-5" href="#registracija">Registrujte se danas!</a>
+        </section>
+        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Opširnije</a>
     </section>
 
     <section class="mb-5">
-      <h2 class="text-center">Živa vaga</h2>
-      <section class="mb-5">
-        <h2 class="text-center">Pronađite živu stoku za vašu sledeću gozbu!</h2>
-        <p class="lead text-center">Da li tražite svežu i kvalitetnu živu stoku, direktno od farme? Ne tražite dalje! Naša stranica "Živa vaga" vam donosi široku ponudu različitih životinja koje uzgajaju poljoprivredna gazdinstva na našem portalu. Od goveda i svinja do ovaca i peradi, možete jednostavno pronaći sve što vam treba za sledeću porodicu večeru ili restoran.</p>
-      
-        <div class="row justify-content-center mt-5">
-          <div class="col-md-6">
-            <h3>Šta možete pronaći na Živa vaga?</h3>
-            <ul>
-              <li>Različite vrste žive stoke, uključujući goveda, svinje, ovce, jagnjad, koze, perad i dr.</li>
-              <li>Detaljne informacije o životinjama, kao što su pasmina, težina, starost i cena.</li>
-              <li>Kontakt informacije za poljoprivredna gazdinstva kako biste direktno pregovarali i kupovali.</li>
-              <li>Sigurne i transparentne transakcije preko našeg portala.</li>
-            </ul>
-          </div>
-          <div class="col-md-6">
-            <h3>Prednosti kupovine žive stoke na Živa vaga:</h3>
-            <ul>
-              <li><strong>Sveža i kvalitetna:</strong> Kupujte direktno od farme i uživajte u najsvežijoj i najkvalitetnijoj živoj stoci.</li>
-              <li><strong>Široka ponuda:</strong> Pronađite sve što vam treba na jednom mestu, bez obzira na vrstu ili količinu stoke.</li>
-              <li><strong>Fer potrošač - direktna komunikacija:</strong> Kontaktirajte poljoprivredna gazdinstva direktno i dobijte sve informacije koje su vam potrebne.</li>
-              <li><strong>Sigurne transakcije:</strong> Koristite naš sigurni sistem kupovine za bezbrižnu transakciju.</li>
-            </ul>
-          </div>
-        </div>
-      
-    </section>
-    
-    <div class="d-flex justify-content-center gap-3 mb-3">
-        <a href=""><i class="fa-solid fa-cow fs-2"></i></a>
-        <a href=""><i class="fa-solid fa-piggy-bank fs-2"></i></a>
-        <a href=""><i class="fa-solid fa-drumstick-bite fs-2"></i></a>
-    </div>
-    <a class="btn btn-primary d-block mx-auto mt-5" href="#">Istražite više</a>
-    </section>
+        <h2 class="text-center">Živa vaga</h2>
+        <section class="mb-5">
+            <h2 class="text-center">Pronađite živu stoku za vašu sledeću gozbu!</h2>
+            <p class="lead text-center">Da li tražite svežu i kvalitetnu živu stoku, direktno od farme? Ne tražite dalje! Naša stranica "Živa vaga" vam donosi široku ponudu različitih životinja koje uzgajaju poljoprivredna gazdinstva na našem portalu. Od goveda i svinja do ovaca i peradi, možete jednostavno pronaći sve što vam treba za sledeću porodicu večeru ili restoran.</p>
 
-    <section class="mb-5">
-      <h2 class="text-center">Gotovi proizvodi</h2>
-      <p class="lead text-center">Kratak tekst sa objašnjenjem</p>
-      <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div class="col">
-          <div class="card h-100">
-            <img src="slike/proizvod1.jpg" class="card-img-top" alt="Slika proizvoda">
-            <div class="card-body">
-              <h5 class="card-title">Kajmak</h5>
-              <p class="card-text">Opisni tekst proizvoda</p>
-              <a href="#" class="btn btn-primary">Detaljnije</a>
+            <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <h3>Šta možete pronaći na Živa vaga?</h3>
+                <ul>
+                    <li>Različite vrste žive stoke, uključujući goveda, svinje, ovce, jagnjad, koze, perad i dr.</li>
+                    <li>Detaljne informacije o životinjama, kao što su pasmina, težina, starost i cena.</li>
+                    <li>Kontakt informacije za poljoprivredna gazdinstva kako biste direktno pregovarali i kupovali.</li>
+                    <li>Sigurne i transparentne transakcije preko našeg portala.</li>
+                </ul>
             </div>
-          </div>
+            <div class="col-md-6">
+                <h3>Prednosti kupovine žive stoke na Živa vaga:</h3>
+                <ul>
+                    <li><strong>Sveža i kvalitetna:</strong> Kupujte direktno od farme i uživajte u najsvežijoj i najkvalitetnijoj živoj stoci.</li>
+                    <li><strong>Široka ponuda:</strong> Pronađite sve što vam treba na jednom mestu, bez obzira na vrstu ili količinu stoke.</li>
+                    <li><strong>Fer potrošač - direktna komunikacija:</strong> Kontaktirajte poljoprivredna gazdinstva direktno i dobijte sve informacije koje su vam potrebne.</li>
+                    <li><strong>Sigurne transakcije:</strong> Koristite naš sigurni sistem kupovine za bezbrižnu transakciju.</li>
+                </ul>
+            </div>
+            </div>
+
+        </section>
+
+        <div class="d-flex justify-content-center gap-3 mb-3">
+            <a href=""><i class="fa-solid fa-cow fs-2"></i></a>
+            <a href=""><i class="fa-solid fa-piggy-bank fs-2"></i></a>
+            <a href=""><i class="fa-solid fa-drumstick-bite fs-2"></i></a>
         </div>
-        </div>
-      <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Vidi sve</a>
+        <a class="btn btn-primary d-block mx-auto mt-5" href="#">Istražite više</a>
     </section>
 
     <section class="mb-5">
-      <h2 class="text-center">Najčešće postavljena pitanja</h2>
-      <ul class="list-group">
-        <li class="list-group-item">Pitanje 1?</li>
-        <li class="list-group-item">Pitanje 2?</li>
-        <li class="list-group-item">Pitanje 3?</li>
-      </ul>
-      <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Vidi sve</a>
+        <h2 class="text-center">Gotovi proizvodi</h2>
+        <p class="lead text-center">Kratak tekst sa objašnjenjem</p>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+                <div class="card h-100">
+                    <img src="slike/proizvod1.jpg" class="card-img-top" alt="Slika proizvoda">
+                    <div class="card-body">
+                        <h5 class="card-title">Kajmak</h5>
+                        <p class="card-text">Opisni tekst proizvoda</p>
+                        <a href="#" class="btn btn-primary">Detaljnije</a>
+                    </div>
+                </div>
+            </div>
+            </div>
+        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Vidi sve</a>
     </section>
 
     <section class="mb-5">
-      <div class="row">
-        <div class="col">
-          <h2 class="mb-3">Upustvo za registraciju korisnika</h2>
-          <p>Upustvo</p>
-          <a class="btn btn-primary" href="{{ url_for('main.about') }}">Registruj se</a>
+        <h2 class="text-center">Najčešće postavljena pitanja</h2>
+        <div class="accordion mb-5" id="faqAccordion">
+            {% for question in faq %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading_{{ loop.index }}">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ loop.index }}" aria-expanded="true" aria-controls="collapse_{{ loop.index }}">
+                            {{ question.question }}
+                        </button>
+                    </h2>
+                    <div id="collapse_{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ loop.index }}" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            {{ question.answer }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-        <div class="col">
-          <h2 class="mb-3">Upustvo za registraciju poljoprivrednog gazdinstva</h2>
-          <p>Upustvo</p>
-          <a class="btn btn-primary" href="{{ url_for('main.about') }}">Registruj gazdinstvo</a>
-        </div>
-      </div>
+        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.faq') }}">Vidi sve</a>
     </section>
-  </main>
+
+    <section class="mb-5">
+        <div class="row" id="registracija">
+            <div class="col">
+                <h2 class="mb-3">Registracija korisnika</h2>
+                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam 
+                    nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam 
+                    erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
+                    tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo 
+                    consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate 
+                    velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis 
+                    at vero eros et accumsan et iusto odio dignissim qui blandit praesent 
+                    luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+                    Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse 
+                    molestie consequat, vel illum dolore eu feugiat nulla facilisis</p>
+                <a class="btn btn-primary" href="{{ url_for('users.register_user') }}">Registruj se</a>
+            </div>
+            <div class="col">
+                <h2 class="mb-3">Registracija PG</h2>
+                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam 
+                    nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam 
+                    erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
+                    tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo 
+                    consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate 
+                    velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis 
+                    at vero eros et accumsan et iusto odio dignissim qui blandit praesent 
+                    luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+                    Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse 
+                    molestie consequat, vel illum dolore eu feugiat nulla facilisis</p>
+                <a class="btn btn-primary" href="{{ url_for('users.register_farm') }}">Registruj PG</a>
+            </div>
+        </div>
+    </section>
+</main>
 {% endblock content%}
