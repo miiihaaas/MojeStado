@@ -1,0 +1,173 @@
+{% extends "layout.html" %}
+{% block content %}
+{% if current_user.user_type == 'farm_active' %}
+<h2>Moji podaci</h2>
+<p>{{current_user.name}} {{current_user.surname}}</p>
+<p>{{current_user.address }}</p>
+<p>{{ current_user.zip_code }} {{ current_user.city }}</p>
+<p>{{ current_user.JMBG }}</p>
+<p>{{ current_user.PBG }}</p>
+<p>{{ current_user.MB }}</p>
+<p>{{ current_user.phone }}</p>
+<p>{{ current_user.email }}</p>
+<h2>Moja farma</h2>
+<h3>{{farm.farm_name}}</h3>
+<h4>{{farm.farm_city}}</h4>
+<div class="row">
+    <div class="col-md-3">
+        <img src="/static/farm_image/{{farm.farm_image}}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
+    </div>
+    <div class="col-md-9">
+        <p>{{farm.farm_description}}</p>
+    </div>
+</div>
+<h2>Upload slika</h2>
+<form action="{{ url_for('farms.upload_image') }}" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="farm_id" value="{{ farm.id }}">
+    <div class="form-group">
+        <div class="mb-3">
+            <label for="picture" class="form-label">Slika</label>
+            <input type="file" class="form-control" id="picture" name="picture" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Pošalji</button>
+    </div>
+    <div class="form-group">
+        {{ farm.farm_description }}
+    </div>
+</form>
+<h2>Moje stado</h2>
+<h3>U ponudi</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID grla</th>
+            <th>Kategorija</th>
+            <th>Podkategorija</th>
+            <th>Rasa</th>
+            <th>Pol</th>
+            <th>Trenutna masa grla</th>
+            <th>Cena po kilogramu</th>
+            <th>Osigurano</th>
+            <th>Organski uzgoj</th>
+            <th>Usluge PG</th>
+            <th>Karton grla</th>
+            <th>Ukloni grlo</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+        </tr>
+        <tr>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+        </tr>
+    </tbody>
+</table>
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel">Dodaj</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                dodati form
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<h3>U tovu</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID grla</th>
+            <th>Kategorija</th>
+            <th>Podkategorija</th>
+            <th>Rasa</th>
+            <th>Pol</th>
+            <th>Trenutna masa grla</th>
+            <th>Željena masa grla</th>
+            <th>Preostali broj hranidbenih dana</th>
+            <th>Kupac (ime i prezime)</th>
+            <th>Osigurano</th>
+            <th>Organski uzgoj</th>
+            <th>Karton grla</th>
+            <th>Cena tova</th>
+            <th>Uplaćeno za tov</th>
+            <th>Ikonica za završetak tova</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+        </tr>
+        <tr>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Moja prodavnica</h2>
+<h3>Moji proizvodi</h3>
+<h3>Moje prodaje</h3>
+{% else %}
+neaktivni farmer {{ current_user.name }} {{ current_user.surname }}
+{% endif %}
+{% endblock content%}

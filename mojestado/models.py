@@ -19,11 +19,11 @@ class User(db.Model, UserMixin):
     address = db.Column(db.String(20), unique=False, nullable=False)
     city = db.Column(db.String(20), unique=False, nullable=False)
     zip_code = db.Column(db.String(5), unique=False, nullable=False)
-    phone = db.Column(db.String(20), unique=True, nullable=False) #! samo za farm
+    phone = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
     PBG = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
     JMBG = db.Column(db.String(13), unique=True, nullable=True)
     MB = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
-    user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm, user, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
+    user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm_active, farm_inactive, user, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
     farms = db.relationship('Farm', backref='user_farm', lazy=True) #! 
     
 

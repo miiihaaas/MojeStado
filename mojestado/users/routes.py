@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db, mail
 from mojestado.users.forms import LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
-from mojestado.models import User
+from mojestado.models import User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 
@@ -10,30 +10,68 @@ from flask_mail import Message
 users = Blueprint('users', __name__)
 
 
-@users.route("/register_farm")
+def send_contract(user):
+    msg = Message(subject='Ugovor o pristupu', 
+                    sender='Wqo2M@example.com', 
+                    recipients=[user.email], 
+                    bcc=['Wqo2M@example.com'], 
+                    attachments=[])
+    msg.body = 'Ugovor o pristupu'
+    mail.send(msg)
+
+
+def send_conformation_email(user):
+    msg = Message(subject='Registracija korisnika', 
+                    sender='Wqo2M@example.com', 
+                    recipients=[user.email], 
+                    bcc=['Wqo2M@example.com'], 
+                    attachments=[])
+    msg.body = f'Da bi ste dovršili registraciju korisnickog naloga, kliknite na sledeći link: {url_for("users.confirm_email", token=user.get_reset_token(), _external=True)}'
+    mail.send(msg)
+
+
+@users.route("/register_farm", methods=['GET', 'POST'])
 def register_farm(): #! Registracija poljoprivrednog gazdinstva
     form = RegistrationFarmForm()
+    form.municipality.choices = [(municipality.id, f'{municipality.municipality_name} ({municipality.municipality_zip_code})') for municipality in db.session.query(Municipality).all()]
     if form.validate_on_submit():
+        municipality = Municipality.query.get(form.municipality.data)
         user = User(email=form.email.data, 
                     password=bcrypt.generate_password_hash(form.password.data).decode('utf-8'),
                     name=form.name.data,
                     surname=form.surname.data,
                     address=form.address.data,
                     city=form.city.data,
-                    zip_code=form.zip_code.data,
+                    zip_code=municipality.municipality_zip_code,
                     phone=form.phone.data,
-                    pbg=form.pbg.data,
-                    jmbg=form.jmbg.data,
-                    mb=form.mb.data,
+                    PBG=form.pbg.data,
+                    JMBG=form.jmbg.data,
+                    MB=form.mb.data,
                     user_type='farm_inactive', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
                     )
         db.session.add(user)
         db.session.commit()
+        farm = Farm(farm_name="Definisati naziv farme",
+                    farm_address=form.address.data,
+                    farm_city=form.city.data,
+                    farm_zip_code=form.zip_code.data,
+                    farm_municipality_id=municipality.id,
+                    farm_phone=form.phone.data,
+                    farm_description="Definisati opis farme",
+                    user_id=user.id)
+        db.session.add(farm)
+        db.session.commit()
         flash(f'Uspesno ste poslali zahtev za registraciju. Na Vaš mejl je poslat ugovor pomoću koga se završava registracija.', 'success')
         #! napisati kod za generisanje ugovora i slanje ugovora na mejl
+        # send_contract(user) #! aktivirati ovaj kod kada se postavi funkcionalnost slanja mejla
         return redirect(url_for('main.home'))
-    return render_template('register_farm.html', title='Registracija poljoprivrednog gazdinstva',
-                            form=form)
+    elif request.method == 'GET':
+        return render_template('register_farm.html', 
+                                title='Registracija poljoprivrednog gazdinstva',
+                                form=form)
+    else:
+        flash(f'Doslo je do greske: {form.errors}. Molimo pokusajte ponovo.', 'danger')
+        return render_template('register_farm.html', title='Registracija poljoprivrednog gazdinstva',form=form)
 
 
 @users.route("/register_user", methods=['GET', 'POST'])
@@ -47,13 +85,14 @@ def register_user(): #! Registracija korisnika
                     address=form.address.data,
                     city=form.city.data,
                     zip_code=form.zip_code.data,
-                    jmbg=form.jmbg.data,
+                    JMBG=form.jmbg.data,
                     user_type='user' #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
                     )
         db.session.add(user)
         db.session.commit()
         flash(f'Uspesno ste se poslali zahtev za registraciju. Na Vašu mejl adresu je poslat link za potvrdu registracije.', 'success')
         #! nastaviti kod za slanje mejla korisniku
+        # send_conformation_email(user) #! aktiviraj ovaj kod kada se postavi funkcionalnost slanja mejla
         return redirect(url_for('main.home'))
     return render_template('register_user.html', title='Registracija korisnika',
                             form=form)
@@ -65,6 +104,9 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
+        print(f'user: {user}')
+        print(f'password form hash: {bcrypt.generate_password_hash(form.password.data).decode("utf-8")}')
+        print(f'password check: {bcrypt.check_password_hash(user.password, form.password.data)}')
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
@@ -81,6 +123,25 @@ def logout():
     return redirect(url_for('main.home'))
 
 
-@users.route("/my_user")
-def my_user(): #! Moj nalog za korisnika
-    pass
+@users.route("/my_user/<user_id>", methods=['GET', 'POST'])
+def my_user(user_id): #! Moj nalog za korisnika
+    user = User.query.get_or_404(user_id)
+    if current_user.id != user.id:
+        flash('Nemate pravo pristupa ovoj stranici.', 'danger')
+        return redirect(url_for('main.home'))
+    print(f'current_user: {current_user}')
+    if current_user.user_type == 'user':
+        print(f'current_user: {current_user}')
+        return render_template('my_user.html', title='Moj nalog', user=user)
+    elif current_user.user_type == 'admin':
+        return render_template('my_admin.html', title='Moj nalog', user=user)
+    
+    
+    elif current_user.user_type == 'farm_active':
+        farm = Farm.query.filter_by(user_id=user.id).first()
+        
+        return render_template('my_farm.html', title='Moj nalog', 
+                                user=user,
+                                farm=farm)
+    elif current_user.user_type == 'farm_inactive':
+        return render_template('my_farm.html', title='Moj nalog', user=user)

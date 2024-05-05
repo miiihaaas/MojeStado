@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% block content %}
+<dif class="form-control">
+    <h1>Moji podaci</h1>
+    <p>{{user.name}} {{user.surname}}</p>
+    <p>{{user.address}} *</p>
+    <p>{{user.zip_code}} {{user.city}} *</p>
+    <p>{{user.phone}}</p>
+    <p>{{user.email}}</p>
+    <h1>Moje stado</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID grla</th>
+                <th>Kategorija</th>
+                <th>Podkategorija</th>
+                <th>Rasa</th>
+                <th>Trenutna masa grla</th>
+                <th>Željena masa grla</th>
+                <th>Preostali broj hranidbenih dana</th>
+                <th>Osigurano</th>
+                <th>Organska proizvodnja</th>
+                <th>PG</th>
+                <th>Lokacija</th>
+                <th>Karton grla</th>
+                <th>Cena tova</th>
+                <th>uplaćeno za tov</th>
+                <th>ikonica za prekid tova</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>6478-83608</td>
+                <td>Ovca</td>
+                <td>Šilježe</td>
+                <td>Vlaška vitoroga</td>
+                <td>35kg</td>
+                <td>45kg</td>
+                <td>8</td>
+                <td>Da</td>
+                <td>Ne</td>
+                <td>PG Panić</td>
+                <td>Gornji Milanovac</td>
+                <td>Karton grla</td>
+                <td>6300 rsd</td>
+                <td>15000 rsd</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>94837-23593</td>
+                <td>Ovca</td>
+                <td>Šilježe</td>
+                <td>Vlaška vitoroga</td>
+                <td>35kg</td>
+                <td>42kg</td>
+                <td>12</td>
+                <td>Ne</td>
+                <td>Da</td>
+                <td>PG Simović</td>
+                <td>Čačak</td>
+                <td>Karton grla</td>
+                <td>7000 rsd</td>
+                <td>18000 rsd</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <h1>Moje kupovine</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Datum kupovine</th>
+                <th>PG</th>
+                <th>Proizvod</th>
+                <th>Količina/Masa</th>
+                <th>Cena</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>3.5.2024.</td>
+                <td>PG Panić</td>
+                <td>Kajmak [600g]</td>
+                <td>15 kom</td>
+                <td>1570 rsd</td>
+            </tr>
+            <tr>
+                <td>13.2.2024.</td>
+                <td>PG Panić</td>
+                <td>Sir [1kg]</td>
+                <td>5 kom</td>
+                <td>1570 rsd</td>
+            </tr>
+        </tbody>
+    </table>
+</dif>
+
+{% endblock content %}

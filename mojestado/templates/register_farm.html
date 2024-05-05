@@ -2,6 +2,7 @@
 {% block content %}
     <h1>Registracija farme</h1>
     <form action="" method="POST">
+        {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.email.label }}
             {{ form.email(class="form-control form-control-lg", id="email" ) }}
@@ -30,10 +31,14 @@
             {{ form.city.label }}
             {{ form.city(class="form-control form-control-lg", id="city") }}
         </div>
-        <div class="form-group">
+        <div class="select-group">
+            {{ form.municipality.label }}
+            {{ form.municipality(class="form-select form-select-lg", id="municipality") }}
+        </div>
+        <!-- <div class="form-group">
             {{ form.zip_code.label }}
             {{ form.zip_code(class="form-control form-control-lg", id="zip_code") }}
-        </div>
+        </div> -->
         <div class="form-group">
             {{ form.phone.label }}
             {{ form.phone(class="form-control form-control-lg", id="phone") }}
@@ -55,3 +60,17 @@
         </div>
     </form>
 {% endblock content%}
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $("#municipality").select2({
+            placeholder: "Izaberi opštinu",
+            allowClear: true,
+        });
+
+        // Postavljanje praznog stringa kao selektovane opcije
+        $("#municipality").val(null).trigger("change");
+    });
+
+</script>
+{% endblock scripts %}
