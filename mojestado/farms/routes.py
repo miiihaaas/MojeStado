@@ -39,9 +39,53 @@ def upload_image():
     farm_image_path = os.path.join(app.root_path, 'static', 'farm_image', farm_image_fn)
     picture.save(farm_image_path)
     #! dodati kod koji će da proširi listu u objektu farm tako što će dodati generisani fajl
-    # farm.farm_image_colection = farm.farm_image_colection + [farm_image_fn] #! dodati kolonu farm_image_colection
-    # db.session.commit()
-    return redirect(url_for('users.my_user', user_id=farm.user_id))
+    farm.farm_image_collection = farm.farm_image_collection + [farm_image_fn] #! dodati kolonu farm_image_colection
+    db.session.commit()
+    return redirect(url_for('users.my_farm', farm_id=farm.id))
+
+
+@farms.route("/delete_image", methods=['POST'])
+def delete_image():
+    farm_id = request.form.get('farm_id')
+    farm = Farm.query.get(farm_id)
+    if not farm:
+        return 'Farm not found', 404
+
+    farm_image_fn = request.form.get('farm_image')
+    # Uklonite farm_image_fn iz farm.farm_image_collection
+    farm_images = farm.farm_image_collection
+    if farm_image_fn in farm_images:
+        print(f'pre remove: {farm_images=}')
+        farm_images = [image for image in farm_images if image != farm_image_fn]
+        print(f'posle remove: {farm_images=}')
+        # Ažurirajte farm.farm_image_collection u bazi podataka
+        farm.farm_image_collection = farm_images
+        print(f'{farm.farm_image_collection=}')
+        db.session.commit()
+        #! dodati kod koji će da iz foldera obriše fajl sa nazivom farm_image_fn
+        image_path = os.path.join(app.root_path, 'static', 'farm_image', farm_image_fn)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+        if farm_image_fn == farm.farm_image:
+            farm.farm_image = 'default.jpg'
+            db.session.commit()
+            flash('Obrisana je naslovna slika, definišite novu naslovnu sliku', "warning")
+        flash('Slika obrisana', "success")
+    else:
+        flash('Slika nije pronađena u kolekciji', "danger")
+    return redirect(url_for('users.my_farm', farm_id=farm.id))
+
+
+@farms.route("/default_image", methods=['GET', 'POST'])
+def default_image():
+    farm_id = request.form.get('farm_id')
+    farm = Farm.query.get(farm_id)
+    if not farm:
+        return 'Farm not found', 404
+    farm_image_fn = request.form.get('farm_image')
+    farm.farm_image = farm_image_fn
+    db.session.commit()
+    return redirect(url_for('users.my_farm', farm_id=farm.id))
 
 
 @farms.route("/farm_list", methods=['GET', 'POST'])

@@ -55,6 +55,7 @@ class Municipality(db.Model):
 class Farm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     farm_image = db.Column(db.String(20), nullable=False, default='default.jpg') #! prilagoditi da može da se stavi do 10 slika
+    farm_image_collection = db.Column(db.JSON, nullable=True)
     farm_name = db.Column(db.String(20), nullable=False)
     farm_address = db.Column(db.String(20), nullable=False)
     farm_city = db.Column(db.String(20), nullable=False)
@@ -87,25 +88,23 @@ class Animal(db.Model):
 class AnimalCategory (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_category_name = db.Column(db.String(20), nullable=False)
-    animal_subcategory_id = db.Column(db.Integer, db.ForeignKey('animal_subcategory.id'), nullable=False) #!
-    animal_race_id = db.Column(db.Integer, db.ForeignKey('animal_race.id'), nullable=False) #!
+    animal_subcategorys = db.relationship('AnimalSubcategory', backref='animal_category_animal_subcategory', lazy=True)
+    animal_races = db.relationship('AnimalRace', backref='animal_category_animal_race', lazy=True)
     animals = db.relationship('Animal', backref='animal_category', lazy=True) #!
-    pass
 
 
 class AnimalSubcategory (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_subcategory_name = db.Column(db.String(20), nullable=False)
-    animal_categories = db.relationship('AnimalCategory', backref='animal_subcategory_animal_category', lazy=True) 
+    animal_categorie_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False) #!
     #! ovde treba dodati kolone za priraštaj mase za tov (min/max) i težina (od-do)
-    pass
+    
 
 
 class AnimalRace (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_race_name = db.Column(db.String(20), nullable=False)
-    animals = db.relationship('AnimalCategory', backref='animal_race_animal_category', lazy=True) #!
-    pass
+    animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False) #!
 
 
 class Product(db.Model):

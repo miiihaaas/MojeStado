@@ -36,7 +36,7 @@
                         <a class="navbar-brand" href="{{ url_for('users.logout') }}">Odjavi se</a>
                     </li>
                     <li class="nav-item">
-                        <a class="navbar-brand" href="{{ url_for('users.my_user', user_id=current_user.id) }}" title="Moj nalog"><i class="fa-regular fa-user"></i></a>
+                        <a class="navbar-brand" href="{{ url_for('users.my_profile', user_id=current_user.id) }}" title="Moj nalog"><i class="fa-regular fa-user"></i></a>
                     </li>
                     {% else %}
                     <li class="nav-item">

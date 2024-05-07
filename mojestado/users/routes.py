@@ -54,7 +54,7 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
         farm = Farm(farm_name="Definisati naziv farme",
                     farm_address=form.address.data,
                     farm_city=form.city.data,
-                    farm_zip_code=form.zip_code.data,
+                    farm_zip_code=municipality.municipality_zip_code,
                     farm_municipality_id=municipality.id,
                     farm_phone=form.phone.data,
                     farm_description="Definisati opis farme",
@@ -123,8 +123,8 @@ def logout():
     return redirect(url_for('main.home'))
 
 
-@users.route("/my_user/<user_id>", methods=['GET', 'POST'])
-def my_user(user_id): #! Moj nalog za korisnika
+@users.route("/my_profile/<user_id>", methods=['GET', 'POST'])
+def my_profile(user_id): #! Moj nalog za korisnika
     user = User.query.get_or_404(user_id)
     if current_user.id != user.id:
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
@@ -132,16 +132,62 @@ def my_user(user_id): #! Moj nalog za korisnika
     print(f'current_user: {current_user}')
     if current_user.user_type == 'user':
         print(f'current_user: {current_user}')
-        return render_template('my_user.html', title='Moj nalog', user=user)
+        return render_template('my_profile.html', title='Moj nalog', user=user)
     elif current_user.user_type == 'admin':
-        return render_template('my_admin.html', title='Moj nalog', user=user)
+        return render_template('my_profile.html', title='Moj nalog', user=user)
     
     
     elif current_user.user_type == 'farm_active':
         farm = Farm.query.filter_by(user_id=user.id).first()
         
-        return render_template('my_farm.html', title='Moj nalog', 
+        return render_template('my_profile.html', title='Moj nalog', 
                                 user=user,
                                 farm=farm)
     elif current_user.user_type == 'farm_inactive':
-        return render_template('my_farm.html', title='Moj nalog', user=user)
+        return render_template('my_profile.html', title='Moj nalog', user=user)
+
+
+#! ispod je za farmera !#
+#! ispod je za farmera !#
+#! ispod je za farmera !#
+
+
+@users.route("/my_farm/<int:farm_id>", methods=['GET', 'POST'])
+def my_farm(farm_id):#! Moj nalog za poljoprivrednog gazdinstva
+    farm = Farm.query.get_or_404(farm_id)
+    if current_user.id != farm.user_id:
+        flash('Nemate pravo pristupa ovoj stranici.', 'danger')
+        return redirect(url_for('main.home'))
+    return render_template('my_farm.html', title='Moj nalog', user=current_user,
+                            farm=farm)
+
+
+@users.route("/my_flock/<int:farm_id>", methods=['GET', 'POST'])
+def my_flock(farm_id):
+    farm = Farm.query.get_or_404(farm_id)
+    return render_template('my_flock.html', title='Moj stado', user=current_user,
+                            farm=farm)
+
+
+@users.route("/my_market/<int:farm_id>", methods=['GET', 'POST'])
+def my_market(farm_id):
+    farm = Farm.query.get_or_404(farm_id)
+    return render_template('my_market.html', title='Moj prodavnica', user=current_user,
+                            farm=farm)
+
+
+#! ispod je za user !#
+#! ispod je za user !#
+#! ispod je za user !#
+
+
+@users.route("/my_fattening/<int:user_id>", methods=['GET', 'POST'])
+def my_fattening(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('my_fattening.html', title='Moj stado', user=user)
+
+
+@users.route("/my_shop/<int:user_id>", methods=['GET', 'POST'])
+def my_shop(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('my_shop.html', title='Moj prodavnica', user=user)

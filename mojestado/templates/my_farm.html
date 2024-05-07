@@ -1,173 +1,148 @@
 {% extends "layout.html" %}
 {% block content %}
-{% if current_user.user_type == 'farm_active' %}
-<h2>Moji podaci</h2>
-<p>{{current_user.name}} {{current_user.surname}}</p>
-<p>{{current_user.address }}</p>
-<p>{{ current_user.zip_code }} {{ current_user.city }}</p>
-<p>{{ current_user.JMBG }}</p>
-<p>{{ current_user.PBG }}</p>
-<p>{{ current_user.MB }}</p>
-<p>{{ current_user.phone }}</p>
-<p>{{ current_user.email }}</p>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ url_for('users.my_profile', user_id=user.id) }}">Moji podaci</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.my_farm', farm_id=farm.id) }}">Moja farma</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.my_flock', farm_id=farm.id) }}">Moje stado</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('users.my_market', farm_id=farm.id) }}">Moja prodavnica</a>
+            </li>
+        </ul>
+    </div>
+</nav>
 <h2>Moja farma</h2>
-<h3>{{farm.farm_name}}</h3>
-<h4>{{farm.farm_city}}</h4>
-<div class="row">
-    <div class="col-md-3">
-        <img src="/static/farm_image/{{farm.farm_image}}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
-    </div>
-    <div class="col-md-9">
-        <p>{{farm.farm_description}}</p>
-    </div>
-</div>
-<h2>Upload slika</h2>
-<form action="{{ url_for('farms.upload_image') }}" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="farm_id" value="{{ farm.id }}">
-    <div class="form-group">
-        <div class="mb-3">
-            <label for="picture" class="form-label">Slika</label>
-            <input type="file" class="form-control" id="picture" name="picture" required>
+<div class="container">
+    <h3>{{farm.farm_name}} <a href="{{ url_for('farms.farm_detail', farm_id=farm.id) }}"><i class="fa-solid fa-link"></i></a></h3>
+    <h4>{{farm.farm_city}}</h4>
+    <div class="row">
+        <div class="col-md-3">
+            <img src="/static/farm_image/{{farm.farm_image}}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
         </div>
-        <button type="submit" class="btn btn-primary">Pošalji</button>
+        <div class="col-md-9">
+            <p>{{farm.farm_description}}</p>
+        </div>
     </div>
-    <div class="form-group">
-        {{ farm.farm_description }}
-    </div>
-</form>
-<h2>Moje stado</h2>
-<h3>U ponudi</h3>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID grla</th>
-            <th>Kategorija</th>
-            <th>Podkategorija</th>
-            <th>Rasa</th>
-            <th>Pol</th>
-            <th>Trenutna masa grla</th>
-            <th>Cena po kilogramu</th>
-            <th>Osigurano</th>
-            <th>Organski uzgoj</th>
-            <th>Usluge PG</th>
-            <th>Karton grla</th>
-            <th>Ukloni grlo</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
-    </tbody>
-</table>
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
-
-<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addModalLabel">Dodaj</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+    <div class="row">
+        <h2>Slike farme</h2>
+        <div class="col-md-9">
+            <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for farm_image in farm.farm_image_collection %}
+                        <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                            <img src="/static/farm_image/{{ farm_image }}" class="d-block w-100" alt="Slika Farme {{ farm.farm_name }}">
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
                 </button>
             </div>
-            <div class="modal-body">
-                dodati form
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <p>U ovoj sekciji možete upravljati svojim slikama. Možete dodati maksimalno 10 slika...</p>
+            </div>
+            <div class="form-group mb-4">
+                <form action="{{ url_for('farms.upload_image') }}" method="POST" enctype="multipart/form-data" id="upload_form">
+                    <input type="hidden" name="farm_id" value="{{ farm.id }}">
+                    <div class="form-group">
+                        <div class="mb-3">
+                            <label for="picture" class="form-label">Izaberi sliku</label>
+                            <input type="file" class="form-control" id="picture" name="picture" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Dodaj sliku</button>
+                    </div>
+                </form>
+            </div>
+            <div class="form-group mb-4">
+                <p>U ovoj sekciji možete pregledati i obrisati slike farme</p>
+                <!-- Button to open the modal -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal">
+                    Pregled i brisanje slika
+                </button>
+
+                <!-- The modal -->
+                <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="imageModalLabel">Slike farme</h5>
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ url_for('farms.delete_image') }}" method="POST">
+                                    <input type="hidden" name="farm_id" value="{{ farm.id }}">
+                                    <div class="row">
+                                    {% for farm_image in farm.farm_image_collection %}
+                                        <div class="col-md-3">
+                                        <img src="/static/farm_image/{{ farm_image }}" class="img-fluid rounded" alt="Slika Farme {{ farm.farm_name }}">
+                                        <button type="submit" class="btn btn-danger" name="farm_image" value="{{ farm_image }}">Obriši</button>
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group mb-4">
+                <p>U ovoj sekciji možete pregledati i postaviti naslovnu sliku</p>
+                <!-- Button to open the modal -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#defaultImageModal">
+                    Podešavanje naslovne slike
+                </button>
+
+                <!-- The modal -->
+                <div class="modal fade" id="defaultImageModal" tabindex="-1" role="dialog" aria-labelledby="defaultImageModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="defaultImageModalLabel">Slike farme</h5>
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ url_for('farms.default_image') }}" method="POST">
+                                    <input type="hidden" name="farm_id" value="{{ farm.id }}">
+                                    <div class="row">
+                                    {% for farm_image in farm.farm_image_collection %}
+                                        <div class="col-md-3">
+                                            <img src="/static/farm_image/{{ farm_image }}" class="img-fluid rounded" alt="Slika Farme {{ farm.farm_name }}">
+                                            <button type="submit" class="btn btn-primary" name="farm_image" value="{{ farm_image }}">Postavi kao naslovnu sliku</button>
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-</div>
+{% endblock content %}
 
+{% block scripts %}
 
-<h3>U tovu</h3>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID grla</th>
-            <th>Kategorija</th>
-            <th>Podkategorija</th>
-            <th>Rasa</th>
-            <th>Pol</th>
-            <th>Trenutna masa grla</th>
-            <th>Željena masa grla</th>
-            <th>Preostali broj hranidbenih dana</th>
-            <th>Kupac (ime i prezime)</th>
-            <th>Osigurano</th>
-            <th>Organski uzgoj</th>
-            <th>Karton grla</th>
-            <th>Cena tova</th>
-            <th>Uplaćeno za tov</th>
-            <th>Ikonica za završetak tova</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
-    </tbody>
-</table>
-
-<h2>Moja prodavnica</h2>
-<h3>Moji proizvodi</h3>
-<h3>Moje prodaje</h3>
-{% else %}
-neaktivni farmer {{ current_user.name }} {{ current_user.surname }}
-{% endif %}
-{% endblock content%}
+{% endblock scripts %}
