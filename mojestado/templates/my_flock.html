@@ -84,31 +84,56 @@
             </div>
             <div class="modal-body">
                 <form action="" method="post">
-                    <p>Ukucajte podatke o grlu</p>
+                    <p>Izaberite podatke</p>
                     {{ form.hidden_tag() }}
-                    <div class ="form-group">
-                        {{ form.animal_category.label }}
-                        {{ form.animal_category (class="form-select form-select-lg", id="animal_category") }}
-                    </div>
                     <div class ="form-group">
                         {{ form.intended_for.label }}
                         {{ form.intended_for (class="form-select form-select-lg", id="intended_for") }}
                     </div>
                     <div class ="form-group">
-                        {{ form.weight.label }}
-                        {{ form.weight(class="form-control form-control-lg", id="weight", type="number", step="0.1") }}
+                        {{ form.category.label }}
+                        {{ form.category (class="form-select form-select-lg", id="category") }}
                     </div>
-                    {% if form.intended_for == 'priplod' %}
-                    <div class ="form-group">
+                    <div class ="form-group" id="subcategory-group" style="display: none;">
                         {{ form.subcategory.label }}
                         {{ form.subcategory (class="form-select form-select-lg", id="subcategory") }}
                     </div>
-                    {% endif %}
                     <div class ="form-group">
+                        {{ form.race.label }}
+                        {{ form.race (class="form-select form-select-lg", id="race") }}
+                    </div>
+                    <div class ="form-group">
+                        {{ form.weight.label }}
+                        {{ form.weight (class="form-control form-control-lg", id="weight", type="number", step="0.1") }}
+                    </div>
+                    <div class ="form-group">
+                        {{ form.price.label }}
+                        {{ form.price (class="form-control form-control-lg", id="price", type="number", step="0.1") }}
+                    </div>
+                    <div class="form-check form-switch">
+                        {{ form.insured (class="form-check-input", id="insured") }}
+                        {{ form.insured.label(class="form-check-label", for="insured") }}
+                    </div>
+                    <div class="form-check form-switch">
+                        {{ form.organic (class="form-check-input", id="insured") }}
+                        {{ form.organic.label(class="form-check-label", for="organic") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.services.label }}
+                        {{ form.services (class="form-select form-select-lg", id="services") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.cardboard.label(class="form-label") }}
+                        {{ form.cardboard(class="form-control", id="cardboard") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.animal_id.label }}
+                        {{ form.animal_id (class="form-control form-control-lg", id="animal_id", placeholder="0000-00000-0000") }}
+                    </div>
+                    <div class="form-group">
                         {{ form.submit(class="btn btn-primary") }}
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
@@ -175,3 +200,73 @@
     </tbody>
 </table>
 {% endblock content%}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#intended_for').change(function() {
+            if ($(this).val() === 'priplod') {
+                $('#subcategory-group').show();
+                const category = $('#category').val();
+                $.ajax({
+                    url: '/get_subcategories',
+                    type: 'GET',
+                    data: { category: category },
+                    success: function(subcategorires_options) {
+                        console.log('iz backenda: ',subcategorires_options);
+                        $('#subcategory').empty();
+                        subcategorires_options.forEach(function(subcategory) {
+                            $('#subcategory').append($('<option>', {
+                                value: subcategory.value,
+                                text: subcategory.text
+                            }));
+                        }, '</option>');
+                    }
+                });
+            } else {
+                $('#subcategory-group').hide();
+                $('#subcategory').val('');
+            }
+        });
+    
+        $('#category').change(function() {
+            const category = $(this).val();
+    
+            // AJAX poziv za subcategories
+            if ($('#subcategory-group').is(':visible')) {
+                $.ajax({
+                    url: '/get_subcategories',
+                    type: 'GET',
+                    data: { category: category },
+                    success: function(subcategorires_options) {
+                        console.log('iz backenda: ',subcategorires_options);
+                        $('#subcategory').empty();
+                        subcategorires_options.forEach(function(subcategory) {
+                            $('#subcategory').append($('<option>', {
+                                value: subcategory.value,
+                                text: subcategory.text
+                            }));
+                        }, '</option>');
+                    }
+                });
+            }
+    
+            // AJAX poziv za races
+            $.ajax({
+                url: '/get_races',
+                type: 'GET',
+                data: { category: category },
+                success: function(races_options) {
+                    $('#race').empty();
+                    races_options.forEach(function(race) {
+                        $('#race').append($('<option>', {
+                            value: race.value,
+                            text: race.text
+                        }, '</option>'));
+                    });
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}
