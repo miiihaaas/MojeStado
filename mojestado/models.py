@@ -85,12 +85,16 @@ class Animal(db.Model):
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
 
 
-class AnimalCategory (db.Model):
+class AnimalCategorization (db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    animal_category_name = db.Column(db.String(20), nullable=False)
-    animal_subcategorys = db.relationship('AnimalSubcategory', backref='animal_category_animal_subcategory', lazy=True)
-    animal_races = db.relationship('AnimalRace', backref='animal_category_animal_race', lazy=True)
-    animals = db.relationship('Animal', backref='animal_category', lazy=True) #!
+    category = db.Column(db.String(20), nullable=False)
+    subcategory = db.Column(db.String(500), nullable=False)
+    intended_for = db.Column(db.String(20), nullable=False) #! tov/priplod
+    min_weight = db.Column(db.Float, nullable=True) #! min tezina za podklasu tova
+    max_weight = db.Column(db.Float, nullable=True) #! max tezina za podklasu tova
+    min_weight_gain = db.Column(db.Float, nullable=True) #! min tezina za podklasu priplodova
+    max_weight_gain = db.Column(db.Float, nullable=True) #! max tezina za podklasu priplodova
+    
 
 
 class AnimalSubcategory (db.Model):

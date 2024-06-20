@@ -1,8 +1,8 @@
 from flask import Blueprint
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db, mail
-from mojestado.users.forms import LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
-from mojestado.models import User, Farm, Municipality
+from mojestado.users.forms import AddAnimalForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
+from mojestado.models import AnimalCategorization, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 
@@ -165,7 +165,14 @@ def my_farm(farm_id):#! Moj nalog za poljoprivrednog gazdinstva
 @users.route("/my_flock/<int:farm_id>", methods=['GET', 'POST'])
 def my_flock(farm_id):
     farm = Farm.query.get_or_404(farm_id)
+    form = AddAnimalForm()
+    categories_query = AnimalCategorization.query.all()
+    categories_list = list(dict.fromkeys(category.category for category in categories_query))
+    form.animal_category.choices = categories_list
+    if request.method == 'POST':
+        print(f'submitovana je forma {request.form=}')
     return render_template('my_flock.html', title='Moj stado', user=current_user,
+                            form=form,
                             farm=farm)
 
 
