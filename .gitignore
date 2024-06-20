@@ -18,6 +18,9 @@ venvMojeStado/
 mojestado/tests
 .vscode/
 
+#! iOS
+.DS_Store
+
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
