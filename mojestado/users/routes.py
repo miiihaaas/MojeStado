@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db, mail
 from mojestado.users.forms import AddAnimalForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
-from mojestado.models import AnimalCategorization, User, Farm, Municipality
+from mojestado.models import Animal, AnimalCategorization, AnimalRace, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 
@@ -164,6 +164,7 @@ def my_farm(farm_id):#! Moj nalog za poljoprivrednog gazdinstva
 
 @users.route("/my_flock/<int:farm_id>", methods=['GET', 'POST'])
 def my_flock(farm_id):
+    animals = Animal.query.filter_by(farm_id=farm_id).all()
     farm = Farm.query.get_or_404(farm_id)
     form = AddAnimalForm()
     categories_query = AnimalCategorization.query.all()
@@ -171,6 +172,11 @@ def my_flock(farm_id):
     form.category.choices = categories_list
     if request.method == 'POST':
         print(f'submitovana je forma {request.form=}')
+        new_animal = Animal(
+            farm_id=farm.id,
+        )
+        db.session.add(new_animal)
+        db.session.commit()
     return render_template('my_flock.html', title='Moj stado', user=current_user,
                             form=form,
                             farm=farm)
@@ -188,8 +194,8 @@ def get_subcategories():
 @users.route("/get_races", methods=['GET'])
 def get_races():
     category = request.args.get('category')
-    races = AnimalCategorization.query.filter_by(category=category, intended_for='priplod').all()
-    races_options = [{'value': race.race, 'text': race.race} for race in races]
+    races = AnimalRace.query.filter_by(category=category).all()
+    races_options = [{'value': race.animal_race_name, 'text': race.animal_race_name} for race in races]
     print(f'races_options: {races_options}')
     return jsonify(races_options)
 

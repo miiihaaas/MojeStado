@@ -109,6 +109,7 @@ class AnimalRace (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_race_name = db.Column(db.String(20), nullable=False)
     animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False) #!
+    category = db.Column(db.String(20), nullable=False)
 
 
 class Product(db.Model):
