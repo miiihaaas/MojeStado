@@ -65,97 +65,105 @@ class Farm(db.Model):
     farm_description = db.Column(db.String(2000), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #!
     animals = db.relationship('Animal', backref='farm_animal', lazy=True) #!
-    products = db.relationship('Product', backref='farm_product', lazy=True) #!
+    # products = db.relationship('Product', backref='farm_product', lazy=True) #!
 
 
 class Animal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    animal_id = db.Column(db.String(12), nullable=False) #! Svako grlo stoke odnosno živine ima minđušu odnosno nanogicu. Na minđuši je ispisan jedinstveni broj koji se sastoji od dva bloka cifara. Prvi petocifreni blok označava PG, a drugi petocifreni ili šestocifreni broj označava redni broj grla.
-    animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False) #!
-    animal_gender = db.Column(db.String(20), nullable=False) #! pol
-    measured_weight = db.Column(db.String(20), nullable=False) #! izmerena težina
-    measured_date = db.Column(db.String(20), nullable=False) #! datum merenja
-    current_weight = db.Column(db.String(20), nullable=False) #! trenutna težina = preračunava se u odnosu na izmerenu težinu i datum merenja
-    price_per_kg = db.Column(db.String(20), nullable=False) #! cena po kg
-    total_price = db.Column(db.String(20), nullable=False) #! ukupna cena
-    insured = db.Column(db.Boolean, nullable=False) #! osigurano
-    organic_animal = db.Column(db.Boolean, nullable=False) #! organska proizvodnja
-    cardboard = db.Column(db.String(50), nullable=False) #! karton grla/životinje
-    fattening = db.Column(db.Boolean, nullable=False) #! tov: true/false
-    farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
+    animal_id = db.Column(db.String(12), nullable=False)  # Svako grlo stoke odnosno živine ima minđušu odnosno nanogicu. Na minđuši je ispisan jedinstveni broj koji se sastoji od dva bloka cifara. Prvi petocifreni blok označava PG, a drugi petocifreni ili šestocifreni broj označava redni broj grla.
+    animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False)
+    animal_categorization_id = db.Column(db.Integer, db.ForeignKey('animal_categorization.id'), nullable=False)
+    animal_race_id = db.Column(db.Integer, db.ForeignKey('animal_race.id'), nullable=False)
+
+    animal_gender = db.Column(db.String(20), nullable=False)  # pol
+    measured_weight = db.Column(db.String(20), nullable=False)  # izmerena težina
+    measured_date = db.Column(db.String(20), nullable=False)  # datum merenja
+    current_weight = db.Column(db.String(20), nullable=False)  # trenutna težina = preračunava se u odnosu na izmerenu težinu i datum merenja
+    price_per_kg = db.Column(db.String(20), nullable=False)  # cena po kg
+    total_price = db.Column(db.String(20), nullable=False)  # ukupna cena
+    insured = db.Column(db.Boolean, nullable=False)  # osigurano
+    organic_animal = db.Column(db.Boolean, nullable=False)  # organska proizvodnja
+    cardboard = db.Column(db.String(50), nullable=False)  # karton grla/životinje
+    intended_for = db.Column(db.String(20), nullable=False)  # tov/priplod
+    farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
+
+    animal_category = db.relationship('AnimalCategory', back_populates='animals')
+    animal_race = db.relationship('AnimalRace', back_populates='animals')
+    animal_categorization = db.relationship('AnimalCategorization', back_populates='animals')
 
 
-class AnimalCategorization (db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(20), nullable=False)
-    subcategory = db.Column(db.String(500), nullable=False)
-    intended_for = db.Column(db.String(20), nullable=False) #! tov/priplod
-    min_weight = db.Column(db.Float, nullable=True) #! min tezina za podklasu tova
-    max_weight = db.Column(db.Float, nullable=True) #! max tezina za podklasu tova
-    min_weight_gain = db.Column(db.Float, nullable=True) #! min tezina za podklasu priplodova
-    max_weight_gain = db.Column(db.Float, nullable=True) #! max tezina za podklasu priplodova
-    
-
-
-class AnimalSubcategory (db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    animal_subcategory_name = db.Column(db.String(20), nullable=False)
-    animal_categorie_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False) #!
-    #! ovde treba dodati kolone za priraštaj mase za tov (min/max) i težina (od-do)
-    
-
-
-class AnimalRace (db.Model):
+class AnimalRace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_race_name = db.Column(db.String(20), nullable=False)
-    animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False) #!
-    category = db.Column(db.String(20), nullable=False)
+    animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False)
+    # category = db.Column(db.String(20), nullable=False)
+    animals = db.relationship('Animal', back_populates='animal_race', lazy=True)
+    animal_category = db.relationship('AnimalCategory', back_populates='animal_races')
 
 
-class Product(db.Model):
+class AnimalCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_image = db.Column(db.String(20), nullable=False) #! slika proizvoda
-    product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
-    product_name = db.Column(db.String(20), nullable=False)
-    product_price_per_kg = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
-    #! razraditi konverziju pakovanje (npr kajmak 1kom = 400g)
-    unite_of_measurement = db.Column(db.String(20), nullable=False) #! jedinica mere može da bude kom ili kg
-    #! ako je kom onda mora da se definiše koliko 1kom ima kg
-    #! ako je kg onda je polje konverzije prazno
-    organic_product = db.Column(db.Boolean, nullable=False) #! organska proizvodnja
-    farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
+    animal_category_name = db.Column(db.String(80), nullable=False)
+    animals = db.relationship('Animal', back_populates='animal_category', lazy=True)
+    animal_races = db.relationship('AnimalRace', back_populates='animal_category', lazy=True)
 
 
-class ProductCategory(db.Model):
+class AnimalCategorization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
-    products = db.relationship('Product', backref='product_category_product', lazy=True) #!
-    pass
+    animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False)
+    subcategory = db.Column(db.String(500), nullable=False)
+    intended_for = db.Column(db.String(20), nullable=False)  # tov/priplod
+    min_weight = db.Column(db.Float, nullable=True)  # min tezina za podklasu tova
+    max_weight = db.Column(db.Float, nullable=True)  # max tezina za podklasu tova
+    min_weight_gain = db.Column(db.Float, nullable=True)  # min tezina za podklasu priplodova
+    max_weight_gain = db.Column(db.Float, nullable=True)  # max tezina za podklasu priplodova
+    animals = db.relationship('Animal', back_populates='animal_categorization', lazy=True)
 
 
-class ProductSubcategory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    product_categories = db.relationship('ProductCategory', backref='product_subcategory_product_category', lazy=True) #!
-    pass
+# class Product(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     product_image = db.Column(db.String(20), nullable=False) #! slika proizvoda
+#     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
+#     product_name = db.Column(db.String(20), nullable=False)
+#     product_price_per_kg = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
+#     #! razraditi konverziju pakovanje (npr kajmak 1kom = 400g)
+#     unite_of_measurement = db.Column(db.String(20), nullable=False) #! jedinica mere može da bude kom ili kg
+#     #! ako je kom onda mora da se definiše koliko 1kom ima kg
+#     #! ako je kg onda je polje konverzije prazno
+#     organic_product = db.Column(db.Boolean, nullable=False) #! organska proizvodnja
+#     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
 
 
-class Debt(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    transactions = db.relationship('Transaction', backref='transaction_debt', lazy=True) #!
-    pass
+# class ProductCategory(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
+#     products = db.relationship('Product', backref='product_category_product', lazy=True) #!
+#     pass
 
 
-class Payment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    transactions = db.relationship('Transaction', backref='transaction_payment', lazy=True) #!
-    pass
+# class ProductSubcategory(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     product_categories = db.relationship('ProductCategory', backref='product_subcategory_product_category', lazy=True) #!
+#     pass
 
 
-class Transaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    debt_id = db.Column(db.Integer, db.ForeignKey('debt.id'), nullable=False)
-    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
-    pass
+# class Debt(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     transactions = db.relationship('Transaction', backref='transaction_debt', lazy=True) #!
+#     pass
+
+
+# class Payment(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     transactions = db.relationship('Transaction', backref='transaction_payment', lazy=True) #!
+#     pass
+
+
+# class Transaction(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     debt_id = db.Column(db.Integer, db.ForeignKey('debt.id'), nullable=False)
+#     payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
+#     pass
 
 
 class FAQ(db.Model):

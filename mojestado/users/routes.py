@@ -1,8 +1,10 @@
+import datetime
 from flask import Blueprint, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db, mail
+from mojestado.animals.routes import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
-from mojestado.models import Animal, AnimalCategorization, AnimalRace, User, Farm, Municipality
+from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 
@@ -167,17 +169,35 @@ def my_flock(farm_id):
     animals = Animal.query.filter_by(farm_id=farm_id).all()
     farm = Farm.query.get_or_404(farm_id)
     form = AddAnimalForm()
-    categories_query = AnimalCategorization.query.all()
-    categories_list = list(dict.fromkeys(category.category for category in categories_query))
+    categories_query = AnimalCategory.query.all()
+    categories_list = list(dict.fromkeys((category.id, category.animal_category_name) for category in categories_query))
     form.category.choices = categories_list
+    print(f'{categories_list=}')
     if request.method == 'POST':
         print(f'submitovana je forma {request.form=}')
+        category_id = get_animal_categorization(form.category.data, form.intended_for.data, form.weight.data, form.subcategory.data)
+        print(f'category_id: {category_id}')
         new_animal = Animal(
+            animal_id=form.animal_id.data,
+            animal_category_id = form.category.data,
+            animal_categorization_id=category_id,
+            animal_race_id = form.race.data,
+            animal_gender = 'test',
+            measured_weight=form.weight.data,
+            measured_date = datetime.datetime.now(),
+            current_weight=form.weight.data,
+            price_per_kg=form.price.data,
+            total_price=form.price.data * form.weight.data,
+            insured = form.insured.data,
+            organic_animal = form.organic.data,
+            cardboard = 'test',
+            intended_for=form.intended_for.data,
             farm_id=farm.id,
         )
         db.session.add(new_animal)
         db.session.commit()
     return render_template('my_flock.html', title='Moj stado', user=current_user,
+                            animals=animals,
                             form=form,
                             farm=farm)
 
@@ -185,7 +205,7 @@ def my_flock(farm_id):
 @users.route("/get_subcategories", methods=['GET'])
 def get_subcategories():
     category = request.args.get('category')
-    subcategories = AnimalCategorization.query.filter_by(category=category, intended_for='priplod').all()
+    subcategories = AnimalCategorization.query.filter_by(animal_category_id=category, intended_for='priplod').all()
     subcategories_options = [{'value': subcategory.subcategory, 'text': subcategory.subcategory} for subcategory in subcategories]
     print(f'subcategories_options: {subcategories_options}')
     return jsonify(subcategories_options)
@@ -194,8 +214,9 @@ def get_subcategories():
 @users.route("/get_races", methods=['GET'])
 def get_races():
     category = request.args.get('category')
-    races = AnimalRace.query.filter_by(category=category).all()
-    races_options = [{'value': race.animal_race_name, 'text': race.animal_race_name} for race in races]
+    print(f'get_races: {category=}')
+    races = AnimalRace.query.filter_by(animal_category_id=category).all()
+    races_options = [{'value': race.id, 'text': race.animal_race_name} for race in races]
     print(f'races_options: {races_options}')
     return jsonify(races_options)
 

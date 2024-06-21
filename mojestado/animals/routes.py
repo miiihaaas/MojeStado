@@ -13,7 +13,7 @@ animals = Blueprint('animals', __name__)
 
 def get_animal_categorization(category: str, intended_for: str, weight: float, subcategory: str = None) -> dict:
     categories = AnimalCategorization.query.filter_by(
-        category=category,
+        animal_category_id=category,
         intended_for=intended_for
     ).all()
     if intended_for == 'tov':
@@ -21,11 +21,13 @@ def get_animal_categorization(category: str, intended_for: str, weight: float, s
         print(f'treba da odredi podkategoriju tova na osnovu tezine: {weight}')
         for category in categories:
             if category.min_weight <= weight <= category.max_weight:
-                return category.subcategory
+                return category.id
     else:
-        print(f'treba da odredi podkategoriju ručno iz liste za priplod')
-        subcategory_list = [category.subcategory for category in categories]
-        return subcategory_list
+        print(f'izabrana podkategorija je { subcategory= }')
+        for category in categories:
+            if category.subcategory == subcategory:
+                return category.id
+    
 
 
 @animals.route('/animal_categorization/<string:category>/<string:intended_for>/<float:weight>')

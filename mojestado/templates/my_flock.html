@@ -33,6 +33,7 @@
             <th>Pol</th>
             <th>Trenutna masa grla</th>
             <th>Cena po kilogramu</th>
+            <th>Ukupna cena</th>
             <th>Osigurano</th>
             <th>Organski uzgoj</th>
             <th>Usluge PG</th>
@@ -41,34 +42,23 @@
         </tr>
     </thead>
     <tbody>
+        {% for animal in animals %}
         <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_category.animal_category_name }}</td>
+            <td>{{ animal.animal_categorization.subcategory }}</td>
+            <td>{{ animal.animal_race.animal_race_name }}</td>
+            <td>{{ animal.animal_gender }}</td>
+            <td>{{ animal.current_weight }}</td>
+            <td>{{ animal.price_per_kg }}</td>
+            <td>{{ animal.total_price }}</td>
+            <td>{{ animal.insured }}</td>
+            <td>{{ animal.organic_animal }}</td>
+            <td>_?_?_?_</td>
+            <td>_?_?_?_</td>
+            <td>_?_?_?_</td>
         </tr>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
+        {% endfor %}
     </tbody>
 </table>
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
@@ -163,8 +153,9 @@
         </tr>
     </thead>
     <tbody>
+        {% for animal in animals %}
         <tr>
-            <td>data</td>
+            <td>animal.animal_id</td>
             <td>data</td>
             <td>data</td>
             <td>data</td>
@@ -180,23 +171,7 @@
             <td>data</td>
             <td>data</td>
         </tr>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock content%}
@@ -204,6 +179,23 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
+        function loadRaces(category) {
+            $.ajax({
+                url: '/get_races',
+                type: 'GET',
+                data: { category: category },
+                success: function(races_options) {
+                    $('#race').empty();
+                    races_options.forEach(function(race) {
+                        $('#race').append($('<option>', {
+                            value: race.value,
+                            text: race.text
+                        }, '</option>'));
+                    });
+                }
+            });
+        }
+
         $('#intended_for').change(function() {
             if ($(this).val() === 'priplod') {
                 $('#subcategory-group').show();
@@ -212,10 +204,10 @@
                     url: '/get_subcategories',
                     type: 'GET',
                     data: { category: category },
-                    success: function(subcategorires_options) {
-                        console.log('iz backenda: ',subcategorires_options);
+                    success: function(subcategories_options) {
+                        console.log('iz backenda: ',subcategories_options);
                         $('#subcategory').empty();
-                        subcategorires_options.forEach(function(subcategory) {
+                        subcategories_options.forEach(function(subcategory) {
                             $('#subcategory').append($('<option>', {
                                 value: subcategory.value,
                                 text: subcategory.text
@@ -238,10 +230,10 @@
                     url: '/get_subcategories',
                     type: 'GET',
                     data: { category: category },
-                    success: function(subcategorires_options) {
-                        console.log('iz backenda: ',subcategorires_options);
+                    success: function(subcategories_options) {
+                        console.log('iz backenda: ',subcategories_options);
                         $('#subcategory').empty();
-                        subcategorires_options.forEach(function(subcategory) {
+                        subcategories_options.forEach(function(subcategory) {
                             $('#subcategory').append($('<option>', {
                                 value: subcategory.value,
                                 text: subcategory.text
@@ -250,23 +242,17 @@
                     }
                 });
             }
-    
-            // AJAX poziv za races
-            $.ajax({
-                url: '/get_races',
-                type: 'GET',
-                data: { category: category },
-                success: function(races_options) {
-                    $('#race').empty();
-                    races_options.forEach(function(race) {
-                        $('#race').append($('<option>', {
-                            value: race.value,
-                            text: race.text
-                        }, '</option>'));
-                    });
-                }
-            });
+
+            // Učitavanje races prilikom promene category
+            loadRaces(category);
         });
+        
+        // Učitavanje races prilikom inicijalnog učitavanja stranice
+        const initialCategory = $('#category').val();
+        if (initialCategory) {
+            loadRaces(initialCategory);
+        }
     });
-    </script>
+</script>
+
 {% endblock %}
