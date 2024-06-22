@@ -69,4 +69,5 @@ class AddAnimalForm(FlaskForm):
     services = SelectField('Usluge', choices=[])
     cardboard = FileField('Karton')
     animal_id = StringField('ID zivotinje')
+    animal_gender = SelectField('Pol', choices=['','m', 'z'])
     submit = SubmitField('Dodajte novu zivotinju')

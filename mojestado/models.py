@@ -86,6 +86,8 @@ class Animal(db.Model):
     cardboard = db.Column(db.String(50), nullable=False)  # karton grla/životinje
     intended_for = db.Column(db.String(20), nullable=False)  # tov/priplod
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
+    
+    fattening = db.Column(db.Boolean, nullable=False) #! podrazumevana vrednost je False, a kada kupac naruči da se tovi neka životnja onda prelazi u True
 
     animal_category = db.relationship('AnimalCategory', back_populates='animals')
     animal_race = db.relationship('AnimalRace', back_populates='animals')

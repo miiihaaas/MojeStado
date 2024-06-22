@@ -30,7 +30,8 @@ def upload_image():
     print(f'{farm_image_list=}')
     print(f'{len(farm_image_list)=}')
     if len(farm_image_list) > 9:
-        return 'Broj slika prekoračio ograničenje, pokušajte ponovo'
+        flash('Nije dodata slika. Makimalan broj slika je 10.', 'danger')
+        return redirect(url_for('users.my_farm', farm_id=farm.id))
     
     picture = request.files['picture']
     f_name = f'farm_{farm.id:05}_{(counter + 1):03}'
@@ -41,6 +42,7 @@ def upload_image():
     #! dodati kod koji će da proširi listu u objektu farm tako što će dodati generisani fajl
     farm.farm_image_collection = farm.farm_image_collection + [farm_image_fn] #! dodati kolonu farm_image_colection
     db.session.commit()
+    flash('Slika je uspješno dodata', 'success')
     return redirect(url_for('users.my_farm', farm_id=farm.id))
 
 
@@ -84,6 +86,16 @@ def default_image():
         return 'Farm not found', 404
     farm_image_fn = request.form.get('farm_image')
     farm.farm_image = farm_image_fn
+    db.session.commit()
+    return redirect(url_for('users.my_farm', farm_id=farm.id))
+
+@farms.route("/edit_farm_description", methods=['POST'])
+def edit_farm_description():
+    farm_id = request.form.get('farm_id')
+    farm = Farm.query.get(farm_id)
+    if not farm:
+        return 'Farm not found', 404
+    farm.farm_description = request.form.get('farm_description')
     db.session.commit()
     return redirect(url_for('users.my_farm', farm_id=farm.id))
 

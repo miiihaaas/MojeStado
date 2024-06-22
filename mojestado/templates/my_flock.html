@@ -93,6 +93,10 @@
                         {{ form.race (class="form-select form-select-lg", id="race") }}
                     </div>
                     <div class ="form-group">
+                        {{ form.animal_gender.label }}
+                        {{ form.animal_gender (class="form-select form-select-lg", id="animal_gender") }}
+                    </div>
+                    <div class ="form-group">
                         {{ form.weight.label }}
                         {{ form.weight (class="form-control form-control-lg", id="weight", type="number", step="0.1") }}
                     </div>
@@ -153,19 +157,19 @@
         </tr>
     </thead>
     <tbody>
-        {% for animal in animals %}
+        {% for animal in fattening_animals %}
         <tr>
-            <td>animal.animal_id</td>
+            <td>{{animal.animal_id}}</td>
+            <td>{{ animal.animal_category.animal_category_name }}</td>
+            <td>{{ animal.animal_categorization.subcategory }}</td>
+            <td>{{ animal.animal_race.animal_race_name }}</td>
+            <td>{{ animal.animal_gender }}</td>
+            <td>{{ animal.current_weight }}</td>
             <td>data</td>
             <td>data</td>
             <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
+            <td>{{ animal.insured }}</td>
+            <td>{{ animal.organic_animal }}</td>
             <td>data</td>
             <td>data</td>
             <td>data</td>

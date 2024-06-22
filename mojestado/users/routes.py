@@ -8,6 +8,8 @@ from mojestado.models import Animal, AnimalCategorization, AnimalCategory, Anima
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 
+from mojestado.users.functions import farm_profile_completed_check
+
 
 users = Blueprint('users', __name__)
 
@@ -134,6 +136,11 @@ def my_profile(user_id): #! Moj nalog za korisnika
     print(f'current_user: {current_user}')
     if current_user.user_type == 'user':
         print(f'current_user: {current_user}')
+        if request.method == 'POST':
+            user.address = request.form.get('addressInput')
+            db.session.commit()
+            flash('Uspesno ste izmenili adresu.', 'success')
+            return redirect(url_for('users.my_profile', user_id=user.id))
         return render_template('my_profile.html', title='Moj nalog', user=user)
     elif current_user.user_type == 'admin':
         return render_template('my_profile.html', title='Moj nalog', user=user)
@@ -141,10 +148,11 @@ def my_profile(user_id): #! Moj nalog za korisnika
     
     elif current_user.user_type == 'farm_active':
         farm = Farm.query.filter_by(user_id=user.id).first()
-        
+        farm_profile_completed = farm_profile_completed_check(farm)
         return render_template('my_profile.html', title='Moj nalog', 
                                 user=user,
-                                farm=farm)
+                                farm=farm,
+                                farm_profile_completed=farm_profile_completed)
     elif current_user.user_type == 'farm_inactive':
         return render_template('my_profile.html', title='Moj nalog', user=user)
 
@@ -160,14 +168,21 @@ def my_farm(farm_id):#! Moj nalog za poljoprivrednog gazdinstva
     if current_user.id != farm.user_id:
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
         return redirect(url_for('main.home'))
-    return render_template('my_farm.html', title='Moj nalog', user=current_user,
-                            farm=farm)
+    farm_profile_completed = farm_profile_completed_check(farm)
+    return render_template('my_farm.html', title='Moj nalog', 
+                            user=current_user,
+                            farm=farm,
+                            farm_profile_completed=farm_profile_completed)
 
 
 @users.route("/my_flock/<int:farm_id>", methods=['GET', 'POST'])
 def my_flock(farm_id):
     animals = Animal.query.filter_by(farm_id=farm_id).all()
+    fattening_animals = [animal for animal in animals if animal.fattening == True]
     farm = Farm.query.get_or_404(farm_id)
+    if len(farm.farm_description) < 100:
+        flash('Opis poljoprivrednog gazdinstva mora biti duši od 100 znakova', 'danger')
+        return redirect(url_for('users.my_farm', farm_id=farm.id))
     form = AddAnimalForm()
     categories_query = AnimalCategory.query.all()
     categories_list = list(dict.fromkeys((category.id, category.animal_category_name) for category in categories_query))
@@ -175,14 +190,26 @@ def my_flock(farm_id):
     print(f'{categories_list=}')
     if request.method == 'POST':
         print(f'submitovana je forma {request.form=}')
-        category_id = get_animal_categorization(form.category.data, form.intended_for.data, form.weight.data, form.subcategory.data)
+        print(f'submitovana je forma {form.category.data=}')
+        print(f'submitovana je forma {form.intended_for.data=}')
+        print(f'submitovana je forma {form.weight.data=}')
+        print(f'submitovana je forma {form.subcategory.data=}')
+        if form.subcategory.data:
+            subcategory = form.subcategory.data
+        else:
+            subcategory = None
+        print(f'pre nego što se pokrene get_animal_categorization: {subcategory=}')
+        category_id = get_animal_categorization(form.category.data, form.intended_for.data, form.weight.data, subcategory)
+        if not category_id:
+            flash('Kategorija ne postoji', 'danger')
+            return redirect(url_for('users.my_flock', farm_id=farm.id))
         print(f'category_id: {category_id}')
         new_animal = Animal(
             animal_id=form.animal_id.data,
             animal_category_id = form.category.data,
             animal_categorization_id=category_id,
             animal_race_id = form.race.data,
-            animal_gender = 'test',
+            animal_gender = form.animal_gender.data,
             measured_weight=form.weight.data,
             measured_date = datetime.datetime.now(),
             current_weight=form.weight.data,
@@ -193,11 +220,15 @@ def my_flock(farm_id):
             cardboard = 'test',
             intended_for=form.intended_for.data,
             farm_id=farm.id,
+            fattening = False #! podrazumevana vrednost je False, a kad kupac želi da se tovi onda se postavlja True
         )
         db.session.add(new_animal)
         db.session.commit()
+        flash('Uspesno ste dodali životinju', 'success')
+        return redirect(url_for('users.my_flock', farm_id=farm.id))
     return render_template('my_flock.html', title='Moj stado', user=current_user,
                             animals=animals,
+                            fattening_animals=fattening_animals,
                             form=form,
                             farm=farm)
 

@@ -12,12 +12,16 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('users.my_farm', farm_id=farm.id) }}">Moja farma</a>
             </li>
+            {% if farm_profile_completed %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('users.my_flock', farm_id=farm.id) }}">Moje stado</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('users.my_market', farm_id=farm.id) }}">Moja prodavnica</a>
             </li>
+            {% else %}
+            <p>Nekompletiran profil!</p>
+            {% endif %}
         </ul>
     </div>
 </nav>
@@ -31,6 +35,31 @@
         </div>
         <div class="col-md-9">
             <p>{{farm.farm_description}}</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#descriptionModal">
+                Izmena opisa poljoprivednog gastinstva
+            </button>
+            <!-- The modal -->
+            <div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="descriptionModalLabel">Opis poljoprivednog gastinstva</h5>
+                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ url_for('farms.edit_farm_description') }}" method="POST">
+                                <input type="hidden" name="farm_id" value="{{ farm.id }}">
+                                <div class="row">
+                                    <input type="text" name="farm_description" value="{{ farm.farm_description }}" class="form-control">
+                                    <button type="submit" class="btn btn-primary">Izmeni tekst</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row">
