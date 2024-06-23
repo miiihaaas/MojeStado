@@ -52,7 +52,7 @@ mail = Mail(app)
 from mojestado.animals.routes import animals
 from mojestado.farms.routes import farms
 from mojestado.main.routes import main
-from mojestado.products.routes import products
+from mojestado.marketplace.routes import marketplace
 from mojestado.users.routes import users
 # print('__init__ checkpoint 9')
 
@@ -60,5 +60,5 @@ from mojestado.users.routes import users
 app.register_blueprint(animals)
 app.register_blueprint(farms)
 app.register_blueprint(main)
-app.register_blueprint(products)
+app.register_blueprint(marketplace)
 app.register_blueprint(users)

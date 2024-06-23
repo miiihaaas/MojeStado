@@ -1,37 +1,15 @@
 import datetime
 from flask import Blueprint, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
-from mojestado import bcrypt, db, mail
+from mojestado import bcrypt, db
 from mojestado.animals.routes import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
+from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email
 from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
-from flask_mail import Message
-
-from mojestado.users.functions import farm_profile_completed_check
 
 
 users = Blueprint('users', __name__)
-
-
-def send_contract(user):
-    msg = Message(subject='Ugovor o pristupu', 
-                    sender='Wqo2M@example.com', 
-                    recipients=[user.email], 
-                    bcc=['Wqo2M@example.com'], 
-                    attachments=[])
-    msg.body = 'Ugovor o pristupu'
-    mail.send(msg)
-
-
-def send_conformation_email(user):
-    msg = Message(subject='Registracija korisnika', 
-                    sender='Wqo2M@example.com', 
-                    recipients=[user.email], 
-                    bcc=['Wqo2M@example.com'], 
-                    attachments=[])
-    msg.body = f'Da bi ste dovršili registraciju korisnickog naloga, kliknite na sledeći link: {url_for("users.confirm_email", token=user.get_reset_token(), _external=True)}'
-    mail.send(msg)
 
 
 @users.route("/register_farm", methods=['GET', 'POST'])

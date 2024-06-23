@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask import  render_template, flash, redirect, url_for, request
 from flask_login import current_user
 from mojestado import app
-from mojestado.models import FAQ
+from mojestado.models import FAQ, AnimalCategory
 
 
 main = Blueprint('main', __name__)
@@ -12,8 +12,11 @@ main = Blueprint('main', __name__)
 @main.route('/home')
 def home():
     faq = FAQ.query.all()
+    faq = [question for question in faq if question.id < 4]
+    animal_categories = AnimalCategory.query.all()
     return render_template('home.html', title='Početna strana',
-                            faq=faq)
+                            faq=faq,
+                            animal_categories=animal_categories)
 
 
 @main.route('/about')
