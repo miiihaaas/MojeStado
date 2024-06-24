@@ -18,7 +18,7 @@
 
         <!-- ovo je za select2 koji ima pretragu u sebi -->
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='mikicustom.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
 
 
         {% if title %}
@@ -28,7 +28,7 @@
         {% endif %}
     </head>
     <body>
-        <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-mosta">
             <div class="container-fluid">
                 <ul class="navbar-nav" style="margin-left: auto;">
                     {% if current_user.is_authenticated %}
@@ -134,14 +134,12 @@
                     {% endif %}
                 </div>
             </div>
-            <nav class="navbar navbar-dark bg-dark navbar-fixed-bottom">
-                <div class="container-fluid">
-                <a class="navbar-brand" href="#">Footer</a>
-                <br>
-                <br><br><br><br><br><br><br><br><br><br>
-                </div>
-            </nav>
         </main>
+        <footer class="footer bg-mosta">
+            <div class="container">
+                <img src="{{ url_for('static', filename='images/moje-stado-logo-medium.png') }}" alt="Moje Stado logo" width="200" height="130">
+            </div>
+        </footer>
 
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
