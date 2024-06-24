@@ -6,7 +6,9 @@
         <p class="lead text-right">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt 
             ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
             tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat</p>
+        {% if not current_user.is_authenticated %}
         <a class="btn btn-primary d-block mx-auto mt-5 mb-1" href="#registracija">Registrujte se danas!</a>
+        {% endif %}
         <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Opširnije</a>
     </section>
 
@@ -16,11 +18,11 @@
         </section>
 
         <div class="d-flex justify-content-center gap-3 mb-3">
-            <a href=""><i class="fa-solid fa-cow fs-2"></i></a>
-            <a href=""><i class="fa-solid fa-piggy-bank fs-2"></i></a>
-            <a href=""><i class="fa-solid fa-drumstick-bite fs-2"></i></a>
+            {% for category in animal_categories %}
+            <a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}">{{ category.animal_category_name }}</a>
+            {% endfor %}
         </div>
-        <a class="btn btn-primary d-block mx-auto mt-5" href="#">Istražite više</a>
+        <a class="btn btn-primary d-block mx-auto mt-5" href="{{ url_for('marketplace.livestock_market', animal_category_id=0) }}">Istražite više</a>
     </section>
 
     <section class="mb-5">
@@ -63,9 +65,9 @@
                 </div>
             </div>
         </div>
-        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Vidi sve</a>
+        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('marketplace.products_market', product_category_id=0) }}">Vidi sve</a>
     </section>
-
+    
     <section class="mb-5">
         <h2 class="text-center">Farme</h2>
         <p class="lead text-center">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt 
@@ -87,7 +89,7 @@
                 <div class="card h-100">
                     <img src="static/farm_image/default.jpg" class="card-img-top" alt="Slika Farme">
                     <div class="card-body">
-                    <h5 class="card-title">Farma Panić</h5>
+                        <h5 class="card-title">Farma Panić</h5>
                     <p class="card-text">Brusnica</p>
                     <br>
                     <a href="#" class="btn btn-primary">Detaljnije</a>
@@ -98,14 +100,15 @@
                 <div class="card h-100">
                     <img src="static/farm_image/default.jpg" class="card-img-top" alt="Slika Farme">
                     <div class="card-body">
-                    <h5 class="card-title">Farma Panić</h5>
-                    <p class="card-text">Brusnica</p>
-                    <br>
-                    <a href="#" class="btn btn-primary">Detaljnije</a>
+                        <h5 class="card-title">Farma Panić</h5>
+                        <p class="card-text">Brusnica</p>
+                        <br>
+                        <a href="#" class="btn btn-primary">Detaljnije</a>
                     </div>
                 </div>
             </div>
         </div>
+        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('farms.farm_list') }}">Vidi sve</a>
     </section>
 
     <section class="mb-5">

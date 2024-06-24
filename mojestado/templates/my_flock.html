@@ -33,6 +33,7 @@
             <th>Pol</th>
             <th>Trenutna masa grla</th>
             <th>Cena po kilogramu</th>
+            <th>Ukupna cena</th>
             <th>Osigurano</th>
             <th>Organski uzgoj</th>
             <th>Usluge PG</th>
@@ -41,34 +42,23 @@
         </tr>
     </thead>
     <tbody>
+        {% for animal in animals %}
         <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
+            <td>{{ animal.animal_id }}</td>
+            <td>{{ animal.animal_category.animal_category_name }}</td>
+            <td>{{ animal.animal_categorization.subcategory }}</td>
+            <td>{{ animal.animal_race.animal_race_name }}</td>
+            <td>{{ animal.animal_gender }}</td>
+            <td>{{ animal.current_weight }}</td>
+            <td>{{ animal.price_per_kg }}</td>
+            <td>{{ animal.total_price }}</td>
+            <td>{{ animal.insured }}</td>
+            <td>{{ animal.organic_animal }}</td>
+            <td>_?_?_?_</td>
+            <td>_?_?_?_</td>
+            <td>_?_?_?_</td>
         </tr>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
+        {% endfor %}
     </tbody>
 </table>
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
@@ -83,7 +73,61 @@
                 </button>
             </div>
             <div class="modal-body">
-                dodati form
+                <form action="" method="post">
+                    <p>Izaberite podatke</p>
+                    {{ form.hidden_tag() }}
+                    <div class ="form-group">
+                        {{ form.intended_for.label }}
+                        {{ form.intended_for (class="form-select form-select-lg", id="intended_for") }}
+                    </div>
+                    <div class ="form-group">
+                        {{ form.category.label }}
+                        {{ form.category (class="form-select form-select-lg", id="category") }}
+                    </div>
+                    <div class ="form-group" id="subcategory-group" style="display: none;">
+                        {{ form.subcategory.label }}
+                        {{ form.subcategory (class="form-select form-select-lg", id="subcategory") }}
+                    </div>
+                    <div class ="form-group">
+                        {{ form.race.label }}
+                        {{ form.race (class="form-select form-select-lg", id="race") }}
+                    </div>
+                    <div class ="form-group">
+                        {{ form.animal_gender.label }}
+                        {{ form.animal_gender (class="form-select form-select-lg", id="animal_gender") }}
+                    </div>
+                    <div class ="form-group">
+                        {{ form.weight.label }}
+                        {{ form.weight (class="form-control form-control-lg", id="weight", type="number", step="0.1") }}
+                    </div>
+                    <div class ="form-group">
+                        {{ form.price.label }}
+                        {{ form.price (class="form-control form-control-lg", id="price", type="number", step="0.1") }}
+                    </div>
+                    <div class="form-check form-switch">
+                        {{ form.insured (class="form-check-input", id="insured") }}
+                        {{ form.insured.label(class="form-check-label", for="insured") }}
+                    </div>
+                    <div class="form-check form-switch">
+                        {{ form.organic (class="form-check-input", id="insured") }}
+                        {{ form.organic.label(class="form-check-label", for="organic") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.services.label }}
+                        {{ form.services (class="form-select form-select-lg", id="services") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.cardboard.label(class="form-label") }}
+                        {{ form.cardboard(class="form-control", id="cardboard") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.animal_id.label }}
+                        {{ form.animal_id (class="form-control form-control-lg", id="animal_id", placeholder="0000-00000-0000") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -113,40 +157,106 @@
         </tr>
     </thead>
     <tbody>
+        {% for animal in fattening_animals %}
         <tr>
+            <td>{{animal.animal_id}}</td>
+            <td>{{ animal.animal_category.animal_category_name }}</td>
+            <td>{{ animal.animal_categorization.subcategory }}</td>
+            <td>{{ animal.animal_race.animal_race_name }}</td>
+            <td>{{ animal.animal_gender }}</td>
+            <td>{{ animal.current_weight }}</td>
             <td>data</td>
             <td>data</td>
             <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
+            <td>{{ animal.insured }}</td>
+            <td>{{ animal.organic_animal }}</td>
             <td>data</td>
             <td>data</td>
             <td>data</td>
             <td>data</td>
         </tr>
-        <tr>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-            <td>data</td>
-        </tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock content%}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        function loadRaces(category) {
+            $.ajax({
+                url: '/get_races',
+                type: 'GET',
+                data: { category: category },
+                success: function(races_options) {
+                    $('#race').empty();
+                    races_options.forEach(function(race) {
+                        $('#race').append($('<option>', {
+                            value: race.value,
+                            text: race.text
+                        }, '</option>'));
+                    });
+                }
+            });
+        }
+
+        $('#intended_for').change(function() {
+            if ($(this).val() === 'priplod') {
+                $('#subcategory-group').show();
+                const category = $('#category').val();
+                $.ajax({
+                    url: '/get_subcategories',
+                    type: 'GET',
+                    data: { category: category },
+                    success: function(subcategories_options) {
+                        console.log('iz backenda: ',subcategories_options);
+                        $('#subcategory').empty();
+                        subcategories_options.forEach(function(subcategory) {
+                            $('#subcategory').append($('<option>', {
+                                value: subcategory.value,
+                                text: subcategory.text
+                            }));
+                        }, '</option>');
+                    }
+                });
+            } else {
+                $('#subcategory-group').hide();
+                $('#subcategory').val('');
+            }
+        });
+    
+        $('#category').change(function() {
+            const category = $(this).val();
+    
+            // AJAX poziv za subcategories
+            if ($('#subcategory-group').is(':visible')) {
+                $.ajax({
+                    url: '/get_subcategories',
+                    type: 'GET',
+                    data: { category: category },
+                    success: function(subcategories_options) {
+                        console.log('iz backenda: ',subcategories_options);
+                        $('#subcategory').empty();
+                        subcategories_options.forEach(function(subcategory) {
+                            $('#subcategory').append($('<option>', {
+                                value: subcategory.value,
+                                text: subcategory.text
+                            }));
+                        }, '</option>');
+                    }
+                });
+            }
+
+            // Učitavanje races prilikom promene category
+            loadRaces(category);
+        });
+        
+        // Učitavanje races prilikom inicijalnog učitavanja stranice
+        const initialCategory = $('#category').val();
+        if (initialCategory) {
+            loadRaces(initialCategory);
+        }
+    });
+</script>
+
+{% endblock %}
