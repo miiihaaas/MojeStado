@@ -23,5 +23,63 @@
 </nav>
 <h2>Moja prodavnica</h2>
 <h3>Moji proizvodi</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Kategorija proizvoda</th>
+            <th>Podkategorija proizvoda</th>
+            <th>Jedinica mere</th>
+            <th>Cena po jedinici mere</th>
+            <th>maksimalna količina (trenutna količina ili maksimalna količina koju PG može da proizvede u slučaju narudžbine)</th>
+            <th>Opis</th>
+            <th>Fotografije</th>
+            <th>Opcija za uklanjanje proizvoda</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
+
 <h3>Moje prodaje</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Kategorija proizvoda</th>
+            <th>Podkategorija proizvoda</th>
+            <th>Jedinica mere</th>
+            <th>Cena po jedinici mere</th>
+            <th>datum prodaje</th>
+            <th>Količina/masa</th>
+            <th>Ukupna cena</th>
+            <th>Kupac</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+            <td>data</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock content%}

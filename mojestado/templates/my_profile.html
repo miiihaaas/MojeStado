@@ -60,18 +60,18 @@
                     <h5 class="modal-title" id="editProfileModalLabel">Izmeni profil</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form action="">
+                <form action="{{ url_for('users.my_profile', user_id=user.id) }}" method="POST">
+                    <div class="modal-body">
                         <div class="form-group">
                             <label for="addressInput">Adresa</label>
-                            <input type="text" class="form-control" id="addressInput" name="address" value="{{ user.address }}">
+                            <input type="text" class="form-control" id="addressInput" name="addressInput" value="{{ user.address }}">
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Odustani</button>
-                    <button type="submit" class="btn btn-primary">Sačuvaj</button>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Odustani</button>
+                        <button type="submit" class="btn btn-primary">Sačuvaj</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -92,12 +92,16 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('users.my_farm', farm_id=farm.id) }}">Moja farma</a>
             </li>
+            {% if farm_profile_completed %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('users.my_flock', farm_id=farm.id) }}">Moje stado</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('users.my_market', farm_id=farm.id) }}">Moja prodavnica</a>
             </li>
+            {% else %}
+            <p>Nekompletiran profil!</p>
+            {% endif %}
         </ul>
     </div>
 </nav>

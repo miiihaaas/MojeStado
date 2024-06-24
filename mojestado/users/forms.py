@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField
+from wtforms import FileField, FloatField, StringField, PasswordField, SubmitField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from mojestado.models import User
 
@@ -55,3 +55,19 @@ class ResetPasswordForm(FlaskForm):
     password = PasswordField('Nova lozinka', validators=[DataRequired()])
     confirm_password = PasswordField('Potvrdite novu lozinku', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Resetujte lozinku')
+
+
+class AddAnimalForm(FlaskForm):
+    category = SelectField('Kategorija', choices=[])
+    subcategory = SelectField('Podkategorija', choices=[])
+    race = SelectField('Rasa', choices=[])
+    intended_for = SelectField('Namena', choices=['tov', 'priplod'])
+    weight = FloatField('Tezina', validators=[DataRequired()])
+    price = FloatField('Cena po kg', validators=[DataRequired()])
+    insured = BooleanField('Osigurano')
+    organic = BooleanField('Organska proizvodnja')
+    services = SelectField('Usluge', choices=[])
+    cardboard = FileField('Karton')
+    animal_id = StringField('ID zivotinje')
+    animal_gender = SelectField('Pol', choices=['','m', 'z'])
+    submit = SubmitField('Dodajte novu zivotinju')
