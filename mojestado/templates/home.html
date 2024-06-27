@@ -1,136 +1,223 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container mt-5">
-    <section class="mb-5">
-        <h2 class="text-center">Povezujemo poljoprivrednike sa direktnim kupcima</h2>
-        <p class="lead text-right">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt 
-            ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
-            tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat</p>
-        {% if not current_user.is_authenticated %}
-        <a class="btn btn-primary d-block mx-auto mt-5 mb-1" href="#registracija">Registrujte se danas!</a>
-        {% endif %}
-        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.about') }}">Opširnije</a>
-    </section>
 
-    <section class="mb-5">
-        <h2 class="text-center">Živa vaga</h2>
 
-        </section>
-
-        <div class="d-flex justify-content-center gap-3 mb-3">
-            {% for category in animal_categories %}
-            <a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}">{{ category.animal_category_name }}</a>
-            {% endfor %}
+    <section class="zivavaga">
+        <div class="container">
+            <h2 class="section-title text-center">Živa vaga</h2>
+            <div class="text-center mt-5 mb-5">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt<br>
+                ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci<br>
+                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+            </div>
+            <div class="d-flex justify-content-center gap-3 mb-3">
+                {% for category in animal_categories %}
+                <a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}">{{ category.animal_category_name }}</a>
+                {% endfor %}
+            </div>
+            <!--<a class="btn btn-primary mx-auto more-button" href="{{ url_for('marketplace.livestock_market', animal_category_id=0) }}">Istražite više</a>-->
         </div>
-        <a class="btn btn-primary d-block mx-auto mt-5" href="{{ url_for('marketplace.livestock_market', animal_category_id=0) }}">Istražite više</a>
     </section>
 
-    <section class="mb-5">
-        <h2 class="text-center">Gotovi proizvodi</h2>
-        <p class="lead text-center">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt 
-            ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
-            tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat</p>
-        <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
-            <div class="col">
-                <div class="card h-100">
-                    <img src="static/product_image/default.jpg" class="card-img-top" alt="Slika proizvoda">
-                    <div class="card-body">
-                        <h5 class="card-title">Kajmak</h5>
-                        <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                        <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                        <a href="#" class="btn btn-primary">Kupi</a>
-                    </div>
-                </div>
+    <section class="gotoviproizvodi">
+        <div class="container">
+            <h2 class="section-title text-center">Gotovi proizvodi</h2>
+            <div class="text-center mb-5 mt-5">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt<br>
+                ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci<br>
+                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
             </div>
-            <div class="col">
-                <div class="card h-100">
-                    <img src="static/product_image/default.jpg" class="card-img-top" alt="Slika proizvoda">
-                    <div class="card-body">
-                        <h5 class="card-title">Sir</h5>
-                        <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                        <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                        <a href="#" class="btn btn-primary">Kupi</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <img src="static/product_image/default.jpg" class="card-img-top" alt="Slika proizvoda">
-                    <div class="card-body">
-                        <h5 class="card-title">Kulen</h5>
-                        <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                        <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                        <a href="#" class="btn btn-primary">Kupi</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('marketplace.products_market', product_category_id=0) }}">Vidi sve</a>
-    </section>
-    
-    <section class="mb-5">
-        <h2 class="text-center">Farme</h2>
-        <p class="lead text-center">Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt 
-            ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
-            tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat</p>
-        <div class="row row-cols-1 row-cols-md-3 g-4 mb-3"> 
-            <div class="col">
-                <div class="card h-100">
-                    <img src="static/farm_image/default.jpg" class="card-img-top" alt="Slika Farme">
-                    <div class="card-body">
-                    <h5 class="card-title">Farma Panić</h5>
-                    <p class="card-text">Brusnica</p>
-                    <br>
-                    <a href="#" class="btn btn-primary">Detaljnije</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <img src="static/farm_image/default.jpg" class="card-img-top" alt="Slika Farme">
-                    <div class="card-body">
-                        <h5 class="card-title">Farma Panić</h5>
-                    <p class="card-text">Brusnica</p>
-                    <br>
-                    <a href="#" class="btn btn-primary">Detaljnije</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <img src="static/farm_image/default.jpg" class="card-img-top" alt="Slika Farme">
-                    <div class="card-body">
-                        <h5 class="card-title">Farma Panić</h5>
-                        <p class="card-text">Brusnica</p>
-                        <br>
-                        <a href="#" class="btn btn-primary">Detaljnije</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('farms.farm_list') }}">Vidi sve</a>
-    </section>
-
-    <section class="mb-5">
-        <h2 class="text-center">Najčešće postavljena pitanja</h2>
-        <div class="accordion mb-5" id="faqAccordion">
-            {% for question in faq %}
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading_{{ loop.index }}">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ loop.index }}" aria-expanded="true" aria-controls="collapse_{{ loop.index }}">
-                            {{ question.question }}
-                        </button>
-                    </h2>
-                    <div id="collapse_{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ loop.index }}" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            {{ question.answer }}
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="image-wrapper">
+                            <img src="static/product_image/slanina.jpg" class="card-img-top" alt="Slika proizvoda">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Slanina</h5>
+                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
+                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
+                            <a href="#" class="btn btn-secondary">Kupi</a>
                         </div>
                     </div>
                 </div>
-            {% endfor %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="image-wrapper">
+                            <img src="static/product_image/prsuta.jpg" class="card-img-top" alt="Slika proizvoda">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Pršuta</h5>
+                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
+                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
+                            <a href="#" class="btn btn-secondary">Kupi</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="image-wrapper">
+                            <img src="static/product_image/kobasica.jpg" class="card-img-top" alt="Slika proizvoda">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Kobasica</h5>
+                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
+                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
+                            <a href="#" class="btn btn-secondary">Kupi</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="image-wrapper">
+                            <img src="static/product_image/kulen.jpg" class="card-img-top" alt="Slika proizvoda">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Kulen</h5>
+                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
+                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
+                            <a href="#" class="btn btn-secondary">Kupi</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="image-wrapper">
+                            <img src="static/product_image/sir.jpg" class="card-img-top" alt="Slika proizvoda">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Sir</h5>
+                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
+                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
+                            <a href="#" class="btn btn-secondary">Kupi</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="image-wrapper">
+                            <img src="static/product_image/kajmak.jpg" class="card-img-top" alt="Slika proizvoda">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Kajmak</h5>
+                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
+                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
+                            <a href="#" class="btn btn-secondary">Kupi</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a class="btn btn-alt mx-auto more-button" href="{{ url_for('marketplace.products_market', product_category_id=0) }}">Vidi sve</a>
         </div>
-        <a class="btn btn-primary d-block mx-auto" href="{{ url_for('main.faq') }}">Vidi sve</a>
     </section>
     
-</div>
+    <section class="farme">
+        <div class="container">
+            <h2 class="section-title text-center">Farme</h2>
+            <div class="text-center mb-5 mt-5">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt<br>
+                ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci<br>
+                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3"> 
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="#" class="image-wrapper">
+                            <img src="static/farm_image/farma-1.jpg" class="card-img-top zoom" alt="Slika Farme">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">Farma Panić</h5>
+                            <p class="card-text">Brusnica</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="#" class="image-wrapper">
+                            <img src="static/farm_image/farma-2.jpg" class="card-img-top zoom" alt="Slika Farme">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">Farma Panić</h5>
+                            <p class="card-text">Brusnica</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="#" class="image-wrapper">
+                            <img src="static/farm_image/farma-3.jpg" class="card-img-top zoom" alt="Slika Farme">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">Farma Panić</h5>
+                            <p class="card-text">Brusnica</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3"> 
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="#" class="image-wrapper">
+                            <img src="static/farm_image/farma-4.jpg" class="card-img-top zoom" alt="Slika Farme">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">Farma Panić</h5>
+                            <p class="card-text">Brusnica</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="#" class="image-wrapper">
+                            <img src="static/farm_image/farma-5.jpg" class="card-img-top zoom" alt="Slika Farme">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">Farma Panić</h5>
+                            <p class="card-text">Brusnica</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="#" class="image-wrapper">
+                            <img src="static/farm_image/farma-6.jpg" class="card-img-top zoom" alt="Slika Farme">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">Farma Panić</h5>
+                            <p class="card-text">Brusnica</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a class="btn btn-alt mx-auto more-button" href="{{ url_for('farms.farm_list') }}">Vidi sve</a>
+        </div>
+    </section>
+
+    <section class="faq">
+        <div class="container">
+            <h2 class="section-title text-center">Najčešće postavljena pitanja</h2>
+            <div class="accordion mb-5" id="faqAccordion">
+                {% for question in faq %}
+                    <div class="accordion-item">
+                        <div class="accordion-header" id="heading_{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ loop.index }}" aria-expanded="true" aria-controls="collapse_{{ loop.index }}">
+                                {{ question.question }}
+                            </button>
+                        </div>
+                        <div id="collapse_{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ loop.index }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                {{ question.answer }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <a class="btn btn-alt mx-auto more-button" href="{{ url_for('main.faq') }}">Vidi sve</a>
+            <div class="banner-horizontal">
+                <a href="#" class=""><img src="static/images/baner-hor.jpg" alt="Banner"></a></a>
+            </div>
+        </div>
+    </section>
 {% endblock content%}
