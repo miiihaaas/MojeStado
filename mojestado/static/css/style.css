@@ -1,1 +1,90 @@
-.bg-mosta { background-color: #5e4432; }
+body { font-family: 'Montserrat', sans-serif; font-weight: 500; }
+h1, h2, h3, h4, h5, .main-menu a { font-family: "Roboto Slab", serif; }
+/*.column { margin: 0; }*/
+.row { padding: 0; }
+.top-bar { background-color: #5e4432; color: #fff; text-transform: uppercase; font-size: 16px; }
+.bg-mosta { background-color: #5e4432 }
+.wht-text { color: #fff; }
+.ml-1 { margin-left: 0.5em; }
+.ml-2 { margin-left: 1em; }
+.ml-3 { margin-left: 2em; }
+.ml-4 { margin-left: 3em; }
+.ml-5 { margin-left: 4em; }
+.mr-1 { margin-right: 0.5em; }
+.mr-2 { margin-right: 1em; }
+.mr-3 { margin-right: 2em; }
+.mr-4 { margin-right: 3em; }
+.mr-5 { margin-right: 4em; }
+.btn { border-radius: .3rem; font-family: "Roboto Slab", serif; font-size: 24px; font-weight: 600; }
+.btn-primary { color: #5e4432;  background-color: #fff; border-color: #fff; }
+.btn-check:focus+.btn-primary, .btn-primary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
+.btn-check:active+.btn-primary, .btn-check:checked+.btn-primary, .btn-primary.active, .btn-primary:active, .show>.btn-primary.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-primary:hover { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-secondary { color: #5e4432;  background-color: #e0bd5d; border-color: #e0bd5d; padding: 0 50px 3px 50px; }
+.btn-check:focus+.btn-secondary, .btn-secondary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
+.btn-check:active+.btn-secondary, .btn-check:checked+.btn-secondary, .btn-secondary.active, .btn-secondary:active, .show>.btn-secondary.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-secondary:hover { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-alt { color: #5e4432;  background-color: transparent; border-color: #5e4432; }
+.btn-check:focus+.btn-alt, .btn-alt:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
+.btn-check:active+.btn-alt, .btn-check:checked+.btn-alt, .btn-alt.active, .btn-alt:active, .show>.btn-alt.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-alt:hover { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.navbar-brand { font-size: inherit; }
+.m-left-auto { margin-left: auto; }
+.m-right-auto { margin-right: auto; }
+header.hero { background: url(../images/home-hero.jpg) no-repeat; background-size: cover; padding-bottom: 50px; }
+header.hero .navbar .container { align-items: flex-start; }
+header.hero .navbar-nav .nav-link { text-transform: uppercase; margin-left: 20px; }
+header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover, header.hero .navbar-nav .nav-link.active { border-bottom: 3px solid #e0bd5d;}
+.home-hero-txt { color:#fff; font-weight: 600; }
+.more-button { display: block; width: fit-content; padding: 5px 50px; margin-top: 100px; margin-bottom: 50px; }
+
+section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
+.section-title { font-size: 48px; font-weight: 700; color: #5e4432; }
+
+/*section.gotoviproizvodi { background-color: #f5f5f5; padding: 50px 0; }*/
+section.gotoviproizvodi { background-image: url('../images/texture-1.jpg'); padding: 50px 0; }
+section.gotoviproizvodi .card { border-radius: 1rem; overflow: hidden; border: 0; box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); }
+section.gotoviproizvodi .card-body { text-align: center; }
+section.gotoviproizvodi .card-title { font-size: 24px; font-weight: 700; color: #5e4432; }
+section.gotoviproizvodi .image-wrapper {display: flex; justify-content: center; align-items: center; overflow: hidden; width: 100%; max-height: 300px; }
+
+section.farme { background-color: #f8f2e9; padding: 50px 0; }
+section.farme .card { border-radius: 1rem; overflow: hidden; border: 0; box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); }
+section.farme .card-body { text-align: center; }
+section.farme .card-title { font-size: 24px; font-weight: 700; color: #5e4432; }
+section.farme .image-wrapper {display: flex; justify-content: center; align-items: center; overflow: hidden; width: 100%; max-height: 300px; }
+.zoom { transition: transform 0.5s ease; }
+.zoom:hover { transform: scale(1.2); }
+
+section.faq { background-image: url('../images/texture-1.jpg'); padding: 50px 0; }
+.accordion, .accordion-button { background-color: transparent; }
+.accordion-button { font-size: 22px; font-weight: 600; color: #5e4432; }
+.accordion-item { background-color: transparent; border: none; border-bottom: 1px solid #5e4432; }
+.accordion-button:not(.collapsed) { color: #5e4432; background-color: transparent; box-shadow: none; }
+.accordion-button:focus { z-index: 3; border-color: transparent; outline: 0; box-shadow: none; }
+.accordion-button::after { content: '+'; background-image: none; font-size: 24px; font-weight: 500; border: 1px solid #5e4432; border-radius: 50px; width: 36px; height: 36px; padding: 0 5px 0 11px; }
+.accordion-button:not(.collapsed)::after { content: '-'; background-image: none; transform: none; line-height: 30px; font-size: 32px; }
+.banner-horizontal img { max-width: 100%; }
+
+section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../images/drawing-bg.jpg) no-repeat center bottom; background-size: contain; }
+
+footer.footer { padding: 30px 0; color: #ddd4cb; }
+footer.footer .navbar-nav li { width: 100%; }
+footer.footer .navbar-nav li a { display: block; color: #ddd4cb; text-decoration: none; border-bottom: 1px solid #e0bd5d; padding: 3px 0; transition: all ease 0.3s; }
+footer.footer .navbar-nav li a:hover { color: #e0bd5d; }
+footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
+
+@media (min-width: 768px) {
+    .border-right { border-right: 1px solid #5e4432; }
+    .pl-50 { padding-left: 50px; }
+    .pr-50 { padding-right: 50px; }
+}
+@media (min-width: 1400px) {
+    header.hero { padding-bottom: 100px; }
+}
+@media (max-width: 992px) {
+    .top-bar .navbar-nav { flex-direction: row; }
+}
+@media (max-width: 480px) {
+    .top-bar { font-size: 12px; }
+}
