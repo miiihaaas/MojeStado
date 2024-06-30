@@ -1,47 +1,75 @@
 {% extends "layout.html" %}
 {% block content %}
-{% if farm.user_id == current_user.id %}
-<h1>{{farm.farm_name}} <a href="{{ url_for('users.my_farm', farm_id=farm.id) }}"><i class="fa-solid fa-pen-to-square"></i></a></h1>
-{% else %}
-<h1>{{farm.farm_name}}</h1>
-{% endif %}
-<h2>{{farm.farm_city}}</h2>
-<div class="row">
-    <div class="col-md-3">
-        <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                {% for farm_image in farm.farm_image_collection %}
-                    <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
-                        <img src="/static/farm_image/{{ farm_image }}" class="d-block w-100" alt="Slika Farme {{ farm.farm_name }}">
-                    </div>
-                {% endfor %}
+<section class="page-hero farmpage">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                {% if farm.user_id == current_user.id %}
+                <h1>{{farm.farm_name}} <a href="{{ url_for('users.my_farm', farm_id=farm.id) }}"><i class="fa-solid fa-pen-to-square"></i></a></h1>
+                {% else %}
+                <h1>{{farm.farm_name}}</h1>
+                {% endif %}
+                <h2>{{farm.farm_city}}</h2>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
+            <div class="col-md-3"></div>
         </div>
     </div>
-    <div class="col-md-9">
-        <p>{{farm.farm_description}}</p>
+</section>
+<section class="farm-page firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for farm_image in farm.farm_image_collection %}
+                            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                                <img src="/static/farm_image/{{ farm_image }}" class="d-block w-100" alt="Slika Farme {{ farm.farm_name }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <p>{{farm.farm_description}}</p>
+            </div>
+        </div>
     </div>
-</div>
-ovde je bio slajder slika, mogu da budu cene usluga?
-<div class="col">
-</div>
-<div class="card-body">
-    <div class="form-check form-switch">
-        <input class="form-check-input" type="checkbox" id="organik">
-        <label class="form-check-label" for="organik">Organski</label>
-        <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Šta se podrazumeva pod organskom proizvodnjom?">
-            <i class="fas fa-question-circle"></i>
-        </a>
-        <a href="#">Detaljnije o organskoj proizvodnji</a>
+</section>
+
+<section class="">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="organik">
+                        <label class="form-check-label" for="organik">Organski</label>
+                        <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Šta se podrazumeva pod organskom proizvodnjom?">
+                            <i class="fas fa-question-circle"></i>
+                        </a>
+                        <a href="#">Detaljnije o organskoj proizvodnji</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-<div>U nastavku dodati ponudu žive vage i gotovih proizvoda</div>
+</section>
+<section class="">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div>U nastavku dodati ponudu žive vage i gotovih proizvoda</div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock content%}

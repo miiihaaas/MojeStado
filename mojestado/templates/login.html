@@ -1,29 +1,51 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Prijavljivanje</h1>
-    <form method="POST" action="{{ url_for('users.login') }}">
-        {{ form.hidden_tag() }}
-        <div class="mb-3">
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control") }}
-            {% for error in form.email.errors %}
-                <span class="text-danger">{{ error }}</span>
-            {% endfor %}
+<section class="page-hero loginpage">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <h1 class="wht-text">Prijavljivanje</h1>
+                <div class="home-hero-txt mb-5">
+                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                </div>
+            </div>
+            <div class="col-md-3"></div>
         </div>
+    </div>
+</section>
+<section class="login-page firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="POST" action="{{ url_for('users.login') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                        {% for error in form.email.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    </div>
 
-        <div class="mb-3">
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control") }}
-            {% for error in form.password.errors %}
-                <span class="text-danger">{{ error }}</span>
-            {% endfor %}
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control") }}
+                        {% for error in form.password.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        {{ form.remember(class="form-check-input") }}
+                        {{ form.remember.label(class="form-check-label") }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
+                </form>
+            </div>
         </div>
-
-        <div class="mb-3 form-check">
-            {{ form.remember(class="form-check-input") }}
-            {{ form.remember.label(class="form-check-label") }}
-        </div>
-
-        <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
-    </form>
+    </div>
+</section>
 {% endblock content%}

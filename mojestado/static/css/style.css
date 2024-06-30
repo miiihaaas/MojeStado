@@ -31,10 +31,12 @@ h1, h2, h3, h4, h5, .main-menu a { font-family: "Roboto Slab", serif; }
 .navbar-brand { font-size: inherit; }
 .m-left-auto { margin-left: auto; }
 .m-right-auto { margin-right: auto; }
-header.hero { background: url(../images/home-hero.jpg) no-repeat; background-size: cover; padding-bottom: 50px; }
+
 header.hero .navbar .container { align-items: flex-start; }
 header.hero .navbar-nav .nav-link { text-transform: uppercase; margin-left: 20px; }
 header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover, header.hero .navbar-nav .nav-link.active { border-bottom: 3px solid #e0bd5d;}
+.home-hero { background: url(../images/home-hero.jpg) no-repeat; background-size: cover; /*padding-bottom: 50px;*/ }
+.home-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
 .home-hero-txt { color:#fff; font-weight: 600; }
 .more-button { display: block; width: fit-content; padding: 5px 50px; margin-top: 100px; margin-bottom: 50px; }
 
@@ -68,6 +70,28 @@ section.faq { background-image: url('../images/texture-1.jpg'); padding: 50px 0;
 
 section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../images/drawing-bg.jpg) no-repeat center bottom; background-size: contain; }
 
+.page-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
+.page-hero-txt { color:#fff; font-weight: 600; }
+.aboutpage { background: url(../images/hero-1.jpg) no-repeat; background-size: cover; /*padding-bottom: 50px;*/ }
+.livestock { background: url(../images/hero-2.jpg) no-repeat; background-size: cover; }
+.contactpage { background: url(../images/hero-default.jpg) no-repeat; background-size: cover; }
+.faqpage { background: url(../images/hero-default.jpg) no-repeat; background-size: cover; }
+.farmpage { background: url(../images/hero-default.jpg) no-repeat; background-size: cover; }
+.registerpage { background: url(../images/hero-default.jpg) no-repeat; background-size: cover; }
+.loginpage { background: url(../images/hero-default.jpg) no-repeat; background-size: cover; }
+.registerpage { background: url(../images/hero-default.jpg) no-repeat; background-size: cover; }
+.firstsection { padding-top: 50px; }
+
+/*.form-switch .form-check-input:checked { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23efc65e'/%3e%3c/svg%3e");}*/
+.form-switch .form-check-input:focus { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");}
+.form-check-input:focus { border-color: #bfbfbf; outline: 0; box-shadow: none; }
+.form-check-input:checked { background-color: #efc65e; border-color: #efc65e; }
+.form-check-input:active { filter: brightness(100%); }
+
+.sidebar .card { border: none; border-bottom: 1px solid #5e4432; border-radius: 0; }
+.sidebar .card:last-child { border-bottom: 0 !important; }
+.sidebar .card-header { font-family: "Roboto Slab", serif; font-weight: 700; font-size: 24px; color: #5e4432; background-color: transparent; border-bottom: 0; }
+
 footer.footer { padding: 30px 0; color: #ddd4cb; }
 footer.footer .navbar-nav li { width: 100%; }
 footer.footer .navbar-nav li a { display: block; color: #ddd4cb; text-decoration: none; border-bottom: 1px solid #e0bd5d; padding: 3px 0; transition: all ease 0.3s; }
@@ -80,7 +104,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .pr-50 { padding-right: 50px; }
 }
 @media (min-width: 1400px) {
-    header.hero { padding-bottom: 100px; }
+    .home-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
 }
 @media (max-width: 992px) {
     .top-bar .navbar-nav { flex-direction: row; }

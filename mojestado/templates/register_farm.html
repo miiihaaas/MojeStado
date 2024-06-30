@@ -1,60 +1,82 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Registracija farme</h1>
-    <form action="" method="POST">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.email.label }}
-            {{ form.email(class="form-control form-control-lg", id="email" ) }}
+<section class="page-hero registerpage">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <h1 class="wht-text">Registracija farme</h1>
+                <div class="home-hero-txt mb-5">
+                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                </div>
+            </div>
+            <div class="col-md-3"></div>
         </div>
-        <div class="form-group">
-            {{ form.password.label }}
-            {{ form.password(class="form-control form-control-lg", id="password") }}
+    </div>
+</section>
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <form action="" method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.email.label }}
+                        {{ form.email(class="form-control form-control-lg", id="email" ) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password.label }}
+                        {{ form.password(class="form-control form-control-lg", id="password") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.confirm_password.label }}
+                        {{ form.confirm_password(class="form-control form-control-lg", id="confirm_password") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.name.label }}
+                        {{ form.name(class="form-control form-control-lg", id="name") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.surname.label }}
+                        {{ form.surname(class="form-control form-control-lg", id="surname") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.address.label }}
+                        {{ form.address(class="form-control form-control-lg", id="address") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.city.label }}
+                        {{ form.city(class="form-control form-control-lg", id="city") }}
+                    </div>
+                    <div class="select-group">
+                        {{ form.municipality.label }}
+                        {{ form.municipality(class="form-select form-select-lg", id="municipality") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.phone.label }}
+                        {{ form.phone(class="form-control form-control-lg", id="phone") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.jmbg.label }}
+                        {{ form.jmbg(class="form-control form-control-lg", id="jmbg") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.pbg.label }}
+                        {{ form.pbg(class="form-control form-control-lg", id="pbg") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.mb.label }}
+                        {{ form.mb(class="form-control form-control-lg", id="mb") }}
+                    </div>
+                    <div>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="form-group">
-            {{ form.confirm_password.label }}
-            {{ form.confirm_password(class="form-control form-control-lg", id="confirm_password") }}
-        </div>
-        <div class="form-group">
-            {{ form.name.label }}
-            {{ form.name(class="form-control form-control-lg", id="name") }}
-        </div>
-        <div class="form-group">
-            {{ form.surname.label }}
-            {{ form.surname(class="form-control form-control-lg", id="surname") }}
-        </div>
-        <div class="form-group">
-            {{ form.address.label }}
-            {{ form.address(class="form-control form-control-lg", id="address") }}
-        </div>
-        <div class="form-group">
-            {{ form.city.label }}
-            {{ form.city(class="form-control form-control-lg", id="city") }}
-        </div>
-        <div class="select-group">
-            {{ form.municipality.label }}
-            {{ form.municipality(class="form-select form-select-lg", id="municipality") }}
-        </div>
-        <div class="form-group">
-            {{ form.phone.label }}
-            {{ form.phone(class="form-control form-control-lg", id="phone") }}
-        </div>
-        <div class="form-group">
-            {{ form.jmbg.label }}
-            {{ form.jmbg(class="form-control form-control-lg", id="jmbg") }}
-        </div>
-        <div class="form-group">
-            {{ form.pbg.label }}
-            {{ form.pbg(class="form-control form-control-lg", id="pbg") }}
-        </div>
-        <div class="form-group">
-            {{ form.mb.label }}
-            {{ form.mb(class="form-control form-control-lg", id="mb") }}
-        </div>
-        <div>
-            {{ form.submit(class="btn btn-primary") }}
-        </div>
-    </form>
+    </div>
+</section>
 {% endblock content%}
 {% block scripts %}
 <script>

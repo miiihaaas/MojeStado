@@ -1,6 +1,25 @@
 {% extends "layout.html" %}
 {% block content %}
-
+    <section class="home-hero">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                    <div class="ml-5">
+                        <h1 class="wht-text">Povezujemo poljoprivrednike sa direktnim kupcima</h1>
+                        <div class="home-hero-txt mb-5">
+                            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                            Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                        </div>
+                        {% if not current_user.is_authenticated %}
+                        <a class="btn btn-primary mr-1 mb-3" href="#registracija">Registrujte se danas!</a>
+                        {% endif %}
+                        <a class="btn btn-primary mb-3" href="{{ url_for('main.about') }}">Opširnije</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section class="zivavaga">
         <div class="container">

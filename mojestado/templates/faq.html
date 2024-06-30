@@ -1,33 +1,63 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>FAQ</h1>
-<div class="accordion" id="faqAccordion">
-    {% for question in faq %}
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="heading_{{ loop.index }}">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ loop.index }}" aria-expanded="true" aria-controls="collapse_{{ loop.index }}">
-                    {{ question.question }}
-                </button>
-            </h2>
-            <div id="collapse_{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ loop.index }}" data-bs-parent="#faqAccordion">
-                <div class="accordion-body">
-                    {{ question.answer }}
+<section class="page-hero faqpage">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <h1 class="wht-text">FAQ</h1>
+                <div class="home-hero-txt mb-5">
+                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+</section>
+<section class="faq-page firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="accordion" id="faqAccordion">
+                    {% for question in faq %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading_{{ loop.index }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ loop.index }}" aria-expanded="true" aria-controls="collapse_{{ loop.index }}">
+                                    {{ question.question }}
+                                </button>
+                            </h2>
+                            <div id="collapse_{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ loop.index }}" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    {{ question.answer }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-    {% endfor %}
-</div>
+    </div>
+</section>
 
-<h2>Postoji pitanje koje nismo ispitali?</h2>
-<form action="" method="POST">
-    <div class="mb-3">
-        <label for="question" class="form-label">Pitanje</label>
-        <input type="text" class="form-control" id="question" name="question" required>
+<section class="about firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Postoji pitanje koje nismo ispitali?</h2>
+                <form action="" method="POST">
+                    <div class="mb-3">
+                        <label for="question" class="form-label">Pitanje</label>
+                        <input type="text" class="form-control" id="question" name="question" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Vaš mejl</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Unesite Vaš mejl kako bi smo mogli da odgovorimo na vaše pitanje" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Pošalji</button>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="email" class="form-label">Vaš mejl</label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Unesite Vaš mejl kako bi smo mogli da odgovorimo na vaše pitanje" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Pošalji</button>
-</form>
+</section>
 {% endblock content%}
