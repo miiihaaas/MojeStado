@@ -1,62 +1,76 @@
 {% extends "layout.html" %}
 {% block content %}
-<header>
-    <h1>Farme</h1>
-</header>
-<main class="container mt-5">
-    <div class="row">
-        <div class="col-md-3">
-            <form action="{{url_for('farms.farm_list')}}" method="POST">
-                <h2>Filteri</h2>
-                <div class="card mb-3">
-                    <div class="card-header">
-                        Lokacija
-                    </div>
-                    <div class="card-body">
-                        <select class="form-select mb-2" id="municipality" name="municipality">
-                        <option value="0">Sve lokacije</option>
-                        {% for municipality in municipality_filter_list %}
-                            <option value="{{municipality.id}}">{{municipality.municipality_name}}</option>
-                        {% endfor %}
-                        </select>
-                    </div>
+<section class="page-hero farmpage">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <h1 class="wht-text">Farme</h1>
+                <div class="home-hero-txt mb-5">
+                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
                 </div>
-                <div class="card mb-3">
-                    <div class="card-header">
-                        Organska proizvodnja
-                    </div>
-                    <div class="card-body">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
-                            <label class="form-check-label" for="organic_filter">Organski</label>
-                            <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Šta se podrazumeva pod organskom proizvodnjom?">
-                                <i class="fas fa-question-circle"></i>
-                            </a>
-                            <a href="#">Detaljnije o organskoj proizvodnji</a>
-                        </div>
-                    </div>
-                </div>
-            </form>
+            </div>
+            <div class="col-md-3"></div>
         </div>
-        <div class="col-md-9">
-            <div class="row row-cols-1 row-cols-md-4 g-4">
-                {% for farm in farm_list %}
-                <div class="col">
-                    <div class="card h-100">
-                        <img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
+    </div>
+</section>
+<section class="firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 sidebar">
+                <form action="{{url_for('farms.farm_list')}}" method="POST">
+                    <!--<h2>Filteri</h2>-->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Lokacija
+                        </div>
                         <div class="card-body">
-                        <h5 class="card-title">{{ farm.farm_name }}</h5>
-                        <p class="card-text">Lokacija: {{ farm.farm_city }}</p>
-                        <br>
-                        <a href="{{url_for('farms.farm_detail', farm_id=farm.id)}}" class="btn btn-primary">Detaljnije</a>
+                            <select class="form-select mb-2" id="municipality" name="municipality">
+                            <option value="0">Sve lokacije</option>
+                            {% for municipality in municipality_filter_list %}
+                                <option value="{{municipality.id}}">{{municipality.municipality_name}}</option>
+                            {% endfor %}
+                            </select>
                         </div>
                     </div>
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Organska proizvodnja
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
+                                <label class="form-check-label" for="organic_filter">Organski</label>
+                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Šta se podrazumeva pod organskom proizvodnjom?">
+                                    <i class="fas fa-question-circle"></i>
+                                </a>
+                                <a href="#">Detaljnije o organskoj proizvodnji</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-9">
+                <div class="row row-cols-1 row-cols-md-4 g-4">
+                    {% for farm in farm_list %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
+                            <div class="card-body">
+                            <h5 class="card-title">{{ farm.farm_name }}</h5>
+                            <p class="card-text">Lokacija: {{ farm.farm_city }}</p>
+                            <br>
+                            <a href="{{url_for('farms.farm_detail', farm_id=farm.id)}}" class="btn btn-primary">Detaljnije</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor%}
                 </div>
-                {% endfor%}
             </div>
         </div>
     </div>
-</main>
+</section>
 {% endblock content%}
 {% block scripts %}
 <script>

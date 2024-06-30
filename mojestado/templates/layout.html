@@ -29,32 +29,32 @@
         {% endif %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark top-bar">
-            <div class="container">
-                <div class="m-right-auto"><i class="fa-solid fa-phone"></i> +381 12 345 678</div>
-                <ul class="navbar-nav m-left-auto">
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="navbar-brand" href="{{ url_for('users.logout') }}">Odjavi se</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="navbar-brand" href="{{ url_for('users.my_profile', user_id=current_user.id) }}" title="Moj nalog"><i class="fa-regular fa-user"></i></a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="navbar-brand" href="{{ url_for('users.login') }}">Uloguj se</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="navbar-brand" href="#registracija">Registracija</a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a class="navbar-brand" href="#" title="Korpa"><i class="fa-solid fa-basket-shopping"></i></a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
         <header class="hero">
+            <div class="navbar navbar-expand-lg navbar-dark top-bar">
+                <div class="container">
+                    <div class="m-right-auto"><i class="fa-solid fa-phone"></i> +381 12 345 678</div>
+                    <ul class="navbar-nav m-left-auto">
+                        {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="navbar-brand" href="{{ url_for('users.logout') }}">Odjavi se</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="navbar-brand" href="{{ url_for('users.my_profile', user_id=current_user.id) }}" title="Moj nalog"><i class="fa-regular fa-user"></i></a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="navbar-brand" href="{{ url_for('users.login') }}">Uloguj se</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="navbar-brand" href="#registracija">Registracija</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="navbar-brand" href="#" title="Korpa"><i class="fa-solid fa-basket-shopping"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
             <nav class="navbar navbar-expand-lg navbar-dark">
                 <div class="container">
                     <a class="navbar-brand" href="{{ url_for('main.home') }}">
@@ -90,6 +90,7 @@
                     </div>
                 </div>
             </nav>
+<!--
             <div class="container">
                 <div class="row">
                     <div class="col-md-6"></div>
@@ -108,6 +109,7 @@
                     </div>
                 </div>
             </div>
+-->
         </header>
         <main role="main" class="">
             {% with messages = get_flashed_messages(with_categories=true) %}
