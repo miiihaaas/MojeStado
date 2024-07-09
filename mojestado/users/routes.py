@@ -1,11 +1,12 @@
 import datetime
+import json
 from flask import Blueprint, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db
 from mojestado.animals.routes import get_animal_categorization
-from mojestado.users.forms import AddAnimalForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
+from mojestado.users.forms import AddAnimalForm, AddProductForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
 from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email
-from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, User, Farm, Municipality
+from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Product, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 
 
@@ -68,7 +69,8 @@ def register_user(): #! Registracija korisnika
                     city=form.city.data,
                     zip_code=form.zip_code.data,
                     JMBG=form.jmbg.data,
-                    user_type='user' #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
+                    user_type='user', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
+                    registration_date = datetime.date.today()
                     )
         db.session.add(user)
         db.session.commit()
@@ -143,6 +145,8 @@ def my_profile(user_id): #! Moj nalog za korisnika
 @users.route("/my_farm/<int:farm_id>", methods=['GET', 'POST'])
 def my_farm(farm_id):#! Moj nalog za poljoprivrednog gazdinstva
     farm = Farm.query.get_or_404(farm_id)
+    # definiše listu kategorija koja se koristi za label u formi usluga
+    animal_categories = {str(category.id): category.animal_category_name for category in AnimalCategory.query.all()}
     if current_user.id != farm.user_id:
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
         return redirect(url_for('main.home'))
@@ -150,12 +154,13 @@ def my_farm(farm_id):#! Moj nalog za poljoprivrednog gazdinstva
     return render_template('my_farm.html', title='Moj nalog', 
                             user=current_user,
                             farm=farm,
-                            farm_profile_completed=farm_profile_completed)
+                            farm_profile_completed=farm_profile_completed,
+                            animal_categories=animal_categories)
 
 
 @users.route("/my_flock/<int:farm_id>", methods=['GET', 'POST'])
 def my_flock(farm_id):
-    animals = Animal.query.filter_by(farm_id=farm_id).all()
+    animals = Animal.query.filter_by(farm_id=farm_id).filter_by(active=True).all()
     fattening_animals = [animal for animal in animals if animal.fattening == True]
     farm = Farm.query.get_or_404(farm_id)
     if len(farm.farm_description) < 100:
@@ -182,8 +187,10 @@ def my_flock(farm_id):
             flash('Kategorija ne postoji', 'danger')
             return redirect(url_for('users.my_flock', farm_id=farm.id))
         print(f'category_id: {category_id}')
+        animals = Animal.query.all()
+        animal_max_id = max([animal.id for animal in animals]) + 1
         new_animal = Animal(
-            animal_id=form.animal_id.data,
+            animal_id=f'{farm.id:05}-{int(form.category.data):02}-{animal_max_id:06}',
             animal_category_id = form.category.data,
             animal_categorization_id=category_id,
             animal_race_id = form.race.data,
@@ -198,7 +205,8 @@ def my_flock(farm_id):
             cardboard = 'test',
             intended_for=form.intended_for.data,
             farm_id=farm.id,
-            fattening = False #! podrazumevana vrednost je False, a kad kupac želi da se tovi onda se postavlja True
+            fattening = False, #! podrazumevana vrednost je False, a kad kupac želi da se tovi onda se postavlja True
+            active = True
         )
         db.session.add(new_animal)
         db.session.commit()
@@ -209,6 +217,54 @@ def my_flock(farm_id):
                             fattening_animals=fattening_animals,
                             form=form,
                             farm=farm)
+
+
+@users.route("/remove_animal/<int:animal_id>", methods=['POST'])
+def remove_animal(animal_id):
+    animal = Animal.query.get_or_404(animal_id)
+    animal.active = False
+    db.session.commit()
+    flash('Uspesno ste uklonili životinju iz ponude', 'success')
+    return redirect(url_for('users.my_flock', farm_id=animal.farm_id))
+
+
+@users.route("/save_services", methods=['POST'])
+def save_services():
+    farm_id = request.form.get('farm_id')
+    farm = Farm.query.get(farm_id)
+    print(f'request.form: {request.form.keys()=}')
+    print(f'request.form: {request.form.to_dict()=}')
+    for key, value in request.form.to_dict().items():
+        try:
+            float_value = float(value)
+            print(f'{key=} {value=}')
+        except ValueError:
+            print(f'Cannot convert value for key {key} to float: {value}')
+            flash('Neuspesno sacuvano', 'danger')
+            redirect(url_for('users.my_farm', farm_id=farm_id))
+            
+    service_dict = {
+        "klanje": {
+            "1": request.form.get('klanje_1'),
+            "2": request.form.get('klanje_2'),
+            "3": request.form.get('klanje_3'),
+            "4": request.form.get('klanje_4'),
+            "5": request.form.get('klanje_5'),
+            "6": request.form.get('klanje_6'),
+            "7": request.form.get('klanje_7'),
+            "8": request.form.get('klanje_8'),
+        },
+        "obrada": {
+            "1": request.form.get('obrada_1'),
+            "2": request.form.get('obrada_2'),
+            "3": request.form.get('obrada_3'),
+        }
+    }
+    print(f'{service_dict=}')
+    # farm.services = json.dumps(service_dict)
+    farm.services = service_dict
+    db.session.commit()
+    return redirect(url_for('users.my_farm', farm_id=farm_id))
 
 
 @users.route("/get_subcategories", methods=['GET'])
@@ -234,7 +290,12 @@ def get_races():
 @users.route("/my_market/<int:farm_id>", methods=['GET', 'POST'])
 def my_market(farm_id):
     farm = Farm.query.get_or_404(farm_id)
-    return render_template('my_market.html', title='Moj prodavnica', user=current_user,
+    products = Product.query.filter_by(farm_id=farm_id).all()
+    form = AddProductForm()
+    return render_template('my_market.html', title='Moj prodavnica', 
+                            user=current_user,
+                            products=products,
+                            form=form,
                             farm=farm)
 
 
@@ -253,3 +314,93 @@ def my_fattening(user_id):
 def my_shop(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('my_shop.html', title='Moj prodavnica', user=user)
+
+
+#! ispod je za admin !#
+#! ispod je za admin !#
+#! ispod je za admin !#
+
+@users.route("/settings", methods=['GET', 'POST'])
+def settings():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    return render_template('settings.html', title='Settings')
+
+
+@users.route("/admin_view_farms", methods=['GET', 'POST'])
+def admin_view_farms():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    farms = Farm.query.all()
+    return render_template('admin_view_farms.html', 
+                            farms=farms, 
+                            title='Prikaz PG')
+
+
+@users.route("/admin_view_users", methods=['GET', 'POST'])
+def admin_view_users():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    users = User.query.filter_by(user_type='user').all()
+    return render_template('admin_view_users.html', 
+                            users=users, 
+                            title='Prikaz korisnika')
+
+
+@users.route("/admin_view_purchases", methods=['GET', 'POST'])
+def admin_view_purchases():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    # purchases = Purchase.query.all() #! dodati klasu u models.py
+    return render_template('admin_view_purchases.html', 
+                            purchases=[], 
+                            title='Prikaz narudžbi')
+
+
+@users.route("/admin_view_overview", methods=['GET', 'POST'])
+def admin_view_overview():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    users = User.query.filter_by(user_type='user').all()
+    return render_template('admin_view_overview.html',
+                            users=users,
+                            title='Pregled stanja')
+
+
+@users.route("/admin_view_overview_user/<int:user_id>", methods=['GET', 'POST'])
+def admin_view_overview_user(user_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    user = User.query.get_or_404(user_id)
+    return render_template('admin_view_overview_user.html',
+                            user=user,
+                            title='Pregled stanja korisnika')
+
+
+@users.route("/admin_view_slips", methods=['GET', 'POST'])
+def admin_view_slips():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    return render_template('admin_view_slips.html',
+                            title='Pregled PG')

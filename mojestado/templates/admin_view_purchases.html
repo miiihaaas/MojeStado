@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <h2>Prikaz PG</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Datum kupovine</th>
+                    <th>Korisnik</th>
+                    <th>PG</th>
+                    <th>Vrsta transakcije</th>
+                    <th>Predmet kupovine</th>
+                    <th>Jedinica mere</th>
+                    <th>Cena po jedinici mere</th>
+                    <th>Broj komada</th>
+                    <th>Iznos</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                <tr>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>pregled ugovora | ponovno generisanje ugovora</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>pregled ugovora | ponovno generisanje ugovora</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <h2>Prikaz PG</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Datum registracije</th>
+                    <th>PG</th>
+                    <th>Opština</th>
+                    <th>Mesto</th>
+                    <th>Telefon</th>
+                    <th>Mejl</th>
+                    <th>Ugovor</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for farm in farms %}
+                <tr>
+                    <td>{{ farm.registration_date }}</td>
+                    <td>{{ farm.farm_name }}</td>
+                    <td>{{ farm.municipality_farm.municipality_name }}</td>
+                    <td>{{ farm.farm_city }}</td>
+                    <td>{{ farm.user_farm.phone}}</td>
+                    <td>{{ farm.user_farm.email}}</td>
+                    <td>data</td>
+                    <td>edit | delete</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
