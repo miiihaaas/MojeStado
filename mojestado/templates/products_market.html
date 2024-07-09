@@ -51,21 +51,71 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
                                 <label class="form-check-label" for="organic_filter">Organski</label>
-                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Šta se podrazumeva pod organskom proizvodnjom?">
+                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
                                     <i class="fas fa-question-circle"></i>
                                 </a>
-                                <a href="#">Detaljnije o organskoj proizvodnji</a>
                             </div>
                         </div>
                     </div>
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Potkategorije
+                        </div>
+                        <div class="card-body">
+                            {% for subcategory in product_subcategories %}
+                            <div class="form-check form-switch">
+                                {% if subcategory.id in active_subcategories %}
+                                <input class="form-check-input subcategory-filter" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}" checked>
+                                {% else %}
+                                <input class="form-check-input subcategory-filter" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}">
+                                {% endif %}
+                                <label class="form-check-label" for="subcategory_{{subcategory.id}}">{{subcategory.product_subcategory_name}}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if section_filter %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Sekcija
+                        </div>
+                        <div class="card-body">
+                            {% for section in product_sections %}
+                            <div class="form-check form-switch">
+                                {% if section.id in active_sections %}
+                                <input class="form-check-input section-filter" type="checkbox" id="section_{{section.id}}" name="section_{{section.id}}" checked>
+                                {% else %}
+                                <input class="form-check-input section-filter" type="checkbox" id="section_{{section.id}}" name="section_{{section.id}}">
+                                {% endif %}
+                                <label class="form-check-label" for="section_{{section.id}}">{{section.product_section_name}}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </form>
             </div>
             <div class="col-md-10">
-                <h2>Proizvodi</h2>
+                <p>Kategorija:</p>
+                <h2>{{ product_category.product_category_name }}</h2>
                 <ul>
-                    {% for product in products %}
-                    <li>{{ product.product_name }}</li>
-                    {% endfor %}
+                    <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+                        {% for product in products %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="image-wrapper">
+                                    <img src="static/product_image/slanina.jpg" class="card-img-top" alt="Slika proizvoda">
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.product_name }}</h5>
+                                    <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
+                                    <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unite_of_measurement}}</strong></p>
+                                    <a href="#" class="btn btn-secondary">Kupi</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </ul>
             </div>
         </div>
@@ -103,6 +153,12 @@
     $(document).ready(function() {
         $('#organic_filter').change(function() {
             // post form
+            $('form').submit();
+        });
+        $('.subcategory-filter').change(function() {
+            $('form').submit();
+        });
+        $('.section-filter').change(function() {
             $('form').submit();
         });
     });

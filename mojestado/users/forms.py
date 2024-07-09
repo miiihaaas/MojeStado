@@ -62,12 +62,17 @@ class AddAnimalForm(FlaskForm):
     subcategory = SelectField('Podkategorija', choices=[])
     race = SelectField('Rasa', choices=[])
     intended_for = SelectField('Namena', choices=['tov', 'priplod'])
-    weight = FloatField('Tezina', validators=[DataRequired()])
+    weight = FloatField('Težina (kg)', validators=[DataRequired()])
     price = FloatField('Cena po kg', validators=[DataRequired()])
     insured = BooleanField('Osigurano')
     organic = BooleanField('Organska proizvodnja')
-    services = SelectField('Usluge', choices=[])
     cardboard = FileField('Karton')
-    animal_id = StringField('ID zivotinje')
     animal_gender = SelectField('Pol', choices=['','m', 'z'])
+    submit = SubmitField('Dodajte novu zivotinju')
+
+
+class AddProductForm(FlaskForm):
+    category = SelectField('Kategorija', choices=[])
+    subcategory = SelectField('Podkategorija', choices=[])
+    section = SelectField('Sekcija', choices=[])
     submit = SubmitField('Dodajte novu zivotinju')

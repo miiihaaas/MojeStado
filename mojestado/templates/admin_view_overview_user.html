@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <h2>Pregled stanja: {{ user.name }} {{ user.surname }}</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Datum zaduženja/uplate</th>
+                    <th>Opis usluge</th>
+                    <th>Zaduženje</th>
+                    <th>Uplate/isplate</th>
+                    <th>Saldo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>ikonica za generisanje konkretne uplatnice</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>ikonica za generisanje konkretne uplatnice</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

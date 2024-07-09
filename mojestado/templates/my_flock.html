@@ -79,9 +79,27 @@
                             <td>{{ animal.total_price }}</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
+                            <td>
+                                {% for service, category in farm.services.items() %}
+                                {% for category_id, price in category.items() %}
+                                {% if price | float > 0 and category_id | int == animal.animal_category.id %}
+                                {% if service == 'klanje' %}
+                                slika klanja
+                                {% elif service == 'obrada' %}
+                                slika obrade
+                                {% endif %}
+                                {% endif %}
+                                {% endfor %}
+                                {% endfor %}
+                            </td>
                             <td>_?_?_?_</td>
-                            <td>_?_?_?_</td>
-                            <td>_?_?_?_</td>
+                            <td>
+                                <form action="{{ url_for('users.remove_animal', animal_id=animal.id) }}" method="post">
+                                    {{ form.hidden_tag() }}
+                                    <input type="hidden" name="animal_id" value="{{ animal.animal_id }}">
+                                    <button>Ukloni</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -141,16 +159,8 @@
                                         {{ form.organic.label(class="form-check-label", for="organic") }}
                                     </div>
                                     <div class="form-group">
-                                        {{ form.services.label }}
-                                        {{ form.services (class="form-select form-select-lg", id="services") }}
-                                    </div>
-                                    <div class="form-group">
                                         {{ form.cardboard.label(class="form-label") }}
                                         {{ form.cardboard(class="form-control", id="cardboard") }}
-                                    </div>
-                                    <div class="form-group">
-                                        {{ form.animal_id.label }}
-                                        {{ form.animal_id (class="form-control form-control-lg", id="animal_id", placeholder="0000-00000-0000") }}
                                     </div>
                                     <div class="form-group">
                                         {{ form.submit(class="btn btn-primary") }}

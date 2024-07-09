@@ -64,10 +64,10 @@
                     <tbody>
                         {% for product in products %}
                         <tr>
-                            <td>data</td>
-                            <td>data</td>
-                            <td>data</td>
-                            <td>data</td>
+                            <td>{{ product.product_category.product_category_name }}</td>
+                            <td>{{ product.product_subcategory_product.product_subcategory_name }}</td>
+                            <td>{{ product.unite_of_measurement }}</td>
+                            <td>{{ product.product_price_per_unit }}</td>
                             <td>data</td>
                             <td>data</td>
                             <td>data</td>
@@ -78,9 +78,42 @@
                 </table>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
             </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addModalLabel">Dodaj</h5>
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="" method="post">
+                                        <p>Izaberite podatkeeee</p>
+                                        {{ form.hidden_tag() }}
+                                        <div class ="form-group">
+                                            {{ form.category.label }}
+                                            {{ form.category (class="form-select form-select-lg", id="category") }}
+                                        </div>
+                                        <div class ="form-group">
+                                            {{ form.subcategory.label }}
+                                            {{ form.subcategory (class="form-select form-select-lg", id="subcategory") }}
+                                        </div>
+                                        <div class ="form-group">
+                                            {{ form.section.label }}
+                                            {{ form.section (class="form-select form-select-lg", id="section") }}
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="row">
-
             <h3>Moje prodaje</h3>
             <table class="table table-striped">
                 <thead>

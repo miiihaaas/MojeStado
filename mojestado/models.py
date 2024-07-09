@@ -24,6 +24,7 @@ class User(db.Model, UserMixin):
     JMBG = db.Column(db.String(13), unique=True, nullable=True)
     MB = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
     user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm_active, farm_inactive, user, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
+    registration_date = db.Column(db.DateTime, nullable=False)
     farms = db.relationship('Farm', backref='user_farm', lazy=True) #! 
     
 
@@ -63,9 +64,11 @@ class Farm(db.Model):
     farm_municipality_id = db.Column(db.Integer, db.ForeignKey('municipality.id'), nullable=False) #!
     farm_phone = db.Column(db.String(20), nullable=False)
     farm_description = db.Column(db.String(2000), nullable=False)
+    services = db.Column(db.JSON, nullable=True) #! usluga klanja, usluga obrade - tu treba da se definišu cene usluga za kategorije
+    registration_date = db.Column(db.Date, nullable=True) #! kada admin potvrdi da je registrovan, tada se dodeli trenutni datum
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #!
     animals = db.relationship('Animal', backref='farm_animal', lazy=True) #!
-    # products = db.relationship('Product', backref='farm_product', lazy=True) #!
+    products = db.relationship('Product', backref='farm_product', lazy=True) #!
 
 
 class Animal(db.Model):
@@ -88,6 +91,7 @@ class Animal(db.Model):
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
     
     fattening = db.Column(db.Boolean, nullable=False) #! podrazumevana vrednost je False, a kada kupac naruči da se tovi neka životnja onda prelazi u True
+    active = db.Column(db.Boolean, nullable=False)
 
     animal_category = db.relationship('AnimalCategory', back_populates='animals')
     animal_race = db.relationship('AnimalRace', back_populates='animals')

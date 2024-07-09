@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <h2>Prikaz korisnika</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Datum registracije</th>
+                    <th>Ime i prezime</th>
+                    <th>Mesto</th>
+                    <th>Telefon</th>
+                    <th>Mejl</th>
+                    <th>Ugovor</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.registration_date }}</td>
+                    <td>{{ user.name }} {{ user.surname }}</td>
+                    <td>{{ user.city}}</td>
+                    <td>{{ user.phone }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>edit | delete</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

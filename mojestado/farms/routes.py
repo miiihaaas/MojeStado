@@ -3,7 +3,7 @@ from flask import Blueprint
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db, mail, app
 from mojestado.users.forms import LoginForm, RequestResetForm, ResetPasswordForm
-from mojestado.models import User, Farm, Municipality
+from mojestado.models import Animal, Product, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 
@@ -129,9 +129,23 @@ def farm_list():
                                 selected_municipality=json.dumps(selected_municipality))
 
 
-@farms.route("/farm_detail/<int:farm_id>")
+@farms.route("/farm_detail/<int:farm_id>", methods=['GET', 'POST'])
 def farm_detail(farm_id):
     farm = Farm.query.get_or_404(farm_id)
-    return render_template('farm_detail.html', title=farm.farm_name, farm=farm)
+    animals = Animal.query.filter_by(farm_id=farm_id).all()
+    #! samo životinje koje nisu u tovu
+    animals = [animal for animal in animals if animal.fattening == False]
+    products = Product.query.filter_by(farm_id=farm_id).all()
+    organic_filter = request.form.get('organic_filter')
+    if request.method == 'POST':
+        if organic_filter == 'on':
+            animals = [animal for animal in animals if animal.organic_animal == 1]
+            products = [product for product in products if product.organic_product == 1]
+    return render_template('farm_detail.html', 
+                            title=farm.farm_name,
+                            organic_filter=json.dumps(organic_filter),
+                            animals=animals,
+                            products=products,
+                            farm=farm)
 
 
