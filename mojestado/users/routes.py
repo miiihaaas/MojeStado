@@ -188,7 +188,10 @@ def my_flock(farm_id):
             return redirect(url_for('users.my_flock', farm_id=farm.id))
         print(f'category_id: {category_id}')
         animals = Animal.query.all()
-        animal_max_id = max([animal.id for animal in animals]) + 1
+        if len(animals) > 0:
+            animal_max_id = max([animal.id for animal in animals]) + 1
+        else:
+            animal_max_id = 1
         new_animal = Animal(
             animal_id=f'{farm.id:05}-{int(form.category.data):02}-{animal_max_id:06}',
             animal_category_id = form.category.data,
