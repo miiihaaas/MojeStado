@@ -34,6 +34,18 @@
                 <a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}">{{ category.animal_category_name }}</a>
                 {% endfor %}
             </div>
+            <div class="row">
+                <div class="container">
+                    <section class="logo-carousel slider" data-arrows="true">
+                        <div class="slide"><a href="#"><img src="{{ url_for('static', filename='images/svinje-2.png') }}" alt="Svinje"></a><p>Svinje</p></div>
+                        <div class="slide"><a href="#"><img src="{{ url_for('static', filename='images/goveda-2.png') }}" alt="Goveda"></a><p>Goveda</p></div>
+                        <div class="slide"><a href="#"><img src="{{ url_for('static', filename='images/ovce-2.png') }}" alt="Ovce"></a><p>Ovce</p></div>
+                        <div class="slide"><a href="#"><img src="{{ url_for('static', filename='images/konji-2.png') }}" alt="Konji"></a><p>Konji</p></div>
+                        <div class="slide"><a href="#"><img src="{{ url_for('static', filename='images/koze-2.png') }}" alt="Koze"></a><p>Koze</p></div>
+                        <div class="slide"><a href="#"><img src="{{ url_for('static', filename='images/zivina-2.png') }}" alt="Živina"></a><p>Živina</p></div>
+                    </section>
+                </div>
+            </div>
             <!--<a class="btn btn-primary mx-auto more-button" href="{{ url_for('marketplace.livestock_market', animal_category_id=0) }}">Istražite više</a>-->
         </div>
     </section>
