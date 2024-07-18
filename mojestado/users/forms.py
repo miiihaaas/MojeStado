@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import FileField, FloatField, StringField, PasswordField, SubmitField, BooleanField, SelectField
+from wtforms import FloatField, StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from mojestado.models import User
 
 
@@ -15,6 +16,17 @@ class RegistrationUserForm(FlaskForm):
     zip_code = StringField('Poštanski broj', validators=[DataRequired(), Length(min=5, max=5)])
     jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
     submit = SubmitField('Registrujte se')
+
+
+class EditProfileForm(FlaskForm):
+    email = StringField('Mejl', validators=[DataRequired(), Email()])
+    name = StringField('Ime', validators=[DataRequired(), Length(min=2, max=20)])
+    surname = StringField('Prezime', validators=[DataRequired(), Length(min=2, max=20)])
+    address = StringField('Adresa', validators=[DataRequired(), Length(min=2, max=20)])
+    city = StringField('Grad', validators=[DataRequired(), Length(min=2, max=20)])
+    zip_code = StringField('Poštanski broj', validators=[DataRequired(), Length(min=5, max=5)])
+    jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
+    submit = SubmitField('Sačuvaj izmene')
 
 
 class RegistrationFarmForm(FlaskForm):
@@ -66,13 +78,22 @@ class AddAnimalForm(FlaskForm):
     price = FloatField('Cena po kg', validators=[DataRequired()])
     insured = BooleanField('Osigurano')
     organic = BooleanField('Organska proizvodnja')
-    cardboard = FileField('Karton')
+    cardboard = FileField('Karton', validators=[])
     animal_gender = SelectField('Pol', choices=['','m', 'z'])
     submit = SubmitField('Dodajte novu zivotinju')
 
 
 class AddProductForm(FlaskForm):
     category = SelectField('Kategorija', choices=[])
-    subcategory = SelectField('Podkategorija', choices=[])
+    subcategory = SelectField('Potkategorija', choices=[])
     section = SelectField('Sekcija', choices=[])
-    submit = SubmitField('Dodajte novu zivotinju')
+    product_name = StringField('Naziv proizvoda', validators=[DataRequired(), Length(min=2, max=20)])
+    product_description = TextAreaField('Opis proizvoda', validators=[DataRequired(), Length(min=2, max=500)])
+    unit_of_measurement = SelectField('Jedinica mere', choices=["kg", "kom"])
+    weight_conversion = FloatField('Konverzija', validators=[])
+    product_price_per_unit = FloatField('Cena po jedinici', validators=[])
+    organic_product = BooleanField('Organska proizvodnja')
+    quantity = FloatField('Kolicina', validators=[])
+    
+    submit = SubmitField('Dodajte proizvod')
+    

@@ -48,7 +48,7 @@
             <div class="col-md-12">
                 <h2>Moje stado</h2>
                 <h3>U ponudi</h3>
-                <table class="table table-striped">
+                <table class="table table-striped" id="Data">
                     <thead>
                         <tr>
                             <th>ID grla</th>
@@ -92,12 +92,29 @@
                                 {% endfor %}
                                 {% endfor %}
                             </td>
-                            <td>_?_?_?_</td>
                             <td>
+                                {% if animal.cardboard %}
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary edit-animal" data-bs-toggle="modal" data-bs-target="#editModal"
+                                    data-animal-id="{{ animal.id }}"
+                                    data-intended-for="{{ animal.intended_for }}"
+                                    data-category="{{ animal.animal_category.animal_category_name }}"
+                                    data-subcategory="{{ animal.animal_categorization.subcategory }}"
+                                    data-race="{{ animal.animal_race.animal_race_name }}"
+                                    data-gender="{{ animal.animal_gender }}"
+                                    data-weight="{{ animal.current_weight }}"
+                                    data-price="{{ animal.price_per_kg }}"
+                                    data-insured="{{ animal.insured }}"
+                                    data-organic="{{ animal.organic_animal }}">
+                                    Izmeni
+                                </button>
                                 <form action="{{ url_for('users.remove_animal', animal_id=animal.id) }}" method="post">
                                     {{ form.hidden_tag() }}
                                     <input type="hidden" name="animal_id" value="{{ animal.animal_id }}">
-                                    <button>Ukloni</button>
+                                    <button class="btn btn-danger">Ukloni</button>
                                 </form>
                             </td>
                         </tr>
@@ -119,7 +136,7 @@
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <form action="" method="post">
+                                <form action="" method="post" enctype="multipart/form-data">
                                     <p>Izaberite podatke</p>
                                     {{ form.hidden_tag() }}
                                     <div class ="form-group">
@@ -160,10 +177,75 @@
                                     </div>
                                     <div class="form-group">
                                         {{ form.cardboard.label(class="form-label") }}
-                                        {{ form.cardboard(class="form-control", id="cardboard") }}
+                                        {{ form.cardboard(class="form-control", id="cardboard", type="file", accept=".pdf") }}
                                     </div>
                                     <div class="form-group">
                                         {{ form.submit(class="btn btn-primary") }}
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel">Izmeni</h5>
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Podaci o životinji</p>
+                                <div class="form-group">
+                                    <label for="intended_for">Namena</label>
+                                    <input type="text" class="form-control form-control-lg" id="intended_for" name="intended_for" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="category">Kategorija</label>
+                                    <input type="text" class="form-control form-control-lg" id="category" name="category" readonly>
+                                </div>
+                                <div class="form-group" id="subcategory-group">
+                                    <label for="subcategory">Potkategorija</label>
+                                    <input type="text" class="form-control form-control-lg" id="subcategory" name="subcategory" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="race">Rasa</label>
+                                    <input type="text" class="form-control form-control-lg" id="race" name="race" readonly>
+                                </div>
+                                <form action="" method="post" enctype="multipart/form-data">
+                                    {{ form.hidden_tag() }}
+                                    <div class="form-group">
+                                        {{ form.animal_gender.label }}
+                                        {{ form.animal_gender(class="form-select form-select-lg", id="animal_gender") }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.weight.label }}
+                                        {{ form.weight(class="form-control form-control-lg", id="weight", type="number", step="0.1") }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.price.label }}
+                                        {{ form.price(class="form-control form-control-lg", id="price", type="number", step="0.1") }}
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        {{ form.insured(class="form-check-input", id="insured") }}
+                                        {{ form.insured.label(class="form-check-label", for="insured") }}
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        {{ form.organic(class="form-check-input", id="organic") }}
+                                        {{ form.organic.label(class="form-check-label", for="organic") }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.cardboard.label(class="form-label") }} (ako treba da se reuploaduje)
+                                        {{ form.cardboard(class="form-control", id="cardboard", type="file", accept=".pdf") }}
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary" name="submit_edit" id="submit_edit">Izmeni</button>
                                     </div>
                                 </form>
                             </div>
@@ -204,12 +286,16 @@
                             <td>{{ animal.animal_race.animal_race_name }}</td>
                             <td>{{ animal.animal_gender }}</td>
                             <td>{{ animal.current_weight }}</td>
-                            <td>data</td>
+                            <td>{{ animal.wanted_weight }}</td>
                             <td>data</td>
                             <td>data</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
-                            <td>data</td>
+                            <td>
+                                {% if animal.cardboard %}
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                {% endif %}
+                            </td>
                             <td>data</td>
                             <td>data</td>
                             <td>data</td>
@@ -248,7 +334,7 @@
                 $('#subcategory-group').show();
                 const category = $('#category').val();
                 $.ajax({
-                    url: '/get_subcategories',
+                    url: '/get_animal_subcategories',
                     type: 'GET',
                     data: { category: category },
                     success: function(subcategories_options) {
@@ -274,7 +360,7 @@
             // AJAX poziv za subcategories
             if ($('#subcategory-group').is(':visible')) {
                 $.ajax({
-                    url: '/get_subcategories',
+                    url: '/get_animal_subcategories',
                     type: 'GET',
                     data: { category: category },
                     success: function(subcategories_options) {
@@ -299,6 +385,40 @@
         if (initialCategory) {
             loadRaces(initialCategory);
         }
+    });
+    $(document).ready(function() {
+        $('.edit-animal').on('click', function() {
+            var modal = $('#editModal');
+            
+            // Popunjavanje polja u modalu
+            modal.find('#intended_for').val($(this).data('intended-for'));
+            modal.find('#category').val($(this).data('category'));
+            modal.find('#subcategory').val($(this).data('subcategory'));
+            modal.find('#race').val($(this).data('race'));
+            modal.find('#animal_gender').val($(this).data('gender'));
+            modal.find('#weight').val($(this).data('weight'));
+            modal.find('#price').val($(this).data('price'));
+            modal.find('#insured').prop('checked', $(this).data('insured') === 'True');
+            modal.find('#organic').prop('checked', $(this).data('organic') === 'True');
+            
+            // Postavljanje action atributa forme
+            var animalId = $(this).data('animal-id');
+            modal.find('form').attr('action', '/edit_animal/' + animalId);
+            
+            // Prikazivanje/sakrivanje subcategory polja
+            if ($(this).data('subcategory')) {
+                modal.find('#subcategory-group').show();
+            } else {
+                modal.find('#subcategory-group').hide();
+            }
+        });
+    });
+    $(document).ready(function() {
+        $('#Data').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
+            }
+        });
     });
 </script>
 

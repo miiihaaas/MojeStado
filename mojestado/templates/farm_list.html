@@ -86,14 +86,20 @@
 
         // Preselektuj izabrane opcije
         var selectedValues = JSON.parse('{{ selected_municipality | safe }}');
+        var organic_filter = JSON.parse('{{ organic_filter | safe }}');
         console.log(selectedValues);
         $("#municipality").val(selectedValues).trigger('change');
+        $("#organic_filter").prop('checked', organic_filter);
     });
     $(document).ready(function() {
         $('#municipality').change(function() {
             // post form
             $('form').submit();
         });
-});
+        $('#organic_filter').change(function() {
+            // post form
+            $('form').submit();
+        });
+    });
 </script>
 {% endblock %}

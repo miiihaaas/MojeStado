@@ -11,7 +11,6 @@
                     <th>Mesto</th>
                     <th>Telefon</th>
                     <th>Mejl</th>
-                    <th>Ugovor</th>
                     <th></th>
                 </tr>
             </thead>
@@ -23,7 +22,12 @@
                     <td>{{ user.city}}</td>
                     <td>{{ user.phone }}</td>
                     <td>{{ user.email }}</td>
-                    <td>edit | delete</td>
+                    <td>
+                        {% if user.user_type == 'user' %}
+                            <a href="{{ url_for('users.admin_edit_profile', user_id=user.id) }}" class="btn btn-primary">Edit</a>
+                        {% endif %}
+                        <a href="{{ url_for('users.admin_remove_user', user_id=user.id) }}" class="btn btn-danger">Ukloni</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

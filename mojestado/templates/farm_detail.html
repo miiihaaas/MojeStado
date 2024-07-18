@@ -139,7 +139,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">{{ product.product_name }}</h5>
                                     <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
-                                    <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unite_of_measurement}}</strong></p>
+                                    <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unit_of_measurement}}</strong></p>
                                     <a href="#" class="btn btn-secondary">Kupi</a>
                                 </div>
                             </div>

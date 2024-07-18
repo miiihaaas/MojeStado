@@ -104,13 +104,16 @@
                         <div class="col">
                             <div class="card h-100">
                                 <div class="image-wrapper">
-                                    <img src="static/product_image/slanina.jpg" class="card-img-top" alt="Slika proizvoda">
+                                    <img src="{{ url_for('static', filename='product_image/' + product.product_image) }}" class="card-img-top" alt="Slika proizvoda">
                                 </div>
                                 <div class="card-body">
                                     <h5 class="card-title">{{ product.product_name }}</h5>
                                     <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
-                                    <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unite_of_measurement}}</strong></p>
-                                    <a href="#" class="btn btn-secondary">Kupi</a>
+                                    {% if product.unit_of_measurement == 'kom' %}
+                                    <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unit_of_measurement}}</strong></p>
+                                    {% endif %}
+                                    <p class="card-text"><strong>{{ product.product_price_per_kg }} rsd/kg</strong></p>
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary">Kupi</a>
                                 </div>
                             </div>
                         </div>
