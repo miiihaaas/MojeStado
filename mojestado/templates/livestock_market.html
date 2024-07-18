@@ -148,7 +148,11 @@
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
                             <td>test</td>
-                            <td><button>Karton</button></td>
+                            <td>
+                                {% if animal.cardboard %}
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                {% endif %}
+                            </td>
                             <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm_animal.farm_name }}</a></td>
                             <td>{{ animal.farm_animal.farm_city }}</td>
                             <td>

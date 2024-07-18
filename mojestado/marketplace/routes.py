@@ -1,8 +1,9 @@
 import json
+import os
 from flask import Blueprint, request
 from flask import  render_template, flash, redirect, url_for
 from flask_login import current_user
-from mojestado import app
+from mojestado import app, db
 from mojestado.models import Animal, AnimalCategorization, AnimalCategory, Farm, Municipality, Product, ProductCategory, ProductSection, ProductSubcategory, User
 
 
@@ -103,6 +104,8 @@ def products_market(product_category_id):
     section_filter = False
     if request.method == 'POST':
         selected_municipality = request.form.getlist('municipality')
+        if '0' in selected_municipality:
+            selected_municipality.remove('0')
         organic_filter = request.form.get('organic_filter')
         active_subcategories = [int(key.split('_')[1]) for key, value in request.form.items() if key.startswith('subcategory_') and value == 'on']
         active_sections = [int(key.split('_')[1]) for key, value in request.form.items() if key.startswith('section_') and value == 'on']
@@ -124,6 +127,7 @@ def products_market(product_category_id):
             farm_list = Farm.query.all()
             farm_list_active = [farm for farm in farm_list if User.query.get(farm.user_id).user_type == 'farm_active']
             farm_list = farm_list_active
+        #todo sortiraj po ceni: products = 
         return render_template('products_market.html',
                             municipality_filter_list=municipality_filter_list,
                             selected_municipality=json.dumps(selected_municipality),
@@ -154,6 +158,41 @@ def products_market(product_category_id):
                             section_filter=section_filter)
 
 
-@marketplace.route('/product_detail')
-def product_detail():
-    render_template('product_detail.html')
+@marketplace.route('/product_detail/<int:product_id>')
+def product_detail(product_id):
+    product = Product.query.get(product_id)
+    return render_template('product_detail.html',
+                            product=product)
+
+
+@marketplace.route('/upload_product_image/<int:product_id>', methods=['GET', 'POST'])
+def upload_product_image(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        return redirect(url_for('marketplace.products_market', product_category_id=0))
+    product_prefix = f'product_{product_id}_'
+    product_image_folder = os.path.join(app.root_path, 'static', 'product_image')
+    product_image_list = os.listdir(product_image_folder)
+    product_image_list = [p for p in product_image_list if os.path.isfile(os.path.join(product_image_folder, p))]
+    product_image_list = [p for p in product_image_list if p.startswith(product_prefix)]
+    image_sufix_list = [int(p.split('_')[-1].split('.')[0]) for p in product_image_list]
+    print(f'{image_sufix_list=}')
+    if len(image_sufix_list) == 0:
+        counter = 0
+    else:
+        counter = max(image_sufix_list)
+    if len(image_sufix_list) > 4:
+        flash('Nije dodata slika. Maksimalan broj slika je 4.')
+        return redirect(url_for('marketplace.product_detail', product_id=product_id))
+    picture = request.files['picture']
+    f_name = f'product_{product_id}_{(counter + 1):03}'
+    _, f_ext = os.path.splitext(picture.filename)
+    product_image_fn = f_name + f_ext
+    product_image_path = os.path.join(app.root_path, 'static', 'product_image', product_image_fn)
+    picture.save(product_image_path)
+    
+    product.product_image_collection = product.product_image_collection + [product_image_fn]
+    db.session.commit()
+    flash('Slika je uspješno dodata', 'success')
+    return redirect(url_for('marketplace.product_detail', product_id=product_id))
+    return render_template('upload_product_image.html')

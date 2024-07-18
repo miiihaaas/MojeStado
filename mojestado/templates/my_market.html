@@ -53,12 +53,12 @@
                         <tr>
                             <th>Kategorija proizvoda</th>
                             <th>Podkategorija proizvoda</th>
+                            <th>Naziv</th>
                             <th>Jedinica mere</th>
                             <th>Cena po jedinici mere</th>
-                            <th>maksimalna količina (trenutna količina ili maksimalna količina koju PG može da proizvede u slučaju narudžbine)</th>
+                            <th>raspoloživa količina</th>
                             <th>Opis</th>
-                            <th>Fotografije</th>
-                            <th>Opcija za uklanjanje proizvoda</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,12 +66,17 @@
                         <tr>
                             <td>{{ product.product_category.product_category_name }}</td>
                             <td>{{ product.product_subcategory_product.product_subcategory_name }}</td>
-                            <td>{{ product.unite_of_measurement }}</td>
+                            <td>{{ product.product_name }}</td>
+                            <td>{{ product.unit_of_measurement }}</td>
                             <td>{{ product.product_price_per_unit }}</td>
-                            <td>data</td>
-                            <td>data</td>
-                            <td>data</td>
-                            <td>data</td>
+                            <td>{{ product.quantity }}</td>
+                            <td>{{ product.product_description }}</td>
+                            <td>
+                                <a href="{{ url_for('marketplace.product_detail', product_id=product.id)}}" class="btn btn-primary">Edit</a>
+                                {% if product.quantity | int > 0 %}
+                                <a href="" class="btn btn-primary">Deaktiviraj</a>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -104,6 +109,37 @@
                                         <div class ="form-group">
                                             {{ form.section.label }}
                                             {{ form.section (class="form-select form-select-lg", id="section") }}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.product_name.label }}
+                                            {{ form.product_name (class="form-control form-control-lg", id="product_name") }}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.product_description.label }}
+                                            {{ form.product_description (class="form-control form-control-lg", id="product_name") }}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.unit_of_measurement.label }}
+                                            {{ form.unit_of_measurement (class="form-select form-select-lg", id="unit_of_measurement") }}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.weight_conversion.label }}
+                                            {{ form.weight_conversion (class="form-control form-control-lg", id="product_price_per_unit", type="number", step="0.05") }}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.product_price_per_unit.label }}
+                                            {{ form.product_price_per_unit (class="form-control form-control-lg", id="product_price_per_unit", type="number", step="1.0") }}
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            {{ form.organic_product (class="form-check-input", id="organic_product") }}
+                                            {{ form.organic_product.label(class="form-check-label", for="organic_product") }}
+                                        </div>
+                                        <div>
+                                            {{ form.quantity.label }}
+                                            {{ form.quantity (class="form-control form-control-lg", id="quantity", type="number", step="1.0") }}
+                                        </div>
+                                        <div>
+                                            {{ form.submit (class="btn btn-primary") }}
                                         </div>
                                     </form>
                                 </div>
@@ -147,3 +183,60 @@
     </div>
 </section>
 {% endblock content%}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        function loadSubcategories(category) {
+            $.ajax({
+                url: '/get_product_subcategories',
+                type: 'GET',
+                data: { category: category },
+                success: function(subcategories_options) {
+                    $('#subcategory').empty();
+                    subcategories_options.forEach(function(subcategory) {
+                        $('#subcategory').append($('<option>', {
+                            value: subcategory.value,
+                            text: subcategory.text
+                        }));
+                    });
+
+                    // Automatically trigger change event for the subcategory to update sections
+                    $('#subcategory').change();
+                }
+            });
+        }
+
+        function loadSections(category, subcategory) {
+            $.ajax({
+                url: '/get_product_sections',
+                type: 'GET',
+                data: { category: category, subcategory: subcategory },
+                success: function(sections_options) {
+                    $('#section').empty();
+                    sections_options.forEach(function(section) {
+                        $('#section').append($('<option>', {
+                            value: section.value,
+                            text: section.text
+                        }));
+                    });
+                }
+            });
+        }
+
+        $('#category').change(function() {
+            loadSubcategories($(this).val());
+        });
+
+        $('#subcategory').change(function() {
+            loadSections($('#category').val(), $(this).val());
+        });
+
+        // Initialize with current values
+        if ($('#category').val()) {
+            loadSubcategories($('#category').val());
+        }
+    });
+</script>
+
+{% endblock scripts %}
