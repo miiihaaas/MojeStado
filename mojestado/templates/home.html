@@ -29,15 +29,18 @@
                 ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci<br>
                 tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
             </div>
-            <div class="d-flex justify-content-center gap-3 mb-3">
-                {% for category in animal_categories %}
-                <a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}">{{ category.animal_category_name }}</a>
-                {% endfor %}
+            <div class="row">
+                <div class="container">
+                    <section class="logo-carousel slider" data-arrows="true">
+                        {% for category in animal_categories %}
+                        <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}">{{ category.animal_category_name }}</a></div>
+                        {% endfor %}
+                    </section>
+                </div>
             </div>
             <!--<a class="btn btn-primary mx-auto more-button" href="{{ url_for('marketplace.livestock_market', animal_category_id=0) }}">Istražite više</a>-->
         </div>
     </section>
-
     <section class="gotoviproizvodi">
         <div class="container">
             <h2 class="section-title text-center">Gotovi proizvodi</h2>

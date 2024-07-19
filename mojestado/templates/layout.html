@@ -15,115 +15,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
-
-<!-- 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <style>
-            body, html {
-                height: 100%;
-                margin: 0;
-                font-family: Arial, sans-serif;
-                background-color: #f0f0f0;
-                overflow: hidden;
-            }
-    
-            .cart-button {
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-                background-color: #3498db;
-                color: white;
-                border: none;
-                cursor: pointer;
-                font-size: 24px;
-                transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 1000;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-    
-            .cart-button:hover {
-                background-color: #2980b9;
-            }
-    
-            .cart-button.active {
-                width: 600px;
-                height: 800px;
-                border-radius: 20px;
-                cursor: default;
-                overflow: hidden;
-            }
-    
-            .cart-content {
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                padding: 20px;
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                overflow: auto;
-                display: flex;
-                flex-direction: column;
-            }
-    
-            .cart-button.active .cart-content {
-                opacity: 1;
-            }
-    
-            .close-btn {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: none;
-                border: none;
-                color: white;
-                font-size: 24px;
-                cursor: pointer;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                z-index: 1001;
-            }
-    
-            .cart-button.active .close-btn {
-                opacity: 1;
-            }
-    
-            ul {
-                list-style-type: none;
-                padding: 0;
-                margin-top: 20px;
-                flex-grow: 1;
-                overflow-y: auto;
-            }
-    
-            li {
-                padding: 10px 0;
-                border-bottom: 1px solid #4fa8e8;
-                color: white;
-            }
-    
-            h2 {
-                color: white;
-                margin-top: 0;
-            }
-    
-            .cart-icon {
-                transition: opacity 0.3s ease;
-            }
-    
-            .cart-button.active .cart-icon {
-                display: none;
-            }
-        </style> -->
-
-
-
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css">
         <script src="https://kit.fontawesome.com/eaa4d75133.js" crossorigin="anonymous"></script>
 
         <!-- ovo je za select2 koji ima pretragu u sebi -->
@@ -334,6 +226,8 @@
         <!-- DataTables JS -->
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/slider.js') }}"></script>
 
         {% block scripts %}{% endblock %}
 <!-- 

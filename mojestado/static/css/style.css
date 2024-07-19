@@ -42,6 +42,21 @@ header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover
 
 section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
 .section-title { font-size: 48px; font-weight: 700; color: #5e4432; }
+/* Slider */
+.slick-slide { margin: 0px 20px; }
+.logo-carousel { overflow: inherit; }
+.slick-slide img { width: 100%; }
+.slick-slide .slide { text-align: center; }
+.slick-track::before, .slick-track::after { display: table; content: ''; }
+.slick-track::after { clear: both; }
+.slick-track { padding: 1rem 0; }
+.slick-loading .slick-track { visibility: hidden; }
+.slick-slide.dragging img { pointer-events: none; }
+.slick-loading .slick-slide { visibility: hidden; }
+.slick-arrow { position: absolute; top: 50%; background: url(https://raw.githubusercontent.com/solodev/infinite-logo-carousel/master/images/arrow.svg?sanitize=true) center no-repeat; color: #fff;
+  filter: invert(77%) sepia(32%) saturate(1%) hue-rotate(344deg) brightness(105%) contrast(103%); border: none; width: 2rem; height: 1.5rem; text-indent: -10000px; margin-top: -16px; z-index: 99; }
+.slick-arrow.slick-next { right: -40px; transform: rotate(180deg); }
+.slick-arrow.slick-prev { left: -40px; }
 
 /*section.gotoviproizvodi { background-color: #f5f5f5; padding: 50px 0; }*/
 section.gotoviproizvodi { background-image: url('../images/texture-1.jpg'); padding: 50px 0; }
@@ -109,6 +124,9 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 }
 @media (max-width: 992px) {
     .top-bar .navbar-nav { flex-direction: row; }
+}
+@media (max-width: 768px) {
+    .slick-arrow { width: 1rem; height: 1rem; }
 }
 @media (max-width: 480px) {
     .top-bar { font-size: 12px; }
