@@ -1,8 +1,8 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify, session
 from flask import  render_template, flash, redirect, url_for, request
 from flask_login import current_user
 from mojestado import app
-from mojestado.models import FAQ, AnimalCategory
+from mojestado.models import FAQ, Animal, AnimalCategory
 
 
 main = Blueprint('main', __name__)
@@ -40,3 +40,47 @@ def faq():
 @main.route('/contact')
 def contact():
     return render_template('contact.html', title='Kontakt strana')
+
+
+@main.route('/set/<value>')
+def set(value):
+    session['value'] = value
+    return f'vrednost koja je postavljena je: {value}'
+
+@main.route('/get')
+def get():
+    if 'value' not in session:
+        return 'nije postavljena ni jedna vrednost...'
+    return f'vrednost koja je postavljena je: {session["value"]}. ovo je get vrednost.'
+
+
+@main.route('/add_animal_to_cart/<int:animal_id>')
+def add_animal_to_cart(animal_id):
+    animal = Animal.query.get_or_404(animal_id)
+    if 'cart' not in session:
+        session['cart'] = []
+    if animal.id in [item['id'] for item in session['cart']]:
+        flash('Ova zivotinja se vec nalazi u korpi!', 'danger')
+        return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
+    new_animal = {
+        'id': animal.id,
+        'name': animal.price_per_kg,
+        'price': animal.total_price
+    }
+    session['cart'].append(new_animal)
+    flash('Uspesno ste dodali ovu zivotinju u korpu!', 'success')
+    return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
+
+
+@main.route('/view_cart')
+def view_cart():
+    if 'cart' not in session:
+        return jsonify({'cart': []})
+    else:
+        return jsonify({'cart': session['cart']})
+
+
+@main.route('/clear_cart')
+def clear_cart():
+    session.pop('cart', None)
+    return 'korpa je obrisana...'
