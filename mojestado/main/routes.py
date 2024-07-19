@@ -57,27 +57,28 @@ def get():
 @main.route('/add_animal_to_cart/<int:animal_id>')
 def add_animal_to_cart(animal_id):
     animal = Animal.query.get_or_404(animal_id)
-    if 'cart' not in session:
-        session['cart'] = []
-    if animal.id in [item['id'] for item in session['cart']]:
+    if 'animals' not in session:
+        session['animals'] = []
+    if animal.id in [animal['id'] for animal in session['animals']]:
         flash('Ova zivotinja se vec nalazi u korpi!', 'danger')
         return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
-    new_animal = {
-        'id': animal.id,
-        'name': animal.price_per_kg,
-        'price': animal.total_price
-    }
-    session['cart'].append(new_animal)
+    new_animal = {column.name: getattr(animal, column.name) for column in animal.__table__.columns}
+    print(f'* * * new_animal: {new_animal}')
+    session['animals'].append(new_animal)
+    print(f'* * * session["animals"]: {session["animals"]}')
     flash('Uspesno ste dodali ovu zivotinju u korpu!', 'success')
     return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
 
 
 @main.route('/view_cart')
 def view_cart():
-    if 'cart' not in session:
-        return jsonify({'cart': []})
+    if 'animals' not in session:
+        flash('Korpa je prazna!', 'info')
+        return render_template('view_cart.html', cart={})
     else:
-        return jsonify({'cart': session['cart']})
+        animals=session['animals']
+        print(f'view_cart: {animals}')
+        return render_template('view_cart.html', animals=animals)
 
 
 @main.route('/clear_cart')
