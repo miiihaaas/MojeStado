@@ -3,7 +3,7 @@ from flask import Blueprint
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db, mail, app
 from mojestado.users.forms import LoginForm, RequestResetForm, ResetPasswordForm
-from mojestado.models import User, Farm, Municipality
+from mojestado.models import Animal, Product, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 
@@ -30,7 +30,7 @@ def upload_image():
     print(f'{farm_image_list=}')
     print(f'{len(farm_image_list)=}')
     if len(farm_image_list) > 9:
-        flash('Nije dodata slika. Makimalan broj slika je 10.', 'danger')
+        flash('Nije dodata slika. Maksimalan broj slika je 10.', 'danger')
         return redirect(url_for('users.my_farm', farm_id=farm.id))
     
     picture = request.files['picture']
@@ -105,7 +105,10 @@ def farm_list():
     municipality_filter_list = Municipality.query.all()
     if request.method == 'POST':
         print(f'{request.form=}')
+        organic_filter = request.form.get('organic_filter')
         selected_municipality = request.form.getlist('municipality')
+        if '0' in selected_municipality:
+            selected_municipality.remove('0')
         print(f'post: {selected_municipality=}')
         if selected_municipality:
             farm_list = Farm.query.filter(Farm.farm_municipality_id.in_(selected_municipality)).all()
@@ -113,10 +116,15 @@ def farm_list():
             farm_list = Farm.query.all()
             farm_list_active = [farm for farm in farm_list if User.query.get(farm.user_id).user_type == 'farm_active']
             farm_list = farm_list_active
+        if organic_filter == 'on':
+            animals = Animal.query.filter(Animal.organic_animal == True).all()
+            products = Product.query.filter(Product.organic_product == True).all()
+            farm_list = [farm for farm in farm_list if farm.id in [animal.farm_id for animal in animals] or farm.id in [product.farm_id for product in products]]
         return render_template('farm_list.html', title='Farms',
                                 farm_list=farm_list,
                                 municipality_filter_list=municipality_filter_list,
-                                selected_municipality=json.dumps(selected_municipality))
+                                selected_municipality=json.dumps(selected_municipality),
+                                organic_filter=json.dumps(organic_filter))
     elif request.method == 'GET':
         selected_municipality = [] #[3, 5, 7] # request.form.getlist('municipality')
         print(f'GET: {selected_municipality=}')
@@ -129,9 +137,23 @@ def farm_list():
                                 selected_municipality=json.dumps(selected_municipality))
 
 
-@farms.route("/farm_detail/<int:farm_id>")
+@farms.route("/farm_detail/<int:farm_id>", methods=['GET', 'POST'])
 def farm_detail(farm_id):
     farm = Farm.query.get_or_404(farm_id)
-    return render_template('farm_detail.html', title=farm.farm_name, farm=farm)
+    animals = Animal.query.filter_by(farm_id=farm_id).all()
+    #! samo životinje koje nisu u tovu
+    animals = [animal for animal in animals if animal.fattening == False]
+    products = Product.query.filter_by(farm_id=farm_id).all()
+    organic_filter = request.form.get('organic_filter')
+    if request.method == 'POST':
+        if organic_filter == 'on':
+            animals = [animal for animal in animals if animal.organic_animal == 1]
+            products = [product for product in products if product.organic_product == 1]
+    return render_template('farm_detail.html', 
+                            title=farm.farm_name,
+                            organic_filter=json.dumps(organic_filter),
+                            animals=animals,
+                            products=products,
+                            farm=farm)
 
 

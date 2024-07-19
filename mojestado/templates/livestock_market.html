@@ -15,7 +15,7 @@
         </div>
     </div>
 </section>
- <section class="zivavaga-page mt-5">
+<section class="zivavaga-page mt-5">
     <div class="container">
         {% if animal_categories %}
             {% for animal_category in animal_categories %}
@@ -41,16 +41,51 @@
                     </div>
                     <div class="card mb-3">
                         <div class="card-header">
+                            Potkategorije
+                        </div>
+                        <div class="card-body">
+                            {% for subcategory in animal_subcategories %}
+                            <div class="form-check form-switch">
+                                {% if subcategory.id in active_subcategories %}
+                                <input class="form-check-input subcategory-filter" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}" checked>
+                                {% else %}
+                                <input class="form-check-input subcategory-filter" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}">
+                                {% endif %}
+                                <label class="form-check-label" for="subcategory_{{subcategory.id}}">{{subcategory.subcategory}}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if weight_filter %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Masa
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                {% for subcategory in animal_subcategories %}
+                                {% if subcategory.animal_categorization_id in active_subcategories %}
+                                <input class="form-check-input" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}" checked>
+                                {% else %}
+                                <input class="form-check-input" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}">
+                                {% endif %}
+                                <label class="form-check-label" for="subcategory_{{subcategory.id}}">{{subcategory.subcategory}}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="card mb-3">
+                        <div class="card-header">
                             Organska proizvodnja
                         </div>
                         <div class="card-body">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
                                 <label class="form-check-label" for="organic_filter">Organski</label>
-                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Šta se podrazumeva pod organskom proizvodnjom?">
+                                <a href="https://sr.wikipedia.org/sr/Organska_poljoprivreda" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
                                     <i class="fas fa-question-circle"></i>
                                 </a>
-                                <a href="#">Detaljnije o organskoj proizvodnji</a>
                             </div>
                         </div>
                     </div>
@@ -67,37 +102,11 @@
                     </div>
                     <div class="card mb-3">
                         <div class="card-header">
-                            Potkategorije
-                        </div>
-                        <div class="card-body">
-                            <div class="form-check form-switch">
-                                {% for subcategory in animal_subcategories %}
-                                <input class="form-check-input" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}">
-                                <label class="form-check-label" for="subcategory_{{subcategory.id}}">{{subcategory.subcategory}}</label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            Masa
-                        </div>
-                        <div class="card-body">
-                            <div class="form-check form-switch">
-                                {% for subcategory in animal_subcategories %}
-                                <input class="form-check-input" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}">
-                                <label class="form-check-label" for="subcategory_{{subcategory.id}}">{{subcategory.subcategory}}</label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card mb-3">
-                        <div class="card-header">
                             Količina
                         </div>
                         <div class="card-body">
                             <div class="">
-                                <label class="form-label" for="quantity_filter">Osigurano</label>
+                                <label class="form-label" for="quantity_filter">Količina</label>
                                 <input class="form-range" type="range" min="0" max="5" id="quantity_filter" name="quantity_filter">
                             </div>
                         </div>
@@ -107,9 +116,6 @@
             <div class="col-md-10">
                 <p>Kategorija:</p>
                 <h2>{{ animal_category.animal_category_name }}</h2>
-                {% for subcategory in animal_subcategories %}
-                <a href="#">{{ subcategory.subcategory }}</a>
-                {% endfor %}
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -122,17 +128,40 @@
                             <th>Ukupna (rsd)</th>
                             <th>Osigurano</th>
                             <th>Organsko</th>
-                            <th>PG</th>
                             <th>Usluge</th>
-                            <th>Lokacija</th>
                             <th>Karton grla</th>
+                            <th>PG</th>
+                            <th>Lokacija</th>
                             <th>Kupovina (korpa/tov)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for animal in livestock %}
+                        {% for animal in animals %}
                         <tr>
-                            <td>data</td>
+                            <td>{{ animal.animal_id }}</td>
+                            <td>{{ animal.animal_categorization.subcategory }}</td>
+                            <td>{{ animal.animal_race.animal_race_name }}</td>
+                            <td>{{ animal.animal_gender }}</td>
+                            <td>{{ animal.current_weight }}</td>
+                            <td>{{ animal.price_per_kg }}</td>
+                            <td>{{ animal.total_price }}</td>
+                            <td>{{ animal.insured }}</td>
+                            <td>{{ animal.organic_animal }}</td>
+                            <td>test</td>
+                            <td>
+                                {% if animal.cardboard %}
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                {% endif %}
+                            </td>
+                            <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm_animal.farm_name }}</a></td>
+                            <td>{{ animal.farm_animal.farm_city }}</td>
+                            <td>
+                                <a href="">Kupi</a>
+                                {% if animal.intended_for == "tov" %}
+                                <a href="">Tov</a>
+                                {% endif %}
+                            </td>
+                            
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -144,7 +173,7 @@
         {% endblock %}
         {% block scripts %}
     </div>
- </section>
+</section>
 <script>
     $(document).ready(function() {
         $("#municipality").select2({
@@ -181,6 +210,9 @@
     $(document).ready(function() {
         $('#insure_filter').change(function() {
             // post form
+            $('form').submit();
+        });
+        $('.subcategory-filter').change(function() {
             $('form').submit();
         });
     });

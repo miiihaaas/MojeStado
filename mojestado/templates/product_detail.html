@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="farm-page firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h1>{{product.product_name}}</h1>
+                <p>{{ product.product_category.product_category_name }} > {{ product.product_subcategory_product.product_subcategory_name }} > {{ product.product_section.product_section_name }}</p>
+                <p><strong>Opis: </strong>{{product.product_description}}</p>
+                <p><strong>Jedinica mere: </strong>{{product.unit_of_measurement}}</p>
+                <p><strong>Cena po jedinici mere: </strong>{{product.product_price_per_unit}} rsd/{{product.unit_of_measurement}}</p>
+                <p><strong>Cena po kg: </strong>{{product.product_price_per_kg}} rsd/kg</p>
+                <p><strong>ovo i ne treba :) </strong>{{product.weight_conversion}}</p>
+            </div>
+            <div class="col-md-6">
+                <img src="/static/product_image/{{ product.product_image }}" class="d-block w-100" alt="Slika proizvoda {{ product.product_name }}">
+            </div>
+        </div>
+        {% if current_user.id == product.farm_product.user_farm.id %}
+        <div class="row">
+            <div class="row">
+                <div class="col-md-9">
+                    ovde je bio slajder - ali mogu da se dodaju opcije za ažuriranje cena žive vage po potkategorijama, cena usluga i slično
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <p>U ovoj sekciji možete upravljati svojim slikama proizvoda. Možete dodati maksimalno 5 slika...</p>
+                    </div>
+                    <div class="form-group mb-4">
+                        <form action="{{ url_for('marketplace.upload_product_image', product_id=product.id) }}" method="POST" enctype="multipart/form-data" id="upload_form">
+                            <input type="hidden" name="product_id" value="product.id">
+                            <div class="form-group">
+                                <div class="mb-3">
+                                    <label for="picture" class="form-label">Izaberi sliku</label>
+                                    <input type="file" class="form-control" id="picture" name="picture" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Dodaj sliku proizvoda</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="form-group mb-4">
+                        <p>U ovoj sekciji možete pregledati i obrisati slike proizvoda</p>
+                        <!-- Button to open the modal -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal">
+                            Pregled i brisanje slika
+                        </button>
+                        <!-- The modal -->
+                        <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="imageModalLabel">Slike farme</h5>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="{{ url_for('farms.delete_image') }}" method="POST">
+                                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                                            <div class="row">
+                                            {% for farm_image in product.farm_image_collection %}
+                                                <div class="col-md-3">
+                                                <img src="/static/farm_image/{{ farm_image }}" class="img-fluid rounded" alt="Slika Farme {{ farm.farm_name }}">
+                                                <button type="submit" class="btn btn-danger" name="farm_image" value="{{ farm_image }}">Obriši</button>
+                                                </div>
+                                            {% endfor %}
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-4">
+                        <p>U ovoj sekciji možete pregledati i postaviti naslovnu sliku</p>
+                        <!-- Button to open the modal -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#defaultImageModal">
+                            Podešavanje naslovne slike
+                        </button>
+    
+                        <!-- The modal -->
+                        <div class="modal fade" id="defaultImageModal" tabindex="-1" role="dialog" aria-labelledby="defaultImageModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="defaultImageModalLabel">Slike farme</h5>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="{{ url_for('farms.default_image') }}" method="POST">
+                                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                                            <div class="row">
+                                            {% for farm_image in product.farm_image_collection %}
+                                                <div class="col-md-3">
+                                                    <img src="/static/farm_image/{{ farm_image }}" class="img-fluid rounded" alt="Slika Farme {{ farm.farm_name }}">
+                                                    <button type="submit" class="btn btn-primary" name="farm_image" value="{{ farm_image }}">Postavi kao naslovnu sliku</button>
+                                                </div>
+                                            {% endfor %}
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="" class="btn btn-primary">otvara modal za edit?</a>
+            <p>dodavanje slika</p>
+            {% else %}
+            
+            <a href="" class="btn btn-primary">kupi</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

@@ -23,7 +23,8 @@ class User(db.Model, UserMixin):
     PBG = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
     JMBG = db.Column(db.String(13), unique=True, nullable=True)
     MB = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
-    user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm_active, farm_inactive, user, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
+    user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm_active, farm_inactive, user, user_removed, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
+    registration_date = db.Column(db.DateTime, nullable=False)
     farms = db.relationship('Farm', backref='user_farm', lazy=True) #! 
     
 
@@ -63,9 +64,11 @@ class Farm(db.Model):
     farm_municipality_id = db.Column(db.Integer, db.ForeignKey('municipality.id'), nullable=False) #!
     farm_phone = db.Column(db.String(20), nullable=False)
     farm_description = db.Column(db.String(2000), nullable=False)
+    services = db.Column(db.JSON, nullable=True) #! usluga klanja, usluga obrade - tu treba da se definišu cene usluga za kategorije
+    registration_date = db.Column(db.Date, nullable=True) #! kada admin potvrdi da je registrovan, tada se dodeli trenutni datum
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #!
     animals = db.relationship('Animal', backref='farm_animal', lazy=True) #!
-    # products = db.relationship('Product', backref='farm_product', lazy=True) #!
+    products = db.relationship('Product', backref='farm_product', lazy=True) #!
 
 
 class Animal(db.Model):
@@ -79,6 +82,7 @@ class Animal(db.Model):
     measured_weight = db.Column(db.String(20), nullable=False)  # izmerena težina
     measured_date = db.Column(db.String(20), nullable=False)  # datum merenja
     current_weight = db.Column(db.String(20), nullable=False)  # trenutna težina = preračunava se u odnosu na izmerenu težinu i datum merenja
+    wanted_weight = db.Column(db.String(20), nullable=True)  # zeljena težina
     price_per_kg = db.Column(db.String(20), nullable=False)  # cena po kg
     total_price = db.Column(db.String(20), nullable=False)  # ukupna cena
     insured = db.Column(db.Boolean, nullable=False)  # osigurano
@@ -88,6 +92,7 @@ class Animal(db.Model):
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
     
     fattening = db.Column(db.Boolean, nullable=False) #! podrazumevana vrednost je False, a kada kupac naruči da se tovi neka životnja onda prelazi u True
+    active = db.Column(db.Boolean, nullable=False)
 
     animal_category = db.relationship('AnimalCategory', back_populates='animals')
     animal_race = db.relationship('AnimalRace', back_populates='animals')
@@ -124,17 +129,22 @@ class AnimalCategorization(db.Model):
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_image = db.Column(db.String(20), nullable=False) #! slika proizvoda
     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
     product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
     product_section_id = db.Column(db.Integer, db.ForeignKey('product_section.id'), nullable=False) #!
     product_name = db.Column(db.String(20), nullable=False)
-    product_price_per_unit = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
+    product_description = db.Column(db.String(500), nullable=False)
+    product_image = db.Column(db.String(20), nullable=False, default='default.jpg') #! prilagoditi da može da se stavi do 10 slika
+    product_image_collection = db.Column(db.JSON, nullable=True)
     #! razraditi konverziju pakovanje (npr kajmak 1kom = 400g)
-    unite_of_measurement = db.Column(db.String(20), nullable=False) #! jedinica mere može da bude KOM ili KG
-    #! ako je kom onda mora da se definiše koliko 1kom ima kg
-    #! ako je kg onda je polje konverzije prazno
+    unit_of_measurement = db.Column(db.String(20), nullable=False) #! jedinica mere može da bude KOM ili KG
+    weight_conversion = db.Column(db.String(20), nullable=True) #! ako je kom onda mora da se definiše koliko 1kom ima kg
+    #! ako je kg onda je polje konverzije prazno ili je =1
+    product_price_per_unit = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
+    product_price_per_kg = db.Column(db.String(20), nullable=True) #! ako je jedinica mere kg, onda se prepisuje taj podatak, a ako je jedinica mere kom onda se uz pomoć podatka weight_conversion izracunava te vrednosti
     organic_product = db.Column(db.Boolean, nullable=False) #! organska proizvodnja
+    #! dodati količinu/masu
+    quantity = db.Column(db.String(20), nullable=False) #! količina/masa
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
     
     product_category = db.relationship('ProductCategory', back_populates='products')

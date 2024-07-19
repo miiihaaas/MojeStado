@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <h2>Pregled stanja</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Korisnik</th>
+                    <th>Zaduženje</th>
+                    <th>Uplate</th>
+                    <th>Saldo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }} {{ user.surname }}</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td><a href="{{ url_for('users.admin_view_overview_user', user_id=user.id) }}" class="btn btn-primary">pregled</a></td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>pregled kartice pojedinačnog korisnika</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

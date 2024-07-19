@@ -75,6 +75,7 @@
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
             Izmeni adresu
         </button>
+        <a href="" class="btn btn-primary" target_="_blank">Pregled ugovora</a>
     
     <!-- Modal -->
         <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
@@ -103,7 +104,40 @@
 </section>
 
 {% elif user.user_type == 'admin' %}
-<h2>Moji podaci - Admin</h2>
+<section class="register-page firstsecton mb-5">
+    <div class="container">
+        <h2>Moji podaci - Admin</h2>
+        <div class="row">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.settings') }}">Podešavanja</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_farms') }}">PG</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_users') }}">Korisnici</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_purchases') }}">Kupovine</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_overview') }}">Pregledi</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_slips') }}">Izvodi</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </div>
+</section>
 {% elif user.user_type == 'farm_active' %}
 <section class="register-page firstsection mb-5">
     <div class="container">
@@ -112,6 +146,7 @@
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                {% if current_user.user_type != 'admin' %}
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item active">
@@ -132,6 +167,7 @@
                         {% endif %}
                     </ul>
                 </div>
+                {% endif %}
             </nav>
         </div>
     </div>
@@ -140,41 +176,47 @@
     <div class="container">
         <div class="row">
             <h2>Moji podaci - Farmer</h2>
-            <div class="col">
-                <div class="form-group">
-                    <label for="name">Ime i prezime</label>
-                    <input class="form-control" type="text" name="name" id="name" value="{{ user.name }} {{ user.surname }}" readonly>
+            <form action="" method="POST">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="name">Ime i prezime</label>
+                        <input class="form-control" type="text" name="name" id="name" value="{{ user.name }} {{ user.surname }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Adresa</label>
+                        <input class="form-control" type="text" name="address" id="address" value="{{ user.address }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Mesto</label>
+                        <input class="form-control" type="text" name="zip_code" id="zip_code" value="{{ user.zip_code }} {{ user.city }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <a href="{{ url_for('static', filename='contracts/farms/' + '{:05d}'.format(user.id) + '.pdf') }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" class="btn btn-primary">Pregled ugovora</a>
+                        {% if current_user.user_type == 'admin' %}
+                        <a href="" class="btn btn-primary">Generiši novi ugovor</a>
+                        <a href="" class="btn btn-primary">Sačuvaj</a>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="name">Adresa</label>
-                    <input class="form-control" type="text" name="address" id="address" value="{{ user.address }}" readonly>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="name">JMBG</label>
+                        <input class="form-control" type="text" name="JMBG" id="JMBG" value="{{ user.JMBG }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">PBG</label>
+                        <input class="form-control" type="text" name="PBG" id="PBG" value="{{ user.PBG }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Telefon</label>
+                        <input class="form-control" type="text" name="phone" id="phone" value="{{ user.phone }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">email</label>
+                        <input class="form-control" type="text" name="email" id="email" value="{{ user.email }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="name">Mesto</label>
-                    <input class="form-control" type="text" name="zip_code" id="zip_code" value="{{ user.zip_code }} {{ user.city }}" readonly>
-                </div>
-                <div class="form-group">
-                    <input href="" class="btn btn-primary mt-4" name="contract" id="contract" value="Pregled ugovora">
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <label for="name">JMBG</label>
-                    <input class="form-control" type="text" name="JMBG" id="JMBG" value="{{ user.JMBG }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="name">PBG</label>
-                    <input class="form-control" type="text" name="PBG" id="PBG" value="{{ user.PBG }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="name">Telefon</label>
-                    <input class="form-control" type="text" name="phone" id="phone" value="{{ user.phone }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="name">email</label>
-                    <input class="form-control" type="text" name="email" id="email" value="{{ user.email }}" readonly>
-                </div>
-            </div>
+            </form>
         </div>    
     </div>
 </section>
