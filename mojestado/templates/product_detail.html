@@ -111,7 +111,7 @@
             <p>dodavanje slika</p>
             {% else %}
             
-            <a href="" class="btn btn-primary">kupi</a>
+            <a href="{{ url_for('main.add_product_to_cart', product_id=product.id) }}" class="btn btn-primary">kupi</a>
         </div>
         {% endif %}
     </div>

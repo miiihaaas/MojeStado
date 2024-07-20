@@ -18,9 +18,15 @@
 <section class="zivavaga-page mt-5">
     <div class="container">
         {% if animal_categories %}
-            {% for animal_category in animal_categories %}
-            <a href="{{ url_for('marketplace.livestock_market', animal_category_id=animal_category.id) }}">{{ animal_category.animal_category_name }}</a>
-            {% endfor %}
+            <div class="row">
+                <div class="container">
+                    <section class="logo-carousel slider" data-arrows="true">
+                        {% for category in animal_categories %}
+                        <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}">{{ category.animal_category_name }}</a></div>
+                        {% endfor %}
+                    </section>
+                </div>
+            </div>
         {% else %}
         <div class="row">
             <div class="col-md-2 sidebar">

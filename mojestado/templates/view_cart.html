@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block content %}
+<section>
+    <div class="container">
+        <form action="{{ url_for('transactions.make_transaction')}}" method="POST">
+            {% if animals %}
+            <h3>Živa vaga</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID životinje</th>
+                        <th>Kategorija</th>
+                        <th>Potkategorija</th>
+                        <th>Rasa</th>
+                        <th>Pol (ne prikazuje se kod živine)</th>
+                        <th>Trenutna masa</th>
+                        <th>Cena po kg (rsd)</th>
+                        <th>Ukupna (rsd)</th>
+                        <th>Osigurano</th>
+                        <th>Organsko</th>
+                        <th>Usluge</th>
+                        <th>Karton grla</th>
+                        <th>PG</th>
+                        <th>Lokacija</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for animal in animals %}
+                    <tr>
+                        <td>{{ animal.animal_id }}</td>
+                        <td>{{ animal.category }}</td>
+                        <td>{{ animal.subcategory }}</td>
+                        <td>{{ animal.race }}</td>
+                        <td>{{ animal.animal_gender }}</td>
+                        <td>{{ animal.current_weight }}</td>
+                        <td>{{ animal.price_per_kg }}</td>
+                        <td>{{ animal.total_price }}</td>
+                        <td>{{ animal.insured }}</td>
+                        <td>{{ animal.organic_animal }}</td>
+                        <td>test</td>
+                        <td>
+                            {% if animal.cardboard %}
+                            <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                            {% endif %}
+                        </td>
+                        <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a></td>
+                        <td>{{ animal.location }}</td>
+                        <td>
+                            <a href="{{ url_for('main.remove_animal_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
+                        </td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            {% if products %}
+            <h3>Gotovi proizvodi</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Kategorija proizvoda</th>
+                        <th>Podkategorija proizvoda</th>
+                        <th>Sektor proizvoda</th>
+                        <th>Naziv</th>
+                        <th>Jedinica mere</th>
+                        <th>Cena po jedinici mere</th>
+                        <th>Cena</th>
+                        <th>količina</th>
+                        <th>PG</th>
+                        <th>lokacija</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.category }}</td>
+                        <td>{{ product.subcategory }}</td>
+                        <td>{{ product.section }}</td>
+                        <td>{{ product.product_name }}</td>
+                        <td>{{ product.unit_of_measurement }}</td>
+                        <td>{{ product.product_price_per_unit }}</td>
+                        <td>{{ product.product_price_per_unit }}</td>
+                        <td>wip</td>
+                        <td><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm }}</a></td>
+                        <td>{{ product.location }}</td>
+                        <td>
+                            <a href="{{ url_for('main.remove_product_from_cart', product_id=product.id)}}">Ukloni iz korpe</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            {% if animals or products %}
+            <button class="btn btn-primary" type="submit">Kupi</button>
+            <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">Obriši korpu</a>
+            {% endif %}
+        </form>
+    </div>
+</section>
+
+{% endblock %}
