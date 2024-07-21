@@ -77,8 +77,9 @@ def add_animal_to_cart(animal_id):
     return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
 
 
-@main.route('/add_product_to_cart/<int:product_id>')
+@main.route('/add_product_to_cart/<int:product_id>', methods=['POST'])
 def add_product_to_cart(product_id):
+    print(f'{request.form=}')
     product = Product.query.get_or_404(product_id)
     if 'products' not in session:
         session['products'] = []
@@ -92,6 +93,8 @@ def add_product_to_cart(product_id):
     new_product['section'] = product.product_section.product_section_name
     new_product['farm'] = product.farm_product.farm_name
     new_product['location'] = product.farm_product.municipality_farm.municipality_name
+    new_product['quantity'] = request.form['quantity']
+    new_product['total_price'] = float(request.form['quantity']) * float(product.product_price_per_unit)
 
     session['products'].append(new_product)
     session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena

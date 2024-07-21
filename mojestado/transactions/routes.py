@@ -13,10 +13,9 @@ def make_transaction():
     if not current_user.is_authenticated:
         flash('Da bi ste dovršili kupovinu potrebno je da se prijavite!', 'warning')
         return redirect(url_for('users.login'))
-        
-        
-    
-    
+
+
+
     for animal in animals:
         print(f'{animal["id"]=}')
         animal_to_edit = Animal.query.get(animal['id'])
