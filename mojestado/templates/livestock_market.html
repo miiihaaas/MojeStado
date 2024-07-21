@@ -17,7 +17,7 @@
 </section>
 <section class="zivavaga-page mt-5">
     <div class="container">
-        {% if animal_categories %}
+        {% if animal_category_id == 0 %}
             <div class="row">
                 <div class="container">
                     <section class="logo-carousel slider" data-arrows="true">
@@ -28,6 +28,15 @@
                 </div>
             </div>
         {% else %}
+        <div class="row">
+            <div class="container">
+                <section class="logo-carousel slider" data-arrows="true">
+                    {% for category in animal_categories %}
+                    <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}" style="width: 40%; height: 40%;">{{ category.animal_category_name }}</a></div>
+                    {% endfor %}
+                </section>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-2 sidebar">
                 <form action="{{url_for('marketplace.livestock_market', animal_category_id=animal_category_id)}}" method="POST">

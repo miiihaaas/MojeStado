@@ -13,11 +13,11 @@ marketplace = Blueprint('marketplace', __name__)
 @marketplace.route('/livestock_market/<int:animal_category_id>', methods=['GET', 'POST'])
 def livestock_market(animal_category_id):
     municipality_filter_list = Municipality.query.all()
+    animal_categories = AnimalCategory.query.all()
     if animal_category_id == 0:
-        animal_categories = AnimalCategory.query.all()
-        return render_template('livestock_market.html', animal_categories=animal_categories)
+        return render_template('livestock_market.html', animal_categories=animal_categories, animal_category_id=animal_category_id)
 
-    animal_categories = None
+    # animal_categories = None
     animal_category = AnimalCategory.query.get(animal_category_id)
     animal_subcategories = AnimalCategorization.query.filter_by(animal_category_id=animal_category_id).all()
     animals = Animal.query.filter_by(animal_category_id=animal_category_id).filter_by(active=True).all()
@@ -95,6 +95,7 @@ def products_market(product_category_id):
         product_categories = ProductCategory.query.all()
         return render_template('products_market.html', product_categories=product_categories)
     products = Product.query.filter_by(product_category_id=product_category_id).all()
+    products = [product for product in products if float(product.quantity) > 0]
     product_categories = None
     product_category = ProductCategory.query.get(product_category_id)
     product_subcategories = ProductSubcategory.query.filter_by(product_category_id=product_category_id).all()
@@ -165,6 +166,15 @@ def product_detail(product_id):
                             product=product)
 
 
+@marketplace.route('/deactivate_product/<int:product_id>', methods=['POST'])
+def deactivate_product(product_id):
+    product = Product.query.get(product_id)
+    product.quantity = "0"
+    db.session.commit()
+    return redirect(url_for('users.my_market', farm_id=product.farm_id))
+
+
+
 @marketplace.route('/upload_product_image/<int:product_id>', methods=['GET', 'POST'])
 def upload_product_image(product_id):
     product = Product.query.get(product_id)
@@ -193,6 +203,70 @@ def upload_product_image(product_id):
     
     product.product_image_collection = product.product_image_collection + [product_image_fn]
     db.session.commit()
-    flash('Slika je uspješno dodata', 'success')
+    flash('Slika je uspešno dodata', 'success')
     return redirect(url_for('marketplace.product_detail', product_id=product_id))
-    return render_template('upload_product_image.html')
+
+
+@marketplace.route('/delete_product_image', methods=['POST'])
+def delete_product_image():
+    product_id = request.form['product_id']
+    product = Product.query.get(product_id)
+    if not product:
+        return 'Proizvod nije nađen', 404
+
+    product_image_fn = request.form.get('product_image')
+    # uklonite product_image_fn iz product.product_image_collection
+    product_images = product.product_image_collection
+    if product_image_fn in product_images:
+        product_images = [product_image for product_image in product_images if product_image != product_image_fn]
+        # ažurirajte product.product_image_collection u bazi podataka
+        product.product_image_collection = product_images
+        db.session.commit()
+        #! kod koji će iz foldera da obriše fajl sa nazivom product_image_fn
+        image_path = os.path.join(app.root_path, 'static', 'product_image', product_image_fn)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+        if product_image_fn == product.product_image:
+            product.product_image = 'default.jpg'
+            db.session.commit()
+            flash('Obrisana je naslovna slika, definišite novu naslovnu sliku', "warning")
+        flash('Slika obrisana', "success")
+    else:
+        flash('Slika nije pronađena u kolekciji', "danger")
+    return redirect(url_for('marketplace.product_detail', product_id=product_id))
+
+
+@marketplace.route('/default_product_image', methods=['POST'])
+def default_product_image():
+    product_id = request.form['product_id']
+    product = Product.query.get(product_id)
+    if not product:
+        return 'Proizvod nije nađen', 404
+    product_image_fn = request.form.get('product_image')
+    product.product_image = product_image_fn
+    db.session.commit()
+    flash('Naslovna slika je uspešno promenjena', 'success')
+    return redirect(url_for('marketplace.product_detail', product_id=product_id))
+
+
+@marketplace.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
+def edit_product(product_id):
+    product = Product.query.get(product_id)
+    print(f'**** {request.form["weight_conversion"]=}')
+    product.product_name = request.form['product_name']
+    product.product_description = request.form['product_description']
+    product.unit_of_measurement = request.form['unit_of_measurement']
+    product.product_price_per_unit = request.form['product_price_per_unit']
+    product.weight_conversion = request.form['weight_conversion']
+    if request.form['unit_of_measurement'] == 'kg':
+        product.product_price_per_kg = product.product_price_per_unit
+    elif request.form['unit_of_measurement'] == 'kom':
+        product.product_price_per_kg = float(request.form['product_price_per_unit']) / float(request.form['weight_conversion'])
+    if request.form.get('organic_product') == 'on':
+        product.organic_product = True
+    else:
+        product.organic_product = False
+    product.quantity = request.form['quantity']
+    db.session.commit()
+    flash('Proizvod je uspešno izmenjen', 'success')
+    return redirect(url_for('marketplace.product_detail', product_id=product_id))

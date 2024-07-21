@@ -74,7 +74,10 @@
                             <td>
                                 <a href="{{ url_for('marketplace.product_detail', product_id=product.id)}}" class="btn btn-primary">Edit</a>
                                 {% if product.quantity | int > 0 %}
-                                <a href="" class="btn btn-primary">Deaktiviraj</a>
+                                <form action="{{ url_for('marketplace.deactivate_product', product_id=product.id)}}" method="post">
+                                    <input type="text" name="product_id" value="{{ product.id }}" hidden>
+                                    <input type="submit" class="btn btn-primary" value="Deaktiviraj">
+                                </form>
                                 {% endif %}
                             </td>
                         </tr>
