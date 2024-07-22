@@ -104,22 +104,23 @@
                                 <td>{{ animal.organic_animal }}</td>
                                 <td>
                                     {% for service, category in farm.services.items() %}
-                                    {% for category_id, price in category.items() %}
-                                    {% if price | float > 0 and category_id | int == animal.animal_category.id %}
-                                    {% if service == 'klanje' %}
-                                    slika klanja
-                                    {% elif service == 'obrada' %}
-                                    slika obrade
-                                    {% endif %}
-                                    {% endif %}
-                                    {% endfor %}
+                                        {% for category_id, price in category.items() %}
+                                            {% if price | float > 0 and category_id | int == animal.animal_category.id %}
+                                                {% if service == 'klanje' %}
+                                                    slika klanja
+                                                {% elif service == 'obrada' %}
+                                                    slika obrade
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
                                     {% endfor %}
                                 </td>
                                 <td>testing</td>
                                 <td>
-                                    <a href="">Kupi</a>
+                                    <button class="btn btn-primary">Kupi + usluge / modal</button>
+                                    <a class="btn btn-secondary" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi / direktno u korpu</a>
                                     {% if animal.intended_for == "tov" %}
-                                    <a href="">Tov</a>
+                                    <a class="btn btn-danger" href="">Tov</a>
                                     {% endif %}
                                 </td>
                             </tr>

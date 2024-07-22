@@ -128,7 +128,7 @@
                     </div>
                 </form>
             </div>
-            <div class="col-md-10">
+            <div class="col-md-8">
                 <p>Kategorija:</p>
                 <h2>{{ animal_category.animal_category_name }}</h2>
                 <table class="table table-striped">
@@ -162,7 +162,19 @@
                             <td>{{ animal.total_price }}</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
-                            <td>test</td>
+                            <td>
+                                {% for service, category in animal.farm_animal.services.items() %}
+                                    {% for category_id, price in category.items() %}
+                                        {% if price | float > 0 and category_id | int == animal.animal_category.id %}
+                                            {% if service == 'klanje' %}
+                                                slika klanja
+                                            {% elif service == 'obrada' %}
+                                                slika obrade
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </td>
                             <td>
                                 {% if animal.cardboard %}
                                 <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
@@ -171,7 +183,8 @@
                             <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm_animal.farm_name }}</a></td>
                             <td>{{ animal.farm_animal.farm_city }}</td>
                             <td>
-                                <a href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
+                                <button class="btn btn-primary" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi Usluge (Modal)</button>
+                                <a class="btn btn-secondary" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
                                 {% if animal.intended_for == "tov" %}
                                 <a href="">Tov</a>
                                 {% endif %}
