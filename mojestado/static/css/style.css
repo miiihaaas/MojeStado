@@ -45,11 +45,15 @@ section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
 /* Slider */
 .slick-slide { margin: 0px 20px; }
 .logo-carousel { overflow: inherit; }
-.slick-slide img { width: 100%; }
+.slick-slide img { width: 100%; transition: all 0.4s; opacity: 0.5; }
+.slick-slide p { width: 100%; transition: all 0.2s; }
 .slick-slide .slide { text-align: center; }
+.slick-slide .slide a { text-decoration: none; color: #5e4432; }
+.slick-slide .slide a:hover img { transform: scale(1.3); opacity: 1 !important; }
+.slick-slide .slide a:hover p { transform: translateY(5px); font-size: 20px; }
 .slick-track::before, .slick-track::after { display: table; content: ''; }
 .slick-track::after { clear: both; }
-.slick-track { padding: 1rem 0; }
+.slick-track { padding: 1rem 0; height: 220px; overflow: hidden; }
 .slick-loading .slick-track { visibility: hidden; }
 .slick-slide.dragging img { pointer-events: none; }
 .slick-loading .slick-slide { visibility: hidden; }

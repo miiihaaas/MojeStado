@@ -33,7 +33,7 @@
                 <div class="container">
                     <section class="logo-carousel slider" data-arrows="true">
                         {% for category in animal_categories %}
-                        <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}">{{ category.animal_category_name }}</a></div>
+                        <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}"><p>{{ category.animal_category_name }}</p></a></div>
                         {% endfor %}
                     </section>
                 </div>
