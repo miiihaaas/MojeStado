@@ -111,8 +111,17 @@ def view_cart():
     if not animals and not products:
         flash('Korpa je prazna!', 'info')
         return render_template('view_cart.html', animals=[], products=[])
+    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
+    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
+    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
+    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
+    if not 'fattening' in session:
+        print(f'*** debug fattening nije u sessiji')
+        submit_button = 'nije_na_rate'
+    else:
+        submit_button = 'na_rate'
 
-    return render_template('view_cart.html', animals=animals, products=products)
+    return render_template('view_cart.html', animals=animals, products=products, submit_button=submit_button)
 
 
 @main.route('/remove_animal_from_cart/<int:animal_id>')

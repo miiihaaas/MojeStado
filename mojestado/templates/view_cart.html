@@ -96,8 +96,21 @@
                 </tbody>
             </table>
             {% endif %}
+            {% if submit_button == 'nije_na_rate' %}
+                <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>
+            {% else %}
+                {% if current_user.is_authenticated %}
+                    <p>link ka banci</p>
+                    <button class="btn btn-primary" type="submit">Kupi - rate</button>
+                {% else %}
+                    <p>link ka login/register strani</p>
+                    <a href="{{ url_for('user.login') }}" class="btn btn-primary">Kupi</a>
+                {% endif %}
+            {% endif %}
+
+
+
             {% if animals or products %}
-            <button class="btn btn-primary" type="submit">Kupi</button>
             <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">Obriši korpu</a>
             {% endif %}
         </form>
