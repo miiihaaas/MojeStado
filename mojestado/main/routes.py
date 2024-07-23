@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, session
 from flask import  render_template, flash, redirect, url_for, request
 from flask_login import current_user
 from mojestado import app
+from mojestado.main.functions import clear_cart_session
 from mojestado.models import FAQ, Animal, AnimalCategory, Product
 
 
@@ -152,7 +153,6 @@ def remove_product_from_cart(product_id):
 
 @main.route('/clear_cart')
 def clear_cart():
-    session.pop('animals', None)
-    session.pop('products', None)
+    clear_cart_session()
     flash('Korpa je obrisana!', 'info')
     return redirect(url_for('main.view_cart'))
