@@ -183,10 +183,10 @@
                             <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm_animal.farm_name }}</a></td>
                             <td>{{ animal.farm_animal.farm_city }}</td>
                             <td>
-                                <button class="btn btn-primary" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi Usluge (Modal)</button>
+                                <button class="btn btn-primary services-btn" data-bs-toggle="modal" data-bs-target="#servicesModal" data-animal-id="{{ animal.id }}">Kupi</button>
                                 <a class="btn btn-secondary" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
                                 {% if animal.intended_for == "tov" %}
-                                <a href="">Tov</a>
+                                <button class="btn btn-danger tov-btn" data-bs-toggle="modal" data-bs-target="#tovModal" data-animal-id="{{ animal.id }}" data-current-weight="{{ animal.current_weight }}">Tov</button>
                                 {% endif %}
                             </td>
                             
@@ -195,6 +195,83 @@
                     </tbody>
                 </table>
                 
+            </div>
+        </div>
+        <!-- Tov Modal -->
+        <div class="modal fade" id="tovModal" tabindex="-1" aria-labelledby="tovModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tovModalLabel">Detalji tova</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="tovForm" action="" method="POST">
+                            <input type="hidden" id="animalId" name="animalId">
+                            <div class="mb-3">
+                                <label for="currentWeight" class="form-label">Trenutna masa (kg)</label>
+                                <input type="number" class="form-control" id="currentWeight" name="currentWeight" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="desiredWeight" class="form-label">Željena masa (kg)</label>
+                                <input type="number" class="form-control" id="desiredWeight" name="desiredWeight" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="calculatedPrice" class="form-label">Preračunata cena tova (RSD)</label>
+                                <input type="number" class="form-control" id="calculatedPrice" name="calculatedPrice" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="feedingDays" class="form-label">Preračunat broj hranidbenih dana</label>
+                                <input type="number" class="form-control" id="feedingDays" name="feedingDays" readonly>
+                            </div>
+                            <div class="mb-3 form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="installmentPayment" name="installmentPayment">
+                                <label class="form-check-label" for="installmentPayment">Plaćanje na rate</label>
+                            </div>
+                            <div class="mb-3" id="installmentOptionsDiv" style="display: none;">
+                                <label for="installmentOptions" class="form-label">Broj rata</label>
+                                <select class="form-select" id="installmentOptions" name="installmentOptions">
+                                    <!-- Options will be dynamically populated -->
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="slaughterService" name="slaughterService">
+                                <label class="form-check-label" for="slaughterService">Klanje</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="processingService" name="processingService">
+                                <label class="form-check-label" for="processingService">Obrada</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Potvrdi tov</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Services Modal -->
+        <div class="modal fade" id="servicesModal" tabindex="-1" aria-labelledby="servicesModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="servicesModalLabel">Kupovina Usluga</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="servicesForm" action="" method="POST">
+                            <input type="hidden" id="serviceAnimalId" name="animalId">
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="slaughterService" name="slaughterService">
+                                <label class="form-check-label" for="slaughterService">Klanje</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="processingService" name="processingService">
+                                <label class="form-check-label" for="processingService">Obrada</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Kupi</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
         {% endif %}
@@ -242,6 +319,99 @@
         });
         $('.subcategory-filter').change(function() {
             $('form').submit();
+        });
+    });
+    $(document).ready(function() {
+        // ... (previous JavaScript remains the same) ...
+
+        // Tov modal functionality
+        $('.tov-btn').click(function() {
+            var animalId = $(this).data('animal-id');
+            var currentWeight = $(this).data('current-weight');
+            
+            $('#animalId').val(animalId);
+            $('#currentWeight').val(currentWeight);
+            
+            // Reset form
+            $('#tovForm')[0].reset();
+            $('#currentWeight').val(currentWeight);
+            $('#installmentOptionsDiv').hide();
+        });
+
+        $('#desiredWeight').on('input', function() {
+            calculateTovDetails();
+        });
+
+        $('#installmentPayment').change(function() {
+            if ($(this).is(':checked')) {
+                $('#installmentOptionsDiv').show();
+                populateInstallmentOptions();
+            } else {
+                $('#installmentOptionsDiv').hide();
+            }
+        });
+
+        function calculateTovDetails() {
+            var currentWeight = parseFloat($('#currentWeight').val());
+            var desiredWeight = parseFloat($('#desiredWeight').val());
+            
+            if (desiredWeight > currentWeight) {
+                var weightDifference = desiredWeight - currentWeight;
+                var pricePerKg = 100; // This should be replaced with actual price calculation logic
+                var daysPerKg = 2; // This should be replaced with actual days calculation logic
+
+                var calculatedPrice = weightDifference * pricePerKg;
+                var feedingDays = Math.ceil(weightDifference * daysPerKg);
+
+                $('#calculatedPrice').val(calculatedPrice.toFixed(2));
+                $('#feedingDays').val(feedingDays);
+
+                populateInstallmentOptions();
+            } else {
+                $('#calculatedPrice').val('');
+                $('#feedingDays').val('');
+                $('#installmentOptions').empty();
+            }
+        }
+
+        function populateInstallmentOptions() {
+            var feedingDays = parseInt($('#feedingDays').val());
+            var maxInstallments = Math.floor(feedingDays / 30);
+            var $select = $('#installmentOptions');
+            
+            $select.empty();
+            
+            for (var i = 2; i <= maxInstallments; i++) {
+                $select.append($('<option></option>').val(i).text(i));
+            }
+        }
+
+        // Form submission (placeholder)
+        $('#tovForm').submit(function(e) {
+            e.preventDefault();
+            // Here you would typically send the form data to the server
+            // For now, we'll just log it to the console
+            console.log($(this).serialize());
+            $('#tovModal').modal('hide');
+        });
+    });
+    $(document).ready(function() {
+        // Services modal functionality
+        $('.services-btn').click(function() {
+            var animalId = $(this).data('animal-id');
+            $('#serviceAnimalId').val(animalId);
+            
+            // Reset form
+            $('#servicesForm')[0].reset();
+        });
+
+        // Services form submission (placeholder)
+        $('#servicesForm').submit(function(e) {
+            e.preventDefault();
+            // Here you would typically send the form data to the server
+            // For now, we'll just log it to the console
+            console.log($(this).serialize());
+            $('#servicesModal').modal('hide');
         });
     });
 </script>

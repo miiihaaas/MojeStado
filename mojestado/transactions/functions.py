@@ -29,6 +29,8 @@ def create_invoice():
 
 
 def send_email():
+    # ako je na rate šaleje fakturu i uplatnice za sve rate
+    # ako nije na rate, šalje fakturu
     print('wip: Email poslat')
     pass
 
@@ -48,6 +50,6 @@ def deactivate_products():
         print(f'wip: deaktivirane kupljene proizvode')
         print(f'{product["id"]=}')
         product_to_edit = Product.query.get(product['id'])
-        product_to_edit.quantity = float(product_to_edit.quantity) - float(product['quantity'])
+        product_to_edit.quantity = float(product_to_edit.quantity) - float(product['quantity']) #! ne smanjuje količinu?
         db.session.commit()
     pass

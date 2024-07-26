@@ -27,7 +27,30 @@ def get_animal_categorization(category: str, intended_for: str, weight: float, s
         for category in categories:
             if category.subcategory == subcategory:
                 return category.id
+
+
+def calculate_number_of_fattening_days(animal):
+    current_weight = animal.current_weight
+    wanted_weight = animal.wanted_weight
     
+    calculated_weight = current_weight
+    number_of_fattening_days = 0
+    
+    categorization_id = animal.animal_categorization_id
+    categorization = AnimalCategorization.query.get(categorization_id)
+    while categorization.min_weight is not None:
+        while calculated_weight < categorization.max_weight:
+            average_weight_gain = (categorization.min_weight + categorization.max_weight) / 2
+            calculated_weight += average_weight_gain
+            if calculated_weight > wanted_weight:
+                categorization.min_weight = None    #! da bi postavio uslov da se prekine i spoljna petlja
+                break                               #! prekida se unutrašnja petlja
+            number_of_fattening_days += 1
+        else:
+            categorization_id += 1
+            categorization = AnimalCategorization.query.get(categorization_id)
+
+    return number_of_fattening_days
 
 
 @animals.route('/animal_categorization/<string:category>/<string:intended_for>/<float:weight>')
