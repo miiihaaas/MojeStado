@@ -39,7 +39,7 @@ def make_transaction():
     if successful_transaction:
         create_invoice()
         clear_cart_session()
-        #send_email() #! ovo samo ako je na rate
+        send_email()
         deactivate_animals()
         deactivate_products()
         flash('Transakcija je uspešno izvršena', 'success')
