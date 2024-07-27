@@ -54,6 +54,34 @@ def get():
         return 'nije postavljena ni jedna vrednost...'
     return f'vrednost koja je postavljena je: {session["value"]}. ovo je get vrednost.'
 
+@main.route('/add_fattening_to_chart', methods=['POST'])
+def add_fattening_to_chart():
+    print(f'**** {request.form=}')
+    animal_id = request.form.get('animalId')
+    animal = Animal.query.get_or_404(animal_id)
+    add_animal_to_cart(animal_id)
+    
+    if 'fattening' not in session:
+        session['fattening'] = []
+    
+    new_fattening = {column.name: getattr(animal, column.name) for column in animal.__table__.columns}
+    new_fattening['category'] = animal.animal_category.animal_category_name
+    new_fattening['subcategory'] = animal.animal_categorization.subcategory
+    new_fattening['race'] = animal.animal_race.animal_race_name
+    new_fattening['farm'] = animal.farm_animal.farm_name
+    new_fattening['location'] = animal.farm_animal.farm_city
+    new_fattening['current_weight'] = request.form.get('currentWeight')
+    new_fattening['desired_weight'] = request.form.get('desiredWeight')
+    new_fattening['fattening_price'] = request.form.get('calculatedPrice')
+    new_fattening['feeding_days'] = request.form.get('feedingDays')
+    new_fattening['installment_option'] = request.form.get('installmentOptions')
+    
+    session['fattening'].append(new_fattening)
+    session.modified = True
+    
+    flash('Uspesno ste dodali ovu zivotinju u korpu za tov!', 'success')
+    return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
+
 
 @main.route('/add_animal_to_cart/<int:animal_id>')
 def add_animal_to_cart(animal_id):
@@ -108,6 +136,7 @@ def add_product_to_cart(product_id):
 def view_cart():
     animals = session.get('animals', [])
     products = session.get('products', [])
+    fattening = session.get('fattening', [])
     
     if not animals and not products:
         flash('Korpa je prazna!', 'info')
@@ -122,7 +151,11 @@ def view_cart():
     else:
         submit_button = 'na_rate'
 
-    return render_template('view_cart.html', animals=animals, products=products, submit_button=submit_button)
+    return render_template('view_cart.html', 
+                            animals=animals, 
+                            products=products, 
+                            submit_button=submit_button, 
+                            fattening=fattening)
 
 
 @main.route('/remove_animal_from_cart/<int:animal_id>')
@@ -132,6 +165,7 @@ def remove_animal_from_cart(animal_id):
         return redirect(url_for('main.view_cart'))
     
     session['animals'] = [animal for animal in session['animals'] if animal['id'] != animal_id]
+    session['fattening'] = [animal for animal in session['fattening'] if animal['id'] != animal_id]
     session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
 
     flash('Uspesno ste obrisali ovu zivotinju iz korpe!', 'success')
@@ -145,6 +179,19 @@ def remove_product_from_cart(product_id):
         return redirect(url_for('main.view_cart'))
     
     session['products'] = [product for product in session['products'] if product['id'] != product_id]
+    session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
+
+    flash('Uspesno ste obrisali ovaj proizvod iz korpe!', 'success')
+    return redirect(url_for('main.view_cart'))
+
+
+@main.route('/remove_fattening_from_cart/<int:animal_id>')
+def remove_fattening_from_cart(animal_id):
+    if 'fattening' not in session:
+        flash('Korpa je prazna!', 'info')
+        return redirect(url_for('main.view_cart'))
+    
+    session['fattening'] = [animal for animal in session['fattening'] if animal['id'] != animal_id]
     session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
 
     flash('Uspesno ste obrisali ovaj proizvod iz korpe!', 'success')

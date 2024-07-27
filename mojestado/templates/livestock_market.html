@@ -206,7 +206,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="tovForm" action="" method="POST">
+                        <form id="tovForm" action="{{ url_for('main.add_fattening_to_chart') }}" method="POST">
                             <input type="hidden" id="animalId" name="animalId">
                             <div class="mb-3">
                                 <label for="currentWeight" class="form-label">Trenutna masa (kg)</label>
@@ -322,8 +322,6 @@
         });
     });
     $(document).ready(function() {
-        // ... (previous JavaScript remains the same) ...
-
         // Tov modal functionality
         $('.tov-btn').click(function() {
             var animalId = $(this).data('animal-id');
@@ -336,10 +334,19 @@
             $('#tovForm')[0].reset();
             $('#currentWeight').val(currentWeight);
             $('#installmentOptionsDiv').hide();
+            $('#installmentPayment').prop('disabled', true);
+            // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
+            $('#tovForm button[type="submit"]').prop('disabled', true);
+            
+            // Resetujemo polja za izračunate vrednosti
+            $('#calculatedPrice').val('');
+            $('#feedingDays').val('');
+            $('#desiredWeight').val('');
         });
 
         $('#desiredWeight').on('input', function() {
             calculateTovDetails();
+            updateConfirmButton();
         });
 
         $('#installmentPayment').change(function() {
@@ -352,27 +359,73 @@
         });
 
         function calculateTovDetails() {
+            var animalId = $('#animalId').val();
             var currentWeight = parseFloat($('#currentWeight').val());
             var desiredWeight = parseFloat($('#desiredWeight').val());
             
             if (desiredWeight > currentWeight) {
-                var weightDifference = desiredWeight - currentWeight;
-                var pricePerKg = 100; // This should be replaced with actual price calculation logic
-                var daysPerKg = 2; // This should be replaced with actual days calculation logic
-
-                var calculatedPrice = weightDifference * pricePerKg;
-                var feedingDays = Math.ceil(weightDifference * daysPerKg);
-
-                $('#calculatedPrice').val(calculatedPrice.toFixed(2));
-                $('#feedingDays').val(feedingDays);
-
-                populateInstallmentOptions();
+                // AJAX poziv ka backend-u
+                $.ajax({
+                    url: "{{ url_for('animals.calculate_fattening_details') }}",
+                    method: "POST",
+                    data: {
+                        animalId: animalId,
+                        currentWeight: currentWeight,
+                        desiredWeight: desiredWeight
+                    },
+                    success: function(response) {
+                        $('#calculatedPrice').val(response.fattening_price.toFixed(2));
+                        $('#feedingDays').val(response.number_of_fattening_days);
+                        
+                        // Omogući/onemogući switch za plaćanje na rate na osnovu broja dana hranjenja
+                        var feedingDays = parseInt(response.number_of_fattening_days);
+                        if (feedingDays >= 60) {
+                            $('#installmentPayment').prop('disabled', false);
+                        } else {
+                            disableInstallmentPayment();
+                        }
+                        
+                        populateInstallmentOptions();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Greška pri izračunavanju detalja tova:", error);
+                        resetTovDetails();
+                    }
+                });
             } else {
-                $('#calculatedPrice').val('');
-                $('#feedingDays').val('');
-                $('#installmentOptions').empty();
+                resetTovDetails();
+            }
+            updateConfirmButton();
+        }
+
+        function disableInstallmentPayment() {
+            $('#installmentPayment').prop('disabled', true);
+            $('#installmentPayment').prop('checked', false);
+            $('#installmentOptionsDiv').hide();
+        }
+
+        function resetTovDetails() {
+            $('#calculatedPrice').val('');
+            $('#feedingDays').val('');
+            $('#installmentOptions').empty();
+            disableInstallmentPayment();
+        }
+        function updateConfirmButton() {
+            var currentWeight = parseFloat($('#currentWeight').val());
+            var desiredWeight = parseFloat($('#desiredWeight').val());
+            var confirmButton = $('#tovForm button[type="submit"]');
+
+            if (isNaN(desiredWeight) || desiredWeight <= currentWeight) {
+                confirmButton.prop('disabled', true);
+            } else {
+                confirmButton.prop('disabled', false);
             }
         }
+        // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri učitavanju stranice
+        $('#tovForm button[type="submit"]').prop('disabled', true);
+
+        // Inicijalno onemogući dugme Potvrdi
+        updateConfirmButton();
 
         function populateInstallmentOptions() {
             var feedingDays = parseInt($('#feedingDays').val());
@@ -387,13 +440,13 @@
         }
 
         // Form submission (placeholder)
-        $('#tovForm').submit(function(e) {
-            e.preventDefault();
-            // Here you would typically send the form data to the server
-            // For now, we'll just log it to the console
-            console.log($(this).serialize());
-            $('#tovModal').modal('hide');
-        });
+        // $('#tovForm').submit(function(e) {
+        //     e.preventDefault();
+        //     // Here you would typically send the form data to the server
+        //     // For now, we'll just log it to the console
+        //     console.log($(this).serialize());
+        //     $('#tovModal').modal('hide');
+        // });
     });
     $(document).ready(function() {
         // Services modal functionality
