@@ -124,6 +124,7 @@ class AnimalCategorization(db.Model):
     max_weight = db.Column(db.Float, nullable=True)  # max tezina za podklasu tova
     min_weight_gain = db.Column(db.Float, nullable=True)  # min tezina za podklasu priplodova
     max_weight_gain = db.Column(db.Float, nullable=True)  # max tezina za podklasu priplodova
+    fattening_price = db.Column(db.Float, nullable=False)  # cena za podklasu tova
     animals = db.relationship('Animal', back_populates='animal_categorization', lazy=True)
 
 

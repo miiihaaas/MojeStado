@@ -96,6 +96,45 @@
                 </tbody>
             </table>
             {% endif %}
+            {% if fattening %}
+            <h3>Fattening</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID životinje</th>
+                        <th>Kategorija</th>
+                        <th>Potkategorija</th>
+                        <th>Rasa</th>
+                        <th>Pol (ne prikazuje se kod živine)</th>
+                        <th>Trenutna masa</th>
+                        <th>Željena masa</th>
+                        <th>Cena tova</th>
+                        <th>Br hranidbenih dana</th>
+                        <th>Br rata</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for animal in fattening %}
+                    <tr>
+                        <td>{{ animal.animal_id }}</td>
+                        <td>{{ animal.category }}</td>
+                        <td>{{ animal.subcategory }}</td>
+                        <td>{{ animal.race }}</td>
+                        <td>{{ animal.animal_gender }}</td>
+                        <td>{{ animal.current_weight }}</td>
+                        <td>{{ animal.desired_weight }}</td>
+                        <td>{{ animal.fattening_price }}</td>
+                        <td>{{ animal.feeding_days }}</td>
+                        <td>{{ animal.installment_option }}</td>
+                        <td>
+                            <a href="{{ url_for('main.remove_fattening_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
             {% if submit_button == 'nije_na_rate' %}
                 <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>
             {% else %}
