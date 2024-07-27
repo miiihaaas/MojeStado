@@ -258,7 +258,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="servicesForm" action="" method="POST">
+                        <form id="servicesForm" action="{{ url_for('main.add_services_to_chart') }}" method="POST">
                             <input type="hidden" id="serviceAnimalId" name="animalId">
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="slaughterService" name="slaughterService">
@@ -459,13 +459,13 @@
         });
 
         // Services form submission (placeholder)
-        $('#servicesForm').submit(function(e) {
-            e.preventDefault();
-            // Here you would typically send the form data to the server
-            // For now, we'll just log it to the console
-            console.log($(this).serialize());
-            $('#servicesModal').modal('hide');
-        });
+        // $('#servicesForm').submit(function(e) {
+        //     e.preventDefault();
+        //     // Here you would typically send the form data to the server
+        //     // For now, we'll just log it to the console
+        //     console.log($(this).serialize());
+        //     $('#servicesModal').modal('hide');
+        // });
     });
 </script>
 {% endblock %}
