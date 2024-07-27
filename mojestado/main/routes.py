@@ -54,6 +54,34 @@ def get():
         return 'nije postavljena ni jedna vrednost...'
     return f'vrednost koja je postavljena je: {session["value"]}. ovo je get vrednost.'
 
+
+@main.route('/add_services_to_chart', methods=['POST'])
+def add_services_to_chart():
+    print(f'**** {request.form=}')
+    animal_id = request.form.get('animalId')
+    animal = Animal.query.get_or_404(animal_id)
+    add_animal_to_cart(animal_id)
+    
+    if 'services' not in session:
+        session['services'] = []
+    if request.form.get('slaughterService') == 'on' or request.form.get('processingService') == 'on':
+        new_service = {column.name: getattr(animal, column.name) for column in animal.__table__.columns}
+        new_service['category'] = animal.animal_category.animal_category_name
+        new_service['subcategory'] = animal.animal_categorization.subcategory
+        new_service['race'] = animal.animal_race.animal_race_name
+        new_service['farm'] = animal.farm_animal.farm_name
+        new_service['location'] = animal.farm_animal.farm_city
+        if request.form.get('slaughterService') == 'on':
+            new_service['slaughterService'] = True
+            new_service['slaughterPrice'] = animal.current_weight * 100 #! ispravi da umesto 100 bude cena definisana na farmi
+        if request.form.get('processingService') == 'on':
+            new_service['processingService'] = True
+            new_service['processingPrice'] = animal.current_weight * 100 #! ispravi da umesto 100 bude cena definisana na farmi
+        session['services'].append(new_service)
+    flash('Uspesno ste dodali uslugu u korpu!', 'success')
+    return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
+
+
 @main.route('/add_fattening_to_chart', methods=['POST'])
 def add_fattening_to_chart():
     print(f'**** {request.form=}')
@@ -137,6 +165,7 @@ def view_cart():
     animals = session.get('animals', [])
     products = session.get('products', [])
     fattening = session.get('fattening', [])
+    services = session.get('services', [])
     
     if not animals and not products:
         flash('Korpa je prazna!', 'info')
@@ -155,7 +184,8 @@ def view_cart():
                             animals=animals, 
                             products=products, 
                             submit_button=submit_button, 
-                            fattening=fattening)
+                            fattening=fattening,
+                            services=services)
 
 
 @main.route('/remove_animal_from_cart/<int:animal_id>')
