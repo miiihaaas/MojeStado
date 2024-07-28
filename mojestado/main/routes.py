@@ -60,6 +60,20 @@ def add_services_to_chart():
     print(f'**** {request.form=}')
     animal_id = request.form.get('animalId')
     animal = Animal.query.get_or_404(animal_id)
+    # povlači cene svih usluga za farmu iz koje se kupuje životinja
+    farm_services = animal.farm_animal.services
+    print(f'**** {farm_services=}')
+    
+    if request.form.get('slaughterService') == 'on':
+        slaughter_service = farm_services['klanje']
+        print(f'**** {slaughter_service=}')
+        slaughter_service_price_per_kg = slaughter_service[f'{animal.animal_category_id}']
+        print(f'**** {slaughter_service_price_per_kg=}')
+    if request.form.get('processingService') == 'on':
+        processing_service = farm_services['obrada']
+        processing_service_price_per_kg = processing_service[f'{animal.animal_category_id}']
+    
+    
     add_animal_to_cart(animal_id)
     
     if 'services' not in session:
@@ -73,10 +87,14 @@ def add_services_to_chart():
         new_service['location'] = animal.farm_animal.farm_city
         if request.form.get('slaughterService') == 'on':
             new_service['slaughterService'] = True
-            new_service['slaughterPrice'] = animal.current_weight * 100 #! ispravi da umesto 100 bude cena definisana na farmi
+            new_service['slaughterPrice'] = float(animal.current_weight) * float(slaughter_service_price_per_kg)
+        else:
+            new_service['slaughterPrice'] = 0
         if request.form.get('processingService') == 'on':
             new_service['processingService'] = True
-            new_service['processingPrice'] = animal.current_weight * 100 #! ispravi da umesto 100 bude cena definisana na farmi
+            new_service['processingPrice'] = float(animal.current_weight) * float(processing_service_price_per_kg)
+        else:
+            new_service['processingPrice'] = 0
         session['services'].append(new_service)
     flash('Uspesno ste dodali uslugu u korpu!', 'success')
     return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
@@ -102,7 +120,12 @@ def add_fattening_to_chart():
     new_fattening['desired_weight'] = request.form.get('desiredWeight')
     new_fattening['fattening_price'] = request.form.get('calculatedPrice')
     new_fattening['feeding_days'] = request.form.get('feedingDays')
-    new_fattening['installment_option'] = request.form.get('installmentOptions')
+    print(f'**** {request.form.get("installmentPayment")=}')
+    if request.form.get('installmentPayment') == 'on':
+        new_fattening['installment_options'] = request.form.get('installmentOptions')
+    else:
+        new_fattening['installment_options'] = 1
+    new_fattening['installment_price'] = request.form.get('installmentPrice')
     
     session['fattening'].append(new_fattening)
     session.modified = True
@@ -178,7 +201,13 @@ def view_cart():
         print(f'*** debug fattening nije u sessiji')
         submit_button = 'nije_na_rate'
     else:
-        submit_button = 'na_rate'
+        print(f'{session["fattening"]=}')
+        for f in session['fattening']:
+            if int(f['installment_options']) > 1:
+                submit_button = 'na_rate'
+                break
+            else:
+                submit_button = 'nije_na_rate'
 
     return render_template('view_cart.html', 
                             animals=animals, 
@@ -196,6 +225,7 @@ def remove_animal_from_cart(animal_id):
     
     session['animals'] = [animal for animal in session['animals'] if animal['id'] != animal_id]
     session['fattening'] = [animal for animal in session['fattening'] if animal['id'] != animal_id]
+    session['services'] = [animal for animal in session['services'] if animal['id'] != animal_id]
     session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
 
     flash('Uspesno ste obrisali ovu zivotinju iz korpe!', 'success')
@@ -222,6 +252,19 @@ def remove_fattening_from_cart(animal_id):
         return redirect(url_for('main.view_cart'))
     
     session['fattening'] = [animal for animal in session['fattening'] if animal['id'] != animal_id]
+    session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
+
+    flash('Uspesno ste obrisali ovaj proizvod iz korpe!', 'success')
+    return redirect(url_for('main.view_cart'))
+
+
+@main.route('/remove_service_from_cart/<int:service_id>')
+def remove_service_from_cart(service_id):
+    if 'services' not in session:
+        flash('Korpa je prazna!', 'info')
+        return redirect(url_for('main.view_cart'))
+    
+    session['services'] = [service for service in session['services'] if service['id'] != service_id]
     session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
 
     flash('Uspesno ste obrisali ovaj proizvod iz korpe!', 'success')

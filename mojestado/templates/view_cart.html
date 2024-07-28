@@ -3,6 +3,82 @@
 <section>
     <div class="container">
         <form action="{{ url_for('transactions.make_transaction')}}" method="POST">
+            {% if products %}
+            <h3>Gotovi proizvodi</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Kategorija proizvoda</th>
+                        <th>Podkategorija proizvoda</th>
+                        <th>Sektor proizvoda</th>
+                        <th>Naziv</th>
+                        <th>Količina</th>
+                        <th>Jedinica mere</th>
+                        <th>Cena po jedinici mere</th>
+                        <th>Cena</th>
+                        <th>Ukupna cena</th>
+                        <th>PG</th>
+                        <th>lokacija</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <input type="hidden" name="product_category_{{ loop.index }}" value="{{ product.category }}">
+                            {{ product.category }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_subcategory_{{ loop.index }}" value="{{ product.subcategory }}">
+                            {{ product.subcategory }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_section_{{ loop.index }}" value="{{ product.section }}">
+                            {{ product.section }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_name_{{ loop.index }}" value="{{ product.product_name }}">
+                            {{ product.product_name }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_quantity_{{ loop.index }}" value="{{ product.quantity }}">
+                            {{ product.quantity }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_unit_{{ loop.index }}" value="{{ product.unit_of_measurement }}">
+                            {{ product.unit_of_measurement }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_price_per_unit_{{ loop.index }}" value="{{ product.product_price_per_unit }}">
+                            {{ product.product_price_per_unit }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_price_per_kg_{{ loop.index }}" value="{{ product.product_price_per_kg }}">
+                            {{ product.product_price_per_kg }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_total_price_{{ loop.index }}" value="{{ product.total_price }}">
+                            {{ product.total_price }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_farm_{{ loop.index }}" value="{{ product.farm }}">
+                            <a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm }}</a>
+                        </td>
+                        <td>
+                            <input type="hidden" name="product_location_{{ loop.index }}" value="{{ product.location }}">
+                            {{ product.location }}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('main.remove_product_from_cart', product_id=product.id)}}">Ukloni iz korpe</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <input type="hidden" name="product_count" value="{{ products|length }}">
+            {% endif %}
+
             {% if animals %}
             <h3>Živa vaga</h3>
             <table class="table table-striped">
@@ -28,74 +104,138 @@
                 <tbody>
                     {% for animal in animals %}
                     <tr>
-                        <td>{{ animal.animal_id }}</td>
-                        <td>{{ animal.category }}</td>
-                        <td>{{ animal.subcategory }}</td>
-                        <td>{{ animal.race }}</td>
-                        <td>{{ animal.animal_gender }}</td>
-                        <td>{{ animal.current_weight }}</td>
-                        <td>{{ animal.price_per_kg }}</td>
-                        <td>{{ animal.total_price }}</td>
-                        <td>{{ animal.insured }}</td>
-                        <td>{{ animal.organic_animal }}</td>
-                        <td>test</td>
+                        <td>
+                            <input type="hidden" name="animal_id_{{ loop.index }}" value="{{ animal.animal_id }}">
+                            {{ animal.animal_id }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_category_{{ loop.index }}" value="{{ animal.category }}">
+                            {{ animal.category }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_subcategory_{{ loop.index }}" value="{{ animal.subcategory }}">
+                            {{ animal.subcategory }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_race_{{ loop.index }}" value="{{ animal.race }}">
+                            {{ animal.race }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_gender_{{ loop.index }}" value="{{ animal.animal_gender }}">
+                            {{ animal.animal_gender }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_weight_{{ loop.index }}" value="{{ animal.current_weight }}">
+                            {{ animal.current_weight }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_price_per_kg_{{ loop.index }}" value="{{ animal.price_per_kg }}">
+                            {{ animal.price_per_kg }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_total_price_{{ loop.index }}" value="{{ animal.total_price }}">
+                            {{ animal.total_price }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_insured_{{ loop.index }}" value="{{ animal.insured }}">
+                            {{ animal.insured }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_organic_{{ loop.index }}" value="{{ animal.organic_animal }}">
+                            {{ animal.organic_animal }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_services_{{ loop.index }}" value="test">
+                            test
+                        </td>
                         <td>
                             {% if animal.cardboard %}
+                            <input type="hidden" name="animal_cardboard_{{ loop.index }}" value="{{ animal.cardboard }}">
                             <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
                             {% endif %}
                         </td>
-                        <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a></td>
-                        <td>{{ animal.location }}</td>
+                        <td>
+                            <input type="hidden" name="animal_farm_{{ loop.index }}" value="{{ animal.farm }}">
+                            <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a>
+                        </td>
+                        <td>
+                            <input type="hidden" name="animal_location_{{ loop.index }}" value="{{ animal.location }}">
+                            {{ animal.location }}
+                        </td>
                         <td>
                             <a href="{{ url_for('main.remove_animal_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
                         </td>
-                        
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <input type="hidden" name="animal_count" value="{{ animals|length }}">
             {% endif %}
-            {% if products %}
-            <h3>Gotovi proizvodi</h3>
+            
+            {% if services %}
+            <h3>Usluge</h3>
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Kategorija proizvoda</th>
-                        <th>Podkategorija proizvoda</th>
-                        <th>Sektor proizvoda</th>
-                        <th>Naziv</th>
-                        <th>Količina</th>
-                        <th>Jedinica mere</th>
-                        <th>Cena po jedinici mere</th>
+                        <th>ID životinje</th>
+                        <th>Kategorija</th>
+                        <th>Potkategorija</th>
+                        <th>Rasa</th>
+                        <th>Pol</th>
+                        <th>Trenutna masa</th>
+                        <th>Usluga</th>
                         <th>Cena</th>
-                        <th>Ukupna cena</th>
-                        <th>PG</th>
-                        <th>lokacija</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for product in products %}
+                    {% for animal in services %}
                     <tr>
-                        <td>{{ product.category }}</td>
-                        <td>{{ product.subcategory }}</td>
-                        <td>{{ product.section }}</td>
-                        <td>{{ product.product_name }}</td>
-                        <td>{{ product.quantity }}</td>
-                        <td>{{ product.unit_of_measurement }}</td>
-                        <td>{{ product.product_price_per_unit }}</td>
-                        <td>{{ product.product_price_per_kg }}</td>
-                        <td>{{ product.total_price }}</td>
-                        <td><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm }}</a></td>
-                        <td>{{ product.location }}</td>
                         <td>
-                            <a href="{{ url_for('main.remove_product_from_cart', product_id=product.id)}}">Ukloni iz korpe</a>
+                            <input type="hidden" name="service_animal_id_{{ loop.index }}" value="{{ animal.animal_id }}">
+                            {{ animal.animal_id }}
                         </td>
+                        <td>
+                            <input type="hidden" name="service_category_{{ loop.index }}" value="{{ animal.category }}">
+                            {{ animal.category }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="service_subcategory_{{ loop.index }}" value="{{ animal.subcategory }}">
+                            {{ animal.subcategory }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="service_race_{{ loop.index }}" value="{{ animal.race }}">
+                            {{ animal.race }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="service_gender_{{ loop.index }}" value="{{ animal.animal_gender }}">
+                            {{ animal.animal_gender }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="service_weight_{{ loop.index }}" value="{{ animal.current_weight }}">
+                            {{ animal.current_weight }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="service_type_{{ loop.index }}" value="{{ 'Klanje' if animal.slaughterService else '' }}{{ 'Obrada' if animal.processingService else '' }}">
+                            {% if animal.slaughterService %}
+                            Klanje
+                            {% endif %}
+                            {% if animal.processingService %}
+                            Obrada
+                            {% endif %}
+                        </td>
+                        <td>
+                            <input type="hidden" name="service_price_{{ loop.index }}" value="{{ animal.slaughterPrice + animal.processingPrice }}">
+                            {{ animal.slaughterPrice + animal.processingPrice }}
+                        </td>
+                        <td><a href="{{ url_for('main.remove_service_from_cart', service_id=animal.id)}}">Ukloni iz korpe</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <input type="hidden" name="service_count" value="{{ services|length }}">
             {% endif %}
+
             {% if fattening %}
             <h3>Tov</h3>
             <table class="table table-striped">
@@ -117,16 +257,46 @@
                 <tbody>
                     {% for animal in fattening %}
                     <tr>
-                        <td>{{ animal.animal_id }}</td>
-                        <td>{{ animal.category }}</td>
-                        <td>{{ animal.subcategory }}</td>
-                        <td>{{ animal.race }}</td>
-                        <td>{{ animal.animal_gender }}</td>
-                        <td>{{ animal.current_weight }}</td>
-                        <td>{{ animal.desired_weight }}</td>
-                        <td>{{ animal.fattening_price }}</td>
-                        <td>{{ animal.feeding_days }}</td>
-                        <td>{{ animal.installment_option }}</td>
+                        <td>
+                            <input type="hidden" name="fattening_animal_id_{{ loop.index }}" value="{{ animal.animal_id }}">
+                            {{ animal.animal_id }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_category_{{ loop.index }}" value="{{ animal.category }}">
+                            {{ animal.category }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_subcategory_{{ loop.index }}" value="{{ animal.subcategory }}">
+                            {{ animal.subcategory }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_race_{{ loop.index }}" value="{{ animal.race }}">
+                            {{ animal.race }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_gender_{{ loop.index }}" value="{{ animal.animal_gender }}">
+                            {{ animal.animal_gender }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_current_weight_{{ loop.index }}" value="{{ animal.current_weight }}">
+                            {{ animal.current_weight }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_desired_weight_{{ loop.index }}" value="{{ animal.desired_weight }}">
+                            {{ animal.desired_weight }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_price_{{ loop.index }}" value="{{ animal.fattening_price }}">
+                            {{ animal.fattening_price }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_feeding_days_{{ loop.index }}" value="{{ animal.feeding_days }}">
+                            {{ animal.feeding_days }}
+                        </td>
+                        <td>
+                            <input type="hidden" name="fattening_installment_options_{{ loop.index }}" value="{{ animal.installment_options }}">
+                            {{ animal.installment_options }}
+                        </td>
                         <td>
                             <a href="{{ url_for('main.remove_fattening_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
                         </td>
@@ -134,55 +304,19 @@
                     {% endfor %}
                 </tbody>
             </table>
-            {% endif %}
-            {% if services %}
-            <h3>Usluge</h3>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID životinje</th>
-                        <th>Kategorija</th>
-                        <th>Potkategorija</th>
-                        <th>Rasa</th>
-                        <th>Pol</th>
-                        <th>Trenutna masa</th>
-                        <th>Usluga</th>
-                        <th>Cena</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for animal in services %}
-                    <tr>
-                        <td>{{ animal.animal_id }}</td>
-                        <td>{{ animal.category }}</td>
-                        <td>{{ animal.subcategory }}</td>
-                        <td>{{ animal.race }}</td>
-                        <td>{{ animal.animal_gender }}</td>
-                        <td>{{ animal.current_weight }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
             {% endif %}
 
-
-
-            {% if submit_button == 'nije_na_rate' %}
-                <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>
+            {% if current_user.is_authenticated %}
+            <button class="btn btn-primary" type="submit">Kupi - rate/odjednom</button>
             {% else %}
-                {% if current_user.is_authenticated %}
-                    <p>link ka banci</p>
-                    <button class="btn btn-primary" type="submit">Kupi - rate</button>
+                {% if submit_button == 'nije_na_rate' %}
+                    <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>
                 {% else %}
-                    <p>link ka login/register strani</p>
-                    <a href="{{ url_for('users.login') }}" class="btn btn-primary">Kupi</a>
+                    <a href="{{ url_for('users.login') }}" class="btn btn-primary">Kupi - login/na rate</a>
                 {% endif %}
             {% endif %}
-
-
-
-            {% if animals or products %}
+            {% if animals or products or services or fattening %}
             <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">Obriši korpu</a>
             {% endif %}
         </form>
