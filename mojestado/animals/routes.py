@@ -33,12 +33,17 @@ def calculate_number_and_price_of_fattening_days(animal):
     current_weight = float(animal.current_weight)
     wanted_weight = animal.wanted_weight
     
+    print(f'{current_weight=}; {wanted_weight=}')
+    print(f'{animal}')
+    
     calculated_weight = current_weight
     number_of_fattening_days = 0
     fattening_price = 0
     
     categorization_id = animal.animal_categorization_id
+    print(f'{categorization_id=}')
     categorization = AnimalCategorization.query.get(categorization_id)
+    print(f'{categorization.min_weight=}')
     while categorization.min_weight is not None:
         while calculated_weight < categorization.max_weight:
             average_weight_gain = (categorization.min_weight_gain + categorization.max_weight_gain) / 2
@@ -68,6 +73,7 @@ def calculate_fattening_details():
     animal.wanted_weight = desired_weight
     
     number_of_fattening_days, fattening_price = calculate_number_and_price_of_fattening_days(animal)
+    print(f'{number_of_fattening_days=}; {fattening_price=}')
     return jsonify({'number_of_fattening_days': number_of_fattening_days, 'fattening_price': fattening_price})
 
 

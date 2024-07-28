@@ -13,6 +13,7 @@ transactions = Blueprint('transactions', __name__)
 @transactions.route('/make_transaction', methods=['GET', 'POST'])
 def make_transaction():
     form_object = request.form
+    print(f'*/*/*{form_object=}')
     if not current_user.is_authenticated:
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
@@ -38,7 +39,7 @@ def make_transaction():
     successful_transaction = check_bank_balance()
     if successful_transaction:
         create_invoice()
-        clear_cart_session()
+        # clear_cart_session()
         send_email()
         deactivate_animals()
         deactivate_products()
