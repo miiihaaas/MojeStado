@@ -83,6 +83,3 @@ def animal_categorization(category, intended_for, weight):
     subcategory = get_animal_categorization(category, intended_for, weight)
     return f'preračunata podkategorija je: {subcategory}'
 
-@animals.route('/animals_list')
-def animals_list():
-    return render_template('animals_list.html', title='Animals')
