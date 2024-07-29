@@ -308,10 +308,10 @@
             {% endif %}
 
             {% if current_user.is_authenticated %}
-            <button class="btn btn-primary" type="submit">Kupi - rate/odjednom</button>
+            <button class="btn btn-primary" type="submit" onclick="prepareCartData()">Kupi - rate/odjednom</button>
             {% else %}
                 {% if submit_button == 'nije_na_rate' %}
-                    <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>
+                    <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary" onclick="prepareCartData()">Kupi - bez rata</a>
                 {% else %}
                     <a href="{{ url_for('users.login') }}" class="btn btn-primary">Kupi - login/na rate</a>
                 {% endif %}
@@ -322,5 +322,94 @@
         </form>
     </div>
 </section>
+
+<script>
+function prepareCartData() {
+    let cartData = {
+        products: [],
+        animals: [],
+        services: [],
+        fattening: []
+    };
+
+    // Collect product data
+    {% if products %}
+        {% for product in products %}
+            cartData.products.push({
+                category: "{{ product.category }}",
+                subcategory: "{{ product.subcategory }}",
+                section: "{{ product.section }}",
+                product_name: "{{ product.product_name }}",
+                quantity: "{{ product.quantity }}",
+                unit_of_measurement: "{{ product.unit_of_measurement }}",
+                product_price_per_unit: "{{ product.product_price_per_unit }}",
+                product_price_per_kg: "{{ product.product_price_per_kg }}",
+                total_price: "{{ product.total_price }}",
+                farm: "{{ product.farm }}",
+                farm_id: "{{ product.farm_id }}",
+                location: "{{ product.location }}"
+            });
+        {% endfor %}
+    {% endif %}
+
+    // Collect animal data
+    {% if animals %}
+        {% for animal in animals %}
+            cartData.animals.push({
+                animal_id: "{{ animal.animal_id }}",
+                category: "{{ animal.category }}",
+                subcategory: "{{ animal.subcategory }}",
+                race: "{{ animal.race }}",
+                animal_gender: "{{ animal.animal_gender }}",
+                current_weight: "{{ animal.current_weight }}",
+                price_per_kg: "{{ animal.price_per_kg }}",
+                total_price: "{{ animal.total_price }}",
+                insured: "{{ animal.insured }}",
+                organic_animal: "{{ animal.organic_animal }}",
+                cardboard: "{{ animal.cardboard }}",
+                farm: "{{ animal.farm }}",
+                farm_id: "{{ animal.farm_id }}",
+                location: "{{ animal.location }}"
+            });
+        {% endfor %}
+    {% endif %}
+
+    // Collect service data
+    {% if services %}
+        {% for animal in services %}
+            cartData.services.push({
+                animal_id: "{{ animal.animal_id }}",
+                category: "{{ animal.category }}",
+                subcategory: "{{ animal.subcategory }}",
+                race: "{{ animal.race }}",
+                animal_gender: "{{ animal.animal_gender }}",
+                current_weight: "{{ animal.current_weight }}",
+                service_type: "{{ 'Klanje' if animal.slaughterService else '' }}{{ 'Obrada' if animal.processingService else '' }}",
+                service_price: "{{ animal.slaughterPrice + animal.processingPrice }}"
+            });
+        {% endfor %}
+    {% endif %}
+
+    // Collect fattening data
+    {% if fattening %}
+        {% for animal in fattening %}
+            cartData.fattening.push({
+                animal_id: "{{ animal.animal_id }}",
+                category: "{{ animal.category }}",
+                subcategory: "{{ animal.subcategory }}",
+                race: "{{ animal.race }}",
+                animal_gender: "{{ animal.animal_gender }}",
+                current_weight: "{{ animal.current_weight }}",
+                desired_weight: "{{ animal.desired_weight }}",
+                fattening_price: "{{ animal.fattening_price }}",
+                feeding_days: "{{ animal.feeding_days }}",
+                installment_options: "{{ animal.installment_options }}"
+            });
+        {% endfor %}
+    {% endif %}
+
+    document.getElementById('cart_data').value = JSON.stringify(cartData);
+}
+</script>
 
 {% endblock %}
