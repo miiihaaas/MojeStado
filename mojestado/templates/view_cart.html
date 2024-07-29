@@ -5,7 +5,7 @@
         <form action="{{ url_for('transactions.make_transaction')}}" method="POST">
             {% if products %}
             <h3>Gotovi proizvodi</h3>
-            <table class="table table-striped">
+            <table class="table table-striped" id="productsTable">
                 <thead>
                     <tr>
                         <th>Kategorija proizvoda</th>
@@ -26,47 +26,36 @@
                     {% for product in products %}
                     <tr>
                         <td>
-                            <input type="hidden" name="product_category_{{ loop.index }}" value="{{ product.category }}">
                             {{ product.category }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_subcategory_{{ loop.index }}" value="{{ product.subcategory }}">
                             {{ product.subcategory }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_section_{{ loop.index }}" value="{{ product.section }}">
                             {{ product.section }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_name_{{ loop.index }}" value="{{ product.product_name }}">
                             {{ product.product_name }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_quantity_{{ loop.index }}" value="{{ product.quantity }}">
                             {{ product.quantity }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_unit_{{ loop.index }}" value="{{ product.unit_of_measurement }}">
                             {{ product.unit_of_measurement }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_price_per_unit_{{ loop.index }}" value="{{ product.product_price_per_unit }}">
                             {{ product.product_price_per_unit }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_price_per_kg_{{ loop.index }}" value="{{ product.product_price_per_kg }}">
                             {{ product.product_price_per_kg }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_total_price_{{ loop.index }}" value="{{ product.total_price }}">
                             {{ product.total_price }}
                         </td>
                         <td>
-                            <input type="hidden" name="product_farm_{{ loop.index }}" value="{{ product.farm }}">
                             <a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm }}</a>
                         </td>
                         <td>
-                            <input type="hidden" name="product_location_{{ loop.index }}" value="{{ product.location }}">
                             {{ product.location }}
                         </td>
                         <td>
@@ -81,7 +70,7 @@
 
             {% if animals %}
             <h3>Živa vaga</h3>
-            <table class="table table-striped">
+            <table class="table table-striped" id="animalsTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -105,61 +94,47 @@
                     {% for animal in animals %}
                     <tr>
                         <td>
-                            <input type="hidden" name="animal_id_{{ loop.index }}" value="{{ animal.animal_id }}">
                             {{ animal.animal_id }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_category_{{ loop.index }}" value="{{ animal.category }}">
                             {{ animal.category }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_subcategory_{{ loop.index }}" value="{{ animal.subcategory }}">
                             {{ animal.subcategory }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_race_{{ loop.index }}" value="{{ animal.race }}">
                             {{ animal.race }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_gender_{{ loop.index }}" value="{{ animal.animal_gender }}">
                             {{ animal.animal_gender }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_weight_{{ loop.index }}" value="{{ animal.current_weight }}">
                             {{ animal.current_weight }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_price_per_kg_{{ loop.index }}" value="{{ animal.price_per_kg }}">
                             {{ animal.price_per_kg }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_total_price_{{ loop.index }}" value="{{ animal.total_price }}">
                             {{ animal.total_price }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_insured_{{ loop.index }}" value="{{ animal.insured }}">
                             {{ animal.insured }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_organic_{{ loop.index }}" value="{{ animal.organic_animal }}">
                             {{ animal.organic_animal }}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_services_{{ loop.index }}" value="test">
                             test
                         </td>
                         <td>
                             {% if animal.cardboard %}
-                            <input type="hidden" name="animal_cardboard_{{ loop.index }}" value="{{ animal.cardboard }}">
                             <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
                             {% endif %}
                         </td>
                         <td>
-                            <input type="hidden" name="animal_farm_{{ loop.index }}" value="{{ animal.farm }}">
                             <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a>
                         </td>
                         <td>
-                            <input type="hidden" name="animal_location_{{ loop.index }}" value="{{ animal.location }}">
                             {{ animal.location }}
                         </td>
                         <td>
@@ -174,7 +149,7 @@
             
             {% if services %}
             <h3>Usluge</h3>
-            <table class="table table-striped">
+            <table class="table table-striped" id="servicesTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -192,31 +167,24 @@
                     {% for animal in services %}
                     <tr>
                         <td>
-                            <input type="hidden" name="service_animal_id_{{ loop.index }}" value="{{ animal.animal_id }}">
                             {{ animal.animal_id }}
                         </td>
                         <td>
-                            <input type="hidden" name="service_category_{{ loop.index }}" value="{{ animal.category }}">
                             {{ animal.category }}
                         </td>
                         <td>
-                            <input type="hidden" name="service_subcategory_{{ loop.index }}" value="{{ animal.subcategory }}">
                             {{ animal.subcategory }}
                         </td>
                         <td>
-                            <input type="hidden" name="service_race_{{ loop.index }}" value="{{ animal.race }}">
                             {{ animal.race }}
                         </td>
                         <td>
-                            <input type="hidden" name="service_gender_{{ loop.index }}" value="{{ animal.animal_gender }}">
                             {{ animal.animal_gender }}
                         </td>
                         <td>
-                            <input type="hidden" name="service_weight_{{ loop.index }}" value="{{ animal.current_weight }}">
                             {{ animal.current_weight }}
                         </td>
                         <td>
-                            <input type="hidden" name="service_type_{{ loop.index }}" value="{{ 'Klanje' if animal.slaughterService else '' }}{{ 'Obrada' if animal.processingService else '' }}">
                             {% if animal.slaughterService %}
                             Klanje
                             {% endif %}
@@ -225,7 +193,6 @@
                             {% endif %}
                         </td>
                         <td>
-                            <input type="hidden" name="service_price_{{ loop.index }}" value="{{ animal.slaughterPrice + animal.processingPrice }}">
                             {{ animal.slaughterPrice + animal.processingPrice }}
                         </td>
                         <td><a href="{{ url_for('main.remove_service_from_cart', service_id=animal.id)}}">Ukloni iz korpe</a></td>
@@ -238,7 +205,7 @@
 
             {% if fattening %}
             <h3>Tov</h3>
-            <table class="table table-striped">
+            <table class="table table-striped" id="fatteningTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -258,43 +225,33 @@
                     {% for animal in fattening %}
                     <tr>
                         <td>
-                            <input type="hidden" name="fattening_animal_id_{{ loop.index }}" value="{{ animal.animal_id }}">
                             {{ animal.animal_id }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_category_{{ loop.index }}" value="{{ animal.category }}">
                             {{ animal.category }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_subcategory_{{ loop.index }}" value="{{ animal.subcategory }}">
                             {{ animal.subcategory }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_race_{{ loop.index }}" value="{{ animal.race }}">
                             {{ animal.race }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_gender_{{ loop.index }}" value="{{ animal.animal_gender }}">
                             {{ animal.animal_gender }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_current_weight_{{ loop.index }}" value="{{ animal.current_weight }}">
                             {{ animal.current_weight }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_desired_weight_{{ loop.index }}" value="{{ animal.desired_weight }}">
                             {{ animal.desired_weight }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_price_{{ loop.index }}" value="{{ animal.fattening_price }}">
                             {{ animal.fattening_price }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_feeding_days_{{ loop.index }}" value="{{ animal.feeding_days }}">
                             {{ animal.feeding_days }}
                         </td>
                         <td>
-                            <input type="hidden" name="fattening_installment_options_{{ loop.index }}" value="{{ animal.installment_options }}">
                             {{ animal.installment_options }}
                         </td>
                         <td>
@@ -307,11 +264,14 @@
             <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
             {% endif %}
 
+            <input type="hidden" id="cartData" name="cartData" value="">
+
+            
             {% if current_user.is_authenticated %}
-            <button class="btn btn-primary" type="submit" onclick="prepareCartData()">Kupi - rate/odjednom</button>
+            <button class="btn btn-primary" type="submit">Kupi - rate/odjednom</button>
             {% else %}
                 {% if submit_button == 'nije_na_rate' %}
-                    <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary" onclick="prepareCartData()">Kupi - bez rata</a>
+                    <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>
                 {% else %}
                     <a href="{{ url_for('users.login') }}" class="btn btn-primary">Kupi - login/na rate</a>
                 {% endif %}
@@ -323,93 +283,60 @@
     </div>
 </section>
 
-<script>
-function prepareCartData() {
-    let cartData = {
-        products: [],
-        animals: [],
-        services: [],
-        fattening: []
-    };
-
-    // Collect product data
-    {% if products %}
-        {% for product in products %}
-            cartData.products.push({
-                category: "{{ product.category }}",
-                subcategory: "{{ product.subcategory }}",
-                section: "{{ product.section }}",
-                product_name: "{{ product.product_name }}",
-                quantity: "{{ product.quantity }}",
-                unit_of_measurement: "{{ product.unit_of_measurement }}",
-                product_price_per_unit: "{{ product.product_price_per_unit }}",
-                product_price_per_kg: "{{ product.product_price_per_kg }}",
-                total_price: "{{ product.total_price }}",
-                farm: "{{ product.farm }}",
-                farm_id: "{{ product.farm_id }}",
-                location: "{{ product.location }}"
-            });
-        {% endfor %}
-    {% endif %}
-
-    // Collect animal data
-    {% if animals %}
-        {% for animal in animals %}
-            cartData.animals.push({
-                animal_id: "{{ animal.animal_id }}",
-                category: "{{ animal.category }}",
-                subcategory: "{{ animal.subcategory }}",
-                race: "{{ animal.race }}",
-                animal_gender: "{{ animal.animal_gender }}",
-                current_weight: "{{ animal.current_weight }}",
-                price_per_kg: "{{ animal.price_per_kg }}",
-                total_price: "{{ animal.total_price }}",
-                insured: "{{ animal.insured }}",
-                organic_animal: "{{ animal.organic_animal }}",
-                cardboard: "{{ animal.cardboard }}",
-                farm: "{{ animal.farm }}",
-                farm_id: "{{ animal.farm_id }}",
-                location: "{{ animal.location }}"
-            });
-        {% endfor %}
-    {% endif %}
-
-    // Collect service data
-    {% if services %}
-        {% for animal in services %}
-            cartData.services.push({
-                animal_id: "{{ animal.animal_id }}",
-                category: "{{ animal.category }}",
-                subcategory: "{{ animal.subcategory }}",
-                race: "{{ animal.race }}",
-                animal_gender: "{{ animal.animal_gender }}",
-                current_weight: "{{ animal.current_weight }}",
-                service_type: "{{ 'Klanje' if animal.slaughterService else '' }}{{ 'Obrada' if animal.processingService else '' }}",
-                service_price: "{{ animal.slaughterPrice + animal.processingPrice }}"
-            });
-        {% endfor %}
-    {% endif %}
-
-    // Collect fattening data
-    {% if fattening %}
-        {% for animal in fattening %}
-            cartData.fattening.push({
-                animal_id: "{{ animal.animal_id }}",
-                category: "{{ animal.category }}",
-                subcategory: "{{ animal.subcategory }}",
-                race: "{{ animal.race }}",
-                animal_gender: "{{ animal.animal_gender }}",
-                current_weight: "{{ animal.current_weight }}",
-                desired_weight: "{{ animal.desired_weight }}",
-                fattening_price: "{{ animal.fattening_price }}",
-                feeding_days: "{{ animal.feeding_days }}",
-                installment_options: "{{ animal.installment_options }}"
-            });
-        {% endfor %}
-    {% endif %}
-
-    document.getElementById('cart_data').value = JSON.stringify(cartData);
-}
-</script>
-
 {% endblock %}
+
+{% block scripts %}
+<script>
+    console.log("Cart script loading...");
+    
+    function updateCartData() {
+        console.log("Updating cart data...");
+        
+        var cartData = {
+            products: [],
+            animals: [],
+            services: [],
+            fattening: []
+        };
+    
+        function extractTableData(tableId, dataArray) {
+            var table = document.getElementById(tableId);
+            if (table) {
+                var rows = table.getElementsByTagName('tr');
+                for (var i = 1; i < rows.length; i++) {
+                    var cells = rows[i].getElementsByTagName('td');
+                    var rowData = {};
+                    for (var j = 0; j < cells.length - 1; j++) {
+                        var key = table.getElementsByTagName('th')[j].innerText.toLowerCase().replace(/ /g, '_').replace(/\(.*?\)/g, '').trim();
+                        rowData[key] = cells[j].innerText.trim();
+                    }
+                    dataArray.push(rowData);
+                }
+            }
+        }
+    
+        try {
+            extractTableData('productsTable', cartData.products);
+            extractTableData('animalsTable', cartData.animals);
+            extractTableData('servicesTable', cartData.services);
+            extractTableData('fatteningTable', cartData.fattening);
+    
+            document.getElementById('cartData').value = JSON.stringify(cartData);
+            console.log("Cart data updated:", cartData);
+        } catch (error) {
+            console.error("Error updating cart data:", error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM fully loaded");
+        updateCartData();
+    });
+    
+    document.getElementById('cartForm').addEventListener('submit', function(e) {
+        console.log("Form submission started");
+        updateCartData();
+        console.log("Form being submitted with cart data:", document.getElementById('cartData').value);
+    });
+</script>
+{% endblock scripts %}
