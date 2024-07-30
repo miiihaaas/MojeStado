@@ -29,6 +29,8 @@ def create_invoice():
 
 
 def send_email(user, form_object):
+    cart_data = form_object.get('cartData')
+    print(f'{cart_data=}')
     # ako je na rate šaleje fakturu i uplatnice za sve rate
     # ako nije na rate, šalje fakturu
     print('wip: Email poslat')
