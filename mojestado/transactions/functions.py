@@ -29,12 +29,18 @@ def create_invoice():
 
 
 def send_email(user, form_object):
+    to = user.email
+    subject = "Potvrda transakcije"
     cart_data = form_object.get('cartData')
-    print(f'{cart_data=}')
-    # ako je na rate šaleje fakturu i uplatnice za sve rate
-    # ako nije na rate, šalje fakturu
+    body = f"Poštovani/a {user.name},\n\nVaša transakcija je uspešno izvršena.\n\nDetalji kupovine:\n{cart_data}\n\nHvala na poverenju!"
+    
+    print(f"To: {to}")
+    print(f"Subject: {subject}")
+    print(f"Body: {body}")
+    
+    # TODO: Implement actual email sending logic here
+    # For now, we'll just print the email details
     print('wip: Email poslat')
-    pass
 
 
 def deactivate_animals():
