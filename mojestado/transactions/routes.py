@@ -27,6 +27,9 @@ def make_transaction():
             #! ako ima u db mejl sa tipom guest, onda treba napraviti fakturu i stavke u fakturi
         elif not user:
             print(f'nema ovaj mejl u db, kreirati usera sa tipom guest i napraviti fakturu i stavke u fakturi')
+            if not form_object.get('email'):
+                flash ('Niste uneli email', 'danger')
+                return redirect(url_for('transactions.guest_form'))
             user_id = register_guest_user(form_object)
             print(f'{user_id=}')
             user = User.query.get(user_id)
@@ -39,10 +42,10 @@ def make_transaction():
     successful_transaction = check_bank_balance()
     if successful_transaction:
         create_invoice()
-        # clear_cart_session()
         send_email()
         deactivate_animals()
         deactivate_products()
+        # clear_cart_session()
         flash('Transakcija je uspešno izvršena', 'success')
     else:
         flash('Transakcija nije uspešno izvršena', 'danger')
