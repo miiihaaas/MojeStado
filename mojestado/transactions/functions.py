@@ -28,7 +28,7 @@ def create_invoice():
     pass
 
 
-def send_email():
+def send_email(user, form_object):
     # ako je na rate šaleje fakturu i uplatnice za sve rate
     # ako nije na rate, šalje fakturu
     print('wip: Email poslat')

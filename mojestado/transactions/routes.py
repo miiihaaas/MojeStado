@@ -42,7 +42,7 @@ def make_transaction():
     successful_transaction = check_bank_balance()
     if successful_transaction:
         create_invoice()
-        send_email()
+        send_email(user, form_object)
         deactivate_animals()
         deactivate_products()
         # clear_cart_session()
