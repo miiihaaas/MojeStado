@@ -268,7 +268,8 @@
 
             
             {% if current_user.is_authenticated %}
-            <button class="btn btn-primary" type="submit">Kupi - rate/odjednom</button>
+            <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>
+            <!-- <button class="btn btn-primary" type="submit">Kupi - rate/odjednom</button> -->
             {% else %}
                 {% if submit_button == 'nije_na_rate' %}
                     <a href="{{ url_for('transactions.guest_form') }}" class="btn btn-primary">Kupi - bez rata</a>

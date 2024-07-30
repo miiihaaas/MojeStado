@@ -4,6 +4,7 @@ from flask_login import current_user
 from mojestado import app, db
 from mojestado.main.functions import clear_cart_session
 from mojestado.models import Animal, User
+from mojestado.transactions.form import GuestForm
 from mojestado.transactions.functions import register_guest_user, create_invoice, send_email, check_bank_balance, deactivate_animals, deactivate_products
 
 
@@ -27,9 +28,6 @@ def make_transaction():
             #! ako ima u db mejl sa tipom guest, onda treba napraviti fakturu i stavke u fakturi
         elif not user:
             print(f'nema ovaj mejl u db, kreirati usera sa tipom guest i napraviti fakturu i stavke u fakturi')
-            if not form_object.get('email'):
-                flash ('Niste uneli email', 'danger')
-                return redirect(url_for('transactions.guest_form'))
             user_id = register_guest_user(form_object)
             print(f'{user_id=}')
             user = User.query.get(user_id)
@@ -55,5 +53,20 @@ def make_transaction():
 
 @transactions.route('/guest_form', methods=['GET', 'POST'])
 def guest_form():
+    form = GuestForm()
     
-    return render_template('guest_form.html')
+    if current_user.is_authenticated:
+        form.email.data = current_user.email
+        form.name.data = current_user.name
+        form.surname.data = current_user.surname
+        form.address.data = current_user.address
+        form.city.data = current_user.city
+        form.zip_code.data = current_user.zip_code
+        
+    if form.validate_on_submit():
+        # Process the form data
+        # For example, you might create a new transaction or save the guest information
+        flash('Kupovina uspešno obavljena!', 'success')
+        return redirect(url_for('transactions.make_transaction'))
+    
+    return render_template('guest_form.html', form=form)
