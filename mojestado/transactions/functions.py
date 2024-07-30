@@ -98,6 +98,6 @@ def deactivate_products():
         print(f'wip: deaktivirane kupljene proizvode')
         print(f'{product["id"]=}')
         product_to_edit = Product.query.get(product['id'])
-        product_to_edit.quantity = float(product_to_edit.quantity) - float(product['quantity']) #! ne smanjuje količinu?
+        product_to_edit.quantity = float(product_to_edit.quantity) - float(product['quantity'])
         db.session.commit()
     pass
