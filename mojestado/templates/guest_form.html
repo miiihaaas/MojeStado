@@ -3,59 +3,36 @@
 <section>
     <div class="container">
         <h1>Kupovina - forma gosta</h1>
-        <form action="{{ url_for('transactions.make_transaction')}}" method="post">
+        <form action="{{ url_for('transactions.guest_form') }}" method="post">
+            {{ form.hidden_tag() }}
             <div class="form-group">
-                <legend class="" for="email">Mejl</legend>
-                {% if current_user.is_authenticated %}
-                <input class="form-control" id="email" name="email" type="email" value="{{current_user.email}}" disabled>
-                {% else %}
-                <input class="form-control" id="email" name="email" type="email">
-                {% endif %}
+                {{ form.email.label(class="") }}
+                {{ form.email(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
             <div class="form-group">
-                <legend class="" for="name">Ime</legend>
-                {% if current_user.is_authenticated %}
-                <input class="form-control" id="name" name="name" type="text" value="{{current_user.name}}" disabled>
-                {% else %}
-                <input class="form-control" id="name" name="name" type="text">
-                {% endif %}
+                {{ form.name.label(class="") }}
+                {{ form.name(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
             <div class="form-group">
-                <legend class="" for="surname">Prezime</legend>
-                {% if current_user.is_authenticated %}
-                <input class="form-control" id="surname" name="surname" type="text" value="{{current_user.surname}}" disabled>
-                {% else %}
-                <input class="form-control" id="surname" name="surname" type="text">
-                {% endif %}
+                {{ form.surname.label(class="") }}
+                {{ form.surname(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
             <div class="form-group">
-                <legend class="" for="address">Adresa</legend>
-                {% if current_user.is_authenticated %}
-                <input class="form-control" id="address" name="address" type="text" value="{{current_user.address}}" disabled>
-                {% else %}
-                <input class="form-control" id="address" name="address" type="text">
-                {% endif %}
+                {{ form.address.label(class="") }}
+                {{ form.address(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
             <div class="form-group">
-                <legend class="" for="city">Mesto</legend>
-                {% if current_user.is_authenticated %}
-                <input class="form-control" id="city" name="city" type="text" value="{{current_user.city}}" disabled>
-                {% else %}
-                <input class="form-control" id="city" name="city" type="text">
-                {% endif %}
+                {{ form.city.label(class="") }}
+                {{ form.city(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
             <div class="form-group">
-                <legend class="" for="zip_code">ZIP</legend>
-                {% if current_user.is_authenticated %}
-                <input class="form-control" id="zip_code" name="zip_code" type="text" value="{{current_user.zip_code}}" disabled>
-                {% else %}
-                <input class="form-control" id="zip_code" name="zip_code" type="text">
-                {% endif %}
+                {{ form.zip_code.label(class="") }}
+                {{ form.zip_code(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
             <hr>
             <div class="form-group">
-                <legend class="" for="bank_info">Podaci bankovne kartice</legend>
-                <input class="form-control" id="bank_info" name="bank_info" type="text">
+                {{ form.bank_info.label(class="") }}
+                {{ form.bank_info(class="form-control") }}
             </div>
             <button class="btn btn-primary" type="submit">Kupi</button>
         </form>

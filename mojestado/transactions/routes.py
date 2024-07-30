@@ -4,6 +4,7 @@ from flask_login import current_user
 from mojestado import app, db
 from mojestado.main.functions import clear_cart_session
 from mojestado.models import Animal, User
+from mojestado.transactions.form import GuestForm
 from mojestado.transactions.functions import register_guest_user, create_invoice, send_email, check_bank_balance, deactivate_animals, deactivate_products
 
 
@@ -39,10 +40,10 @@ def make_transaction():
     successful_transaction = check_bank_balance()
     if successful_transaction:
         create_invoice()
-        # clear_cart_session()
-        send_email()
+        send_email(user, form_object)
         deactivate_animals()
         deactivate_products()
+        # clear_cart_session()
         flash('Transakcija je uspešno izvršena', 'success')
     else:
         flash('Transakcija nije uspešno izvršena', 'danger')
@@ -52,5 +53,20 @@ def make_transaction():
 
 @transactions.route('/guest_form', methods=['GET', 'POST'])
 def guest_form():
+    form = GuestForm()
     
-    return render_template('guest_form.html')
+    if current_user.is_authenticated:
+        form.email.data = current_user.email
+        form.name.data = current_user.name
+        form.surname.data = current_user.surname
+        form.address.data = current_user.address
+        form.city.data = current_user.city
+        form.zip_code.data = current_user.zip_code
+        
+    if form.validate_on_submit():
+        # Process the form data
+        # For example, you might create a new transaction or save the guest information
+        flash('Kupovina uspešno obavljena!', 'success')
+        return redirect(url_for('transactions.make_transaction'))
+    
+    return render_template('guest_form.html', form=form)
