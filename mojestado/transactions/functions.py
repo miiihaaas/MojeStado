@@ -4,7 +4,6 @@ import hashlib
 import random
 from flask_login import current_user
 from flask import session
-import requests
 import string
 import urllib.parse
 
