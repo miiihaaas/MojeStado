@@ -41,4 +41,3 @@ class GuestForm(FlaskForm):
     def validate_bank_info(self, bank_info):
         if len(bank_info.data) < 2:
             raise ValidationError('Podaci bankovne kartice moraju sadržati bar dva slova.')
-    bank_info = StringField('Podaci bankovne kartice', validators=[DataRequired()])

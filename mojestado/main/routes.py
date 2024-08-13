@@ -1,9 +1,13 @@
+import datetime
+import os
+import random
 from flask import Blueprint, jsonify, session
 from flask import  render_template, flash, redirect, url_for, request
 from flask_login import current_user
-from mojestado import app
-from mojestado.main.functions import clear_cart_session
+from mojestado import app, db
+from mojestado.main.functions import clear_cart_session, define_next_invoice_number, get_cart_total
 from mojestado.models import FAQ, Animal, AnimalCategory, Product
+from mojestado.transactions.functions import calculate_hash, generate_random_string
 
 
 main = Blueprint('main', __name__)
@@ -109,6 +113,8 @@ def add_fattening_to_chart():
     
     if 'fattening' not in session:
         session['fattening'] = []
+    # Pronađi da li životinja sa ovim ID-jem već postoji u fattening listi
+    existing_fattening = next((f for f in session['fattening'] if f['id'] == int(animal_id)), None)
     
     new_fattening = {column.name: getattr(animal, column.name) for column in animal.__table__.columns}
     new_fattening['category'] = animal.animal_category.animal_category_name
@@ -127,10 +133,16 @@ def add_fattening_to_chart():
         new_fattening['installment_options'] = 1
     new_fattening['installment_price'] = request.form.get('installmentPrice')
     
-    session['fattening'].append(new_fattening)
+    if existing_fattening:
+        # Ažuriraj postojeću stavku
+        existing_fattening.update(new_fattening)
+        flash('Uspesno ste ažurirali ovu zivotinju u korpi za tov!', 'success')
+    else:
+        # Dodaj novu stavku
+        session['fattening'].append(new_fattening)
+        flash('Uspesno ste dodali ovu zivotinju u korpu za tov!', 'success')
     session.modified = True
     
-    flash('Uspesno ste dodali ovu zivotinju u korpu za tov!', 'success')
     return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
 
 
@@ -190,85 +202,150 @@ def view_cart():
     fattening = session.get('fattening', [])
     services = session.get('services', [])
     
+    print(f'*** {session=}')
+    
     if not animals and not products:
         flash('Korpa je prazna!', 'info')
         return render_template('view_cart.html', animals=[], products=[])
-    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
-    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
-    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
-    #! ovo treba prilogoditi, ukoliko se u korpi nalazi tov koji se prodaje na rate - možda sutra ne bude fattening već neki drugi naziv
-    if not 'fattening' in session:
-        print(f'*** debug fattening nije u sessiji')
-        submit_button = 'nije_na_rate'
-    else:
-        print(f'{session["fattening"]=}')
+    submit_button = 'nije_na_rate'  # Pretpostavljena vrednost
+    if session.get('fattening'):
         for f in session['fattening']:
-            if int(f['installment_options']) > 1:
+            if int(f.get('installment_options', 0)) > 1:
                 submit_button = 'na_rate'
                 break
-            else:
-                submit_button = 'nije_na_rate'
 
+    company_id = os.getenv('PAYSPOT_COMPANY_ID')
+    new_invoice_id = define_next_invoice_number()
+    rnd = generate_random_string()
+    merchant_order_id = f'MS-{new_invoice_id}'
+    merchant_order_amount, installment_total = get_cart_total()
+    print(f'*** ** *{merchant_order_amount=}')
+    print(f'*** ** *{installment_total=}')
+    current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    secret_key = 'R1W4tPq30OU'  # Proverite da li je ovo ispravan ključ dobijen od PaySpot sistema
+    
+    plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
+    hash_value = calculate_hash(plaintext)
+    
+    print(f'* view_chart: {rnd=}')
+    print(f'* view_chart: {hash_value=}')
+    
     return render_template('view_cart.html', 
                             animals=animals, 
                             products=products, 
                             submit_button=submit_button, 
                             fattening=fattening,
-                            services=services)
+                            services=services,
+                            company_id=company_id,
+                            rnd=rnd,
+                            hash_value=hash_value, 
+                            merchant_order_id=merchant_order_id, 
+                            merchant_order_amount=merchant_order_amount,
+                            installment_total=installment_total,
+                            current_date=current_date)
 
 
 @main.route('/remove_animal_from_cart/<int:animal_id>')
 def remove_animal_from_cart(animal_id):
-    if 'animals' not in session:
-        flash('Korpa je prazna!', 'info')
-        return redirect(url_for('main.view_cart'))
-    
-    session['animals'] = [animal for animal in session['animals'] if animal['id'] != animal_id]
-    session['fattening'] = [animal for animal in session['fattening'] if animal['id'] != animal_id]
-    session['services'] = [animal for animal in session['services'] if animal['id'] != animal_id]
-    session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
+    try:
+        # Provera da li je sesija inicijalizovana
+        if 'animals' not in session or not isinstance(session.get('animals'), list):
+            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            return redirect(url_for('main.view_cart'))
 
-    flash('Uspesno ste obrisali ovu zivotinju iz korpe!', 'success')
+        # Uklanjanje životinje iz sesije 'animals'
+        session['animals'] = [animal for animal in session['animals'] if animal.get('id') != animal_id]
+
+        # Provera i uklanjanje životinje iz sesije 'fattening'
+        if 'fattening' in session and isinstance(session.get('fattening'), list):
+            session['fattening'] = [animal for animal in session['fattening'] if animal.get('id') != animal_id]
+
+        # Provera i uklanjanje životinje iz sesije 'services'
+        if 'services' in session and isinstance(session.get('services'), list):
+            session['services'] = [animal for animal in session['services'] if animal.get('id') != animal_id]
+
+        # Obezbeđivanje da Flask zna da je sesija promenjena
+        session.modified = True
+
+        flash('Uspešno ste obrisali ovu životinju iz korpe!', 'success')
+    
+    except Exception as e:
+        flash(f'Došlo je do greške: {str(e)}', 'danger')
+
     return redirect(url_for('main.view_cart'))
+
 
 
 @main.route('/remove_product_from_cart/<int:product_id>')
 def remove_product_from_cart(product_id):
-    if 'products' not in session:
-        flash('Korpa je prazna!', 'info')
-        return redirect(url_for('main.view_cart'))
-    
-    session['products'] = [product for product in session['products'] if product['id'] != product_id]
-    session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
+    try:
+        # Provera da li 'products' postoji u sesiji i da li je lista
+        if 'products' not in session or not isinstance(session.get('products'), list):
+            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            return redirect(url_for('main.view_cart'))
 
-    flash('Uspesno ste obrisali ovaj proizvod iz korpe!', 'success')
+        # Uklanjanje proizvoda iz sesije 'products'
+        session['products'] = [product for product in session['products'] if product.get('id') != product_id]
+
+        # Obezbeđivanje da Flask zna da je sesija promenjena
+        session.modified = True
+
+        flash('Uspešno ste obrisali ovaj proizvod iz korpe!', 'success')
+    
+    except Exception as e:
+        flash(f'Došlo je do greške: {str(e)}', 'danger')
+
     return redirect(url_for('main.view_cart'))
+
 
 
 @main.route('/remove_fattening_from_cart/<int:animal_id>')
 def remove_fattening_from_cart(animal_id):
-    if 'fattening' not in session:
-        flash('Korpa je prazna!', 'info')
-        return redirect(url_for('main.view_cart'))
-    
-    session['fattening'] = [animal for animal in session['fattening'] if animal['id'] != animal_id]
-    session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
+    try:
+        # Provera da li 'fattening' postoji u sesiji i da li je lista
+        if 'fattening' not in session or not isinstance(session.get('fattening'), list):
+            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            return redirect(url_for('main.view_cart'))
 
-    flash('Uspesno ste obrisali ovaj proizvod iz korpe!', 'success')
+        # Uklanjanje životinje iz sesije 'fattening'
+        session['fattening'] = [animal for animal in session['fattening'] if animal.get('id') != animal_id]
+        animal = Animal.query.get(animal_id)
+        animal.wanted_weight = None
+        db.session.commit()
+
+        # Obezbeđivanje da Flask zna da je sesija promenjena
+        session.modified = True
+
+        flash('Uspešno ste obrisali ovaj proizvod iz korpe!', 'success')
+    
+    except Exception as e:
+        flash(f'Došlo je do greške: {str(e)}', 'danger')
+
     return redirect(url_for('main.view_cart'))
+
 
 
 @main.route('/remove_service_from_cart/<int:service_id>')
 def remove_service_from_cart(service_id):
-    if 'services' not in session:
-        flash('Korpa je prazna!', 'info')
-        return redirect(url_for('main.view_cart'))
-    
-    session['services'] = [service for service in session['services'] if service['id'] != service_id]
-    session.modified = True  # Obezbeđuje da Flask zna da je sesija promenjena
+    try:
+        # Provera da li 'services' postoji u sesiji i da li je lista
+        if 'services' not in session or not isinstance(session.get('services'), list):
+            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            return redirect(url_for('main.view_cart'))
 
-    flash('Uspesno ste obrisali ovaj proizvod iz korpe!', 'success')
+        # Uklanjanje usluge iz sesije 'services'
+        session['services'] = [service for service in session['services'] if service.get('id') != service_id]
+
+        # Obezbeđivanje da Flask zna da je sesija promenjena
+        session.modified = True
+
+        flash('Uspešno ste obrisali ovu uslugu iz korpe!', 'success')
+    
+    except Exception as e:
+        flash(f'Došlo je do greške: {str(e)}', 'danger')
+
     return redirect(url_for('main.view_cart'))
+
 
 
 @main.route('/clear_cart')

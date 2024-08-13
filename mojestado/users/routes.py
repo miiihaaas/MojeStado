@@ -85,6 +85,7 @@ def register_user(): #! Registracija korisnika
 @users.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        print(f'već je ulogovan korisnik : {current_user=}')
         return redirect(url_for('main.home'))
     form = LoginForm()
     if form.validate_on_submit():
