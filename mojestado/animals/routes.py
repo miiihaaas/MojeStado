@@ -44,20 +44,25 @@ def calculate_number_and_price_of_fattening_days(animal):
     print(f'{categorization_id=}')
     categorization = AnimalCategorization.query.get(categorization_id)
     print(f'{categorization.min_weight=}')
-    while categorization.min_weight is not None:
+    
+    stop_fattening = False  # Privremeni marker za prekidanje spoljašnje petlje
+    
+    while categorization and categorization.min_weight is not None:
         while calculated_weight < categorization.max_weight:
             average_weight_gain = (categorization.min_weight_gain + categorization.max_weight_gain) / 2
             calculated_weight += average_weight_gain
             if calculated_weight > wanted_weight:
-                categorization.min_weight = None    #! da bi postavio uslov da se prekine i spoljna petlja
-                break                               #! prekida se unutrašnja petlja
+                stop_fattening = True  # Postavite marker za prekid spoljašnje petlje
+                break  # Prekid unutrašnje petlje
             number_of_fattening_days += 1
             fattening_price += categorization.fattening_price
-        else:
-            categorization_id += 1
-            categorization = AnimalCategorization.query.get(categorization_id)
+        if stop_fattening:
+            break  # Prekid spoljašnje petlje
+        categorization_id += 1
+        categorization = AnimalCategorization.query.get(categorization_id)
 
     return number_of_fattening_days, fattening_price
+
 
 
 @animals.route('/calculate_fattening_details', methods=['POST'])

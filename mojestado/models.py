@@ -179,10 +179,15 @@ class ProductSection(db.Model):
 
 
 
-# class Debt(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     transactions = db.relationship('Transaction', backref='transaction_debt', lazy=True) #!
-#     pass
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    datetime = db.Column(db.DateTime, nullable=False)
+    invoice_number = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #! kupac
+    status = db.Column(db.String(20), nullable=False) #! unconfirmed, confirmed
+    
+    invoice_items = db.relationship('InvoiceItems', backref='invoice_items_invoice', lazy=True) #!
+    pass
 
 
 # class Payment(db.Model):
@@ -191,11 +196,14 @@ class ProductSection(db.Model):
 #     pass
 
 
-# class Transaction(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     debt_id = db.Column(db.Integer, db.ForeignKey('debt.id'), nullable=False)
-#     payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
-#     pass
+class InvoiceItems(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
+    invoice_item_details = db.Column(db.String(200), nullable=False)
+    invoice_item_type = db.Column(db.Integer, nullable=False) #! 1 = product, 2 = animal, 3 = service, 4 = fattening
+    # payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
+    pass
 
 
 class FAQ(db.Model):

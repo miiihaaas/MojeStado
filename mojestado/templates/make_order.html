@@ -1,9 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
 <section>
-    <div class="container">
-        <h1>Pregled korpe</h1>
-        <!-- <form action="" method="POST"> -->
+    <div class="row">
+        <div class="col-8">
+            <h1>Pregled korpe</h1>
             {% if products %}
             <h3>Gotovi proizvodi</h3>
             <table class="table table-striped" id="productsTable">
@@ -84,11 +84,8 @@
                         <th>Ukupna (rsd)</th>
                         <th>Osigurano</th>
                         <th>Organsko</th>
-                        <th>Usluge</th>
-                        <th>Karton grla</th>
                         <th>PG</th>
                         <th>Lokacija</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,21 +122,11 @@
                             {{ animal.organic_animal }}
                         </td>
                         <td>
-                            test
-                        </td>
-                        <td>
-                            {% if animal.cardboard %}
-                            <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a>
+                            {{ animal.farm }}
+                            <!-- <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a> -->
                         </td>
                         <td>
                             {{ animal.location }}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('main.remove_animal_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -196,7 +183,6 @@
                         <td>
                             {{ animal.slaughterPrice + animal.processingPrice }}
                         </td>
-                        <td><a href="{{ url_for('main.remove_service_from_cart', service_id=animal.id)}}">Ukloni iz korpe</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -255,90 +241,56 @@
                         <td>
                             {{ animal.installment_options }}
                         </td>
-                        <td>
-                            <a href="{{ url_for('main.remove_fattening_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
-                        </td>
                     </tr>
                     {% endfor %}
+
                 </tbody>
             </table>
             <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
             {% endif %}
+        </div>
+        <div class="col-4">
+            <h1>Info o kupcu</h1>
+            <p>{{ user.name }}</p>
+            <p>{{ user.surname }}</p>
+            <p>{{ user.email }}</p>
+            <p>{{ user.address }}</p>
+            <p>{{ user.city }}</p>
+        </div>
+    </div>
+    <div>
+        {% if merchant_order_amount %}
+        <legend>Ukupno za uplatu: </legend> 
+        <input type="text" class="form-control" value="{{ merchant_order_amount }} rsd" disabled>
+        {% endif %}
+        {% if installment_total %}
+        <legend>Ukupno na rate: </legend>
+        <input type="text" class="form-control" value="{{ installment_total }} rsd" disabled>
+        {% endif %}
+        <input type="hidden" id="cartData" name="cartData" value="">
 
-            {% if merchant_order_amount %}
-            <legend>Ukupno za uplatu: </legend> 
-            <input type="text" class="form-control" value="{{ merchant_order_amount }} rsd" disabled>
-            {% endif %}
-            {% if installment_total %}
-            <legend>Ukupno na rate: </legend>
-            <input type="text" class="form-control" value="{{ installment_total }} rsd" disabled>
-            {% endif %}
-            <input type="hidden" id="cartData" name="cartData" value="">
+        <form id="paymentForm" 
+            method="post" 
+            action='https://test.nsgway.rs:50009/api/ecommerce/submit' 
+            target="output_frame">
+            <input type="hidden" name="companyId" value="{{ company_id }}" />
+            <input type="hidden" name="merchantOrderID" value='{{ merchant_order_id }}' />
+            <input type="hidden" name="merchantOrderAmount" value="{{ merchant_order_amount }}" />
+            <input type="hidden" name="merchantCurrencyCode" value="941" />
+            <input type="hidden" name="language" value="1" />
+            <input type="hidden" name="successURL" value="http://127.0.0.1:5000/success_url" />
+            <input type="hidden" name="cancelURL" value="http://127.0.0.1:5000/cancel_url" />
+            <input type="hidden" name="errorURL" value="{{ url_for('transactions.error_url') }}" />
+            <input type="hidden" name="email" value='{{ user.email }}' />
+            <input type="hidden" name="customerId" value='123456789' />
+            <input type="hidden" name="requestType" value='11'/>
+            <input type="hidden" name="hash" value='{{ hash_value }}' />
+            <input type="hidden" name="rnd" value='{{ rnd }}' />
+            <input type="hidden" name="timeout" value='600' />
+            <input type="hidden" name="currentDate" id="currentDate" value="{{ current_date }}" />
 
-            <a href="{{ url_for('transactions.user_payment_form')}}" class="btn btn-primary">Nastavi ka kupovini</a>
-
-            
-        <!-- </form> -->
-
-
-
+            <button class="btn btn-primary" type="submit">Nastavi ka uplati</button>
+        </form>
     </div>
 </section>
-
 {% endblock %}
-
-{% block scripts %}
-<script>
-    console.log("Cart script loading...");
-    
-    function updateCartData() {
-        console.log("Updating cart data...");
-        
-        var cartData = {
-            products: [],
-            animals: [],
-            services: [],
-            fattening: []
-        };
-    
-        function extractTableData(tableId, dataArray) {
-            var table = document.getElementById(tableId);
-            if (table) {
-                var rows = table.getElementsByTagName('tr');
-                for (var i = 1; i < rows.length; i++) {
-                    var cells = rows[i].getElementsByTagName('td');
-                    var rowData = {};
-                    for (var j = 0; j < cells.length - 1; j++) {
-                        var key = table.getElementsByTagName('th')[j].innerText.toLowerCase().replace(/ /g, '_').replace(/\(.*?\)/g, '').trim();
-                        rowData[key] = cells[j].innerText.trim();
-                    }
-                    dataArray.push(rowData);
-                }
-            }
-        }
-    
-        try {
-            extractTableData('productsTable', cartData.products);
-            extractTableData('animalsTable', cartData.animals);
-            extractTableData('servicesTable', cartData.services);
-            extractTableData('fatteningTable', cartData.fattening);
-    
-            document.getElementById('cartData').value = JSON.stringify(cartData);
-            console.log("Cart data updated:", cartData);
-        } catch (error) {
-            console.error("Error updating cart data:", error);
-        }
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("DOM fully loaded");
-        updateCartData();
-    });
-    
-    document.getElementById('cartForm').addEventListener('submit', function(e) {
-        console.log("Form submission started");
-        updateCartData();
-        console.log("Form being submitted with cart data:", document.getElementById('cartData').value);
-    });
-</script>
-{% endblock scripts %}
