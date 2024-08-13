@@ -275,7 +275,12 @@
             {% endif %}
             <input type="hidden" id="cartData" name="cartData" value="">
 
+            {% if not current_user.is_authenticated and installment_total %}
+            <a href="{{ url_for('users.login')}}" class="btn btn-primary">Uloguj/Registruj se</a>
+            {% else %}
             <a href="{{ url_for('transactions.user_payment_form')}}" class="btn btn-primary">Nastavi ka kupovini</a>
+            {% endif %}
+            <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">Obriši korpu</a>
 
             
         <!-- </form> -->
