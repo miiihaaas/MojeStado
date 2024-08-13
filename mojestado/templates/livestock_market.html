@@ -39,7 +39,7 @@
         </div>
         <div class="row">
             <div class="col-md-2 sidebar">
-                <form action="{{url_for('marketplace.livestock_market', animal_category_id=animal_category_id)}}" method="POST">
+                <form id='livestock' action="{{url_for('marketplace.livestock_market', animal_category_id=animal_category_id)}}" method="POST">
                     <!--<h2>Filteri</h2>-->
                     <div class="card mb-3">
                         <div class="card-header">
@@ -78,13 +78,9 @@
                         </div>
                         <div class="card-body">
                             <div class="form-check form-switch">
-                                {% for subcategory in animal_subcategories %}
-                                {% if subcategory.animal_categorization_id in active_subcategories %}
-                                <input class="form-check-input" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}" checked>
-                                {% else %}
-                                <input class="form-check-input" type="checkbox" id="subcategory_{{subcategory.id}}" name="subcategory_{{subcategory.id}}">
-                                {% endif %}
-                                <label class="form-check-label" for="subcategory_{{subcategory.id}}">{{subcategory.subcategory}}</label>
+                                {% for mass_filter in mass_filters %}
+                                <input class="form-check-input" type="checkbox" id="subcategory_{{mass_filter}}" name="subcategory_{{mass_filter}}">
+                                <label class="form-check-label" for="subcategory_{{mass_filter}}">{{mass_filter}}</label>
                                 {% endfor %}
                             </div>
                         </div>
@@ -303,22 +299,22 @@
     $(document).ready(function() {
         $('#municipality').change(function() {
             // post form
-            $('form').submit();
+            $('#livestock').submit();
         });
     });
     $(document).ready(function() {
         $('#organic_filter').change(function() {
             // post form
-            $('form').submit();
+            $('#livestock').submit();
         });
     });
     $(document).ready(function() {
         $('#insure_filter').change(function() {
             // post form
-            $('form').submit();
+            $('#livestock').submit();
         });
         $('.subcategory-filter').change(function() {
-            $('form').submit();
+            $('#livestock').submit();
         });
     });
     $(document).ready(function() {

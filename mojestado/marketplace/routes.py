@@ -21,7 +21,13 @@ def livestock_market(animal_category_id):
     animal_category = AnimalCategory.query.get(animal_category_id)
     animal_subcategories = AnimalCategorization.query.filter_by(animal_category_id=animal_category_id).all()
     animals = Animal.query.filter_by(animal_category_id=animal_category_id).filter_by(active=True).all()
-    weight_filter = True
+    if animal_category.mass_filters:
+        weight_filter = True
+        mass_filters = list(animal_category.mass_filters.keys())
+    else:
+        weight_filter = False
+        mass_filters = None
+    print(f'{weight_filter=}, {mass_filters=}')
     if request.method == 'POST':
         selected_municipality = request.form.getlist('municipality')
         if '0' in selected_municipality:
@@ -39,6 +45,7 @@ def livestock_market(animal_category_id):
         if active_subcategories:
             animals = [animal for animal in animals if animal.animal_categorization_id in active_subcategories]
             weight_filter = False
+            mass_filters = None
 
         
         print(f'post: {selected_municipality=}, {organic_filter=}')
@@ -61,6 +68,7 @@ def livestock_market(animal_category_id):
                             animal_categories=animal_categories,
                             animal_category=animal_category,
                             animal_subcategories=animal_subcategories,
+                            mass_filters=mass_filters,
                             animals=animals,
                             active_subcategories=active_subcategories,
                             weight_filter=weight_filter)
@@ -78,6 +86,7 @@ def livestock_market(animal_category_id):
                             animal_categories=animal_categories,
                             animal_category=animal_category,
                             animal_subcategories=animal_subcategories,
+                            mass_filters=mass_filters,
                             animals=animals,
                             active_subcategories=[],
                             weight_filter=weight_filter)
