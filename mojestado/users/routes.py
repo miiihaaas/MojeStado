@@ -32,6 +32,7 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                     JMBG=form.jmbg.data,
                     MB=form.mb.data,
                     user_type='farm_inactive', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
+                    registration_date=datetime.date.today()
                     )
         db.session.add(user)
         db.session.commit()
