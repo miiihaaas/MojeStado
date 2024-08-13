@@ -43,7 +43,7 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                     farm_municipality_id=municipality.id,
                     farm_phone=form.phone.data,
                     farm_description="Definisati opis farme",
-                    registrain_date=datetime.date.today(),
+                    registration_date=datetime.date.today(),
                     user_id=user.id)
         db.session.add(farm)
         db.session.commit()
