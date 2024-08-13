@@ -44,7 +44,8 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                     farm_phone=form.phone.data,
                     farm_description="Definisati opis farme",
                     registration_date=datetime.date.today(),
-                    user_id=user.id)
+                    user_id=user.id,
+                    farm_image_collection=[])
         db.session.add(farm)
         db.session.commit()
         flash(f'Uspesno ste poslali zahtev za registraciju. Na Vaš mejl je poslat ugovor pomoću koga se završava registracija.', 'success')
