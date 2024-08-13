@@ -101,7 +101,7 @@ class Animal(db.Model):
 
 class AnimalRace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    animal_race_name = db.Column(db.String(20), nullable=False)
+    animal_race_name = db.Column(db.String(50), nullable=False)
     animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False)
     # category = db.Column(db.String(20), nullable=False)
     animals = db.relationship('Animal', back_populates='animal_race', lazy=True)
@@ -155,13 +155,13 @@ class Product(db.Model):
 
 class ProductCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_category_name = db.Column(db.String(20), nullable=False)
+    product_category_name = db.Column(db.String(50), nullable=False)
     products = db.relationship('Product', back_populates='product_category', lazy=True) #!
 
 
 class ProductSubcategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_subcategory_name = db.Column(db.String(20), nullable=False)
+    product_subcategory_name = db.Column(db.String(50), nullable=False)
     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
     product_categories = db.relationship('ProductCategory', backref='product_subcategory_product_category', lazy=True) #!
     products = db.relationship('Product', backref='product_subcategory_product', lazy=True) #!
