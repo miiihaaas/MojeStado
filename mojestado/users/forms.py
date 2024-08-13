@@ -87,7 +87,7 @@ class AddProductForm(FlaskForm):
     category = SelectField('Kategorija', choices=[])
     subcategory = SelectField('Potkategorija', choices=[])
     section = SelectField('Sekcija', choices=[])
-    product_name = StringField('Naziv proizvoda', validators=[DataRequired(), Length(min=2, max=20)])
+    product_name = StringField('Naziv proizvoda', validators=[DataRequired(), Length(min=2, max=50)])
     product_description = TextAreaField('Opis proizvoda', validators=[DataRequired(), Length(min=2, max=500)])
     unit_of_measurement = SelectField('Jedinica mere', choices=["kg", "kom"])
     weight_conversion = FloatField('Konverzija', validators=[])

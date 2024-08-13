@@ -45,7 +45,8 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                     farm_description="Definisati opis farme",
                     registration_date=datetime.date.today(),
                     user_id=user.id,
-                    farm_image_collection=[])
+                    farm_image_collection=[],
+                    services={"klanje": {"1": "0", "2": "0", "3": "0", "4": "0", "5": "0", "6": "0", "7": "0", "8": "0"}, "obrada": {"1": "0", "2": "0", "3": "0"}})
         db.session.add(farm)
         db.session.commit()
         flash(f'Uspesno ste poslali zahtev za registraciju. Na Vaš mejl je poslat ugovor pomoću koga se završava registracija.', 'success')
@@ -365,7 +366,8 @@ def my_market(farm_id):
             product_price_per_kg = float(form.product_price_per_unit.data) / float(form.weight_conversion.data) if form.unit_of_measurement.data == 'kom' else float(form.product_price_per_unit.data),
             organic_product = form.organic_product.data,
             quantity = float(form.quantity.data),
-            farm_id = farm.id
+            farm_id = farm.id,
+            product_image_collection = []            
         )
         db.session.add(new_product)
         db.session.commit()

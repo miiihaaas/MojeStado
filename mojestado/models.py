@@ -73,7 +73,7 @@ class Farm(db.Model):
 
 class Animal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    animal_id = db.Column(db.String(12), nullable=False)  # Svako grlo stoke odnosno živine ima minđušu odnosno nanogicu. Na minđuši je ispisan jedinstveni broj koji se sastoji od dva bloka cifara. Prvi petocifreni blok označava PG, a drugi petocifreni ili šestocifreni broj označava redni broj grla.
+    animal_id = db.Column(db.String(15), nullable=False)  # Svako grlo stoke odnosno živine ima minđušu odnosno nanogicu. Na minđuši je ispisan jedinstveni broj koji se sastoji od dva bloka cifara. Prvi petocifreni blok označava PG, a drugi petocifreni ili šestocifreni broj označava redni broj grla.
     animal_category_id = db.Column(db.Integer, db.ForeignKey('animal_category.id'), nullable=False)
     animal_categorization_id = db.Column(db.Integer, db.ForeignKey('animal_categorization.id'), nullable=False)
     animal_race_id = db.Column(db.Integer, db.ForeignKey('animal_race.id'), nullable=False)
@@ -111,6 +111,7 @@ class AnimalRace(db.Model):
 class AnimalCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     animal_category_name = db.Column(db.String(80), nullable=False)
+    mass_filters = db.Column(db.JSON, nullable=True)
     animals = db.relationship('Animal', back_populates='animal_category', lazy=True)
     animal_races = db.relationship('AnimalRace', back_populates='animal_category', lazy=True)
 
@@ -133,7 +134,7 @@ class Product(db.Model):
     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
     product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
     product_section_id = db.Column(db.Integer, db.ForeignKey('product_section.id'), nullable=False) #!
-    product_name = db.Column(db.String(20), nullable=False)
+    product_name = db.Column(db.String(50), nullable=False)
     product_description = db.Column(db.String(500), nullable=False)
     product_image = db.Column(db.String(20), nullable=False, default='default.jpg') #! prilagoditi da može da se stavi do 10 slika
     product_image_collection = db.Column(db.JSON, nullable=True)
