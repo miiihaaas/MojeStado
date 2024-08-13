@@ -87,7 +87,7 @@ class Animal(db.Model):
     total_price = db.Column(db.String(20), nullable=False)  # ukupna cena
     insured = db.Column(db.Boolean, nullable=False)  # osigurano
     organic_animal = db.Column(db.Boolean, nullable=False)  # organska proizvodnja
-    cardboard = db.Column(db.String(50), nullable=False)  # karton grla/životinje
+    cardboard = db.Column(db.String(50), nullable=True)  # karton grla/životinje
     intended_for = db.Column(db.String(20), nullable=False)  # tov/priplod
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
     
