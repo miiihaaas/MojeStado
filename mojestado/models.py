@@ -215,7 +215,7 @@ class FAQ(db.Model):
 
 class PaySpotCallback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.String(20), nullable=False)
+    invoice_id = db.Column(db.String(20), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     recived_at = db.Column(db.DateTime, nullable=False)
     callback_data = db.Column(db.JSON, nullable=False)
