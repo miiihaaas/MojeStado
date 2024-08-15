@@ -129,29 +129,29 @@ class AnimalCategorization(db.Model):
     animals = db.relationship('Animal', back_populates='animal_categorization', lazy=True)
 
 
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
-    product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
-    product_section_id = db.Column(db.Integer, db.ForeignKey('product_section.id'), nullable=False) #!
-    product_name = db.Column(db.String(50), nullable=False)
-    product_description = db.Column(db.String(500), nullable=False)
-    product_image = db.Column(db.String(20), nullable=False, default='default.jpg') #! prilagoditi da može da se stavi do 10 slika
-    product_image_collection = db.Column(db.JSON, nullable=True)
-    #! razraditi konverziju pakovanje (npr kajmak 1kom = 400g)
-    unit_of_measurement = db.Column(db.String(20), nullable=False) #! jedinica mere može da bude KOM ili KG
-    weight_conversion = db.Column(db.String(20), nullable=True) #! ako je kom onda mora da se definiše koliko 1kom ima kg
-    #! ako je kg onda je polje konverzije prazno ili je =1
-    product_price_per_unit = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
-    product_price_per_kg = db.Column(db.String(20), nullable=True) #! ako je jedinica mere kg, onda se prepisuje taj podatak, a ako je jedinica mere kom onda se uz pomoć podatka weight_conversion izracunava te vrednosti
-    organic_product = db.Column(db.Boolean, nullable=False) #! organska proizvodnja
-    #! dodati količinu/masu
-    quantity = db.Column(db.String(20), nullable=False) #! količina/masa
-    farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
+# class Product(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
+#     product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
+#     product_section_id = db.Column(db.Integer, db.ForeignKey('product_section.id'), nullable=False) #!
+#     product_name = db.Column(db.String(50), nullable=False)
+#     product_description = db.Column(db.String(500), nullable=False)
+#     product_image = db.Column(db.String(20), nullable=False, default='default.jpg') #! prilagoditi da može da se stavi do 10 slika
+#     product_image_collection = db.Column(db.JSON, nullable=True)
+#     #! razraditi konverziju pakovanje (npr kajmak 1kom = 400g)
+#     unit_of_measurement = db.Column(db.String(20), nullable=False) #! jedinica mere može da bude KOM ili KG
+#     weight_conversion = db.Column(db.String(20), nullable=True) #! ako je kom onda mora da se definiše koliko 1kom ima kg
+#     #! ako je kg onda je polje konverzije prazno ili je =1
+#     product_price_per_unit = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
+#     product_price_per_kg = db.Column(db.String(20), nullable=True) #! ako je jedinica mere kg, onda se prepisuje taj podatak, a ako je jedinica mere kom onda se uz pomoć podatka weight_conversion izracunava te vrednosti
+#     organic_product = db.Column(db.Boolean, nullable=False) #! organska proizvodnja
+#     #! dodati količinu/masu
+#     quantity = db.Column(db.String(20), nullable=False) #! količina/masa
+#     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
     
-    product_category = db.relationship('ProductCategory', back_populates='products')
-    product_subcategories = db.relationship('ProductSubcategory', back_populates='products')
-    product_section = db.relationship('ProductSection', back_populates='products')
+#     product_category = db.relationship('ProductCategory', back_populates='products')
+#     product_subcategories = db.relationship('ProductSubcategory', back_populates='products')
+#     product_section = db.relationship('ProductSection', back_populates='products')
 
 
 class ProductCategory(db.Model):
@@ -160,13 +160,13 @@ class ProductCategory(db.Model):
     products = db.relationship('Product', back_populates='product_category', lazy=True) #!
 
 
-class ProductSubcategory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    product_subcategory_name = db.Column(db.String(50), nullable=False)
-    product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
-    product_categories = db.relationship('ProductCategory', backref='product_subcategory_product_category', lazy=True) #!
-    products = db.relationship('Product', backref='product_subcategory_product', lazy=True) #!
-    product_sections = db.relationship('ProductSection', back_populates='product_subcategory', lazy=True)
+# class ProductSubcategory(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     product_subcategory_name = db.Column(db.String(50), nullable=False)
+#     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
+#     product_categories = db.relationship('ProductCategory', backref='product_subcategory_product_category', lazy=True) #!
+#     products = db.relationship('Product', backref='product_subcategory_product', lazy=True) #!
+#     product_sections = db.relationship('ProductSection', back_populates='product_subcategory', lazy=True)
 
 
 class ProductSection(db.Model):
@@ -177,6 +177,41 @@ class ProductSection(db.Model):
     products = db.relationship('Product', back_populates='product_section', lazy=True)
     product_categories = db.relationship('ProductCategory', backref='product_section_product_category', lazy=True)
     product_subcategory = db.relationship('ProductSubcategory', back_populates='product_sections') # Ovde dodajemo relaciju sa ProductSubcategory
+
+
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
+    product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False)
+    product_section_id = db.Column(db.Integer, db.ForeignKey('product_section.id'), nullable=False)
+    product_name = db.Column(db.String(50), nullable=False)
+    product_description = db.Column(db.String(500), nullable=False)
+    product_image = db.Column(db.String(20), nullable=False, default='default.jpg')
+    product_image_collection = db.Column(db.JSON, nullable=True)
+    unit_of_measurement = db.Column(db.String(20), nullable=False)
+    weight_conversion = db.Column(db.String(20), nullable=True)
+    product_price_per_unit = db.Column(db.String(20), nullable=False)
+    product_price_per_kg = db.Column(db.String(20), nullable=True)
+    organic_product = db.Column(db.Boolean, nullable=False)
+    quantity = db.Column(db.String(20), nullable=False)
+    farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
+    
+    product_category = db.relationship('ProductCategory', back_populates='products')
+    product_subcategory = db.relationship('ProductSubcategory', back_populates='products')
+    product_section = db.relationship('ProductSection', back_populates='products')
+
+class ProductSubcategory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_subcategory_name = db.Column(db.String(50), nullable=False)
+    product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
+    products = db.relationship('Product', back_populates='product_subcategory')
+    product_sections = db.relationship('ProductSection', back_populates='product_subcategory')
+
+
+
+
+
 
 
 
