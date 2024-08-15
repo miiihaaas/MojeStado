@@ -226,24 +226,38 @@ def create_invoice():
     return new_invoice
 
 
-def deactivate_animals():
-    print(f'wip: {session.get("animals", [])=}')
-    for animal in session.get('animals', []):
-        print(f'wip: deaktivirane kupljene životinje')
-        print(f'{animal["id"]=}')
-        animal_to_edit = Animal.query.get(animal['id'])
-        animal_to_edit.active = False
-        db.session.commit()
+def deactivate_animals(invoice_id):
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    for invoice_item in invoice_items:
+        if invoice_item.invoice_item_type == 2:
+            animal_id = json.loads(invoice_item.invoice_item_details)['id']
+            animal_to_edit = Animal.query.get(animal_id)
+            animal_to_edit.active = False
+            db.session.commit()
+    # print(f'wip: {session.get("animals", [])=}')
+    # for animal in session.get('animals', []):
+    #     print(f'wip: deaktivirane kupljene životinje')
+    #     print(f'{animal["id"]=}')
+    #     animal_to_edit = Animal.query.get(animal['id'])
+    #     animal_to_edit.active = False
+    #     db.session.commit()
     pass
 
 
-def deactivate_products():
-    for product in session.get('products', []):
-        print(f'wip: deaktivirane kupljene proizvode')
-        print(f'{product["id"]=}')
-        product_to_edit = Product.query.get(product['id'])
-        product_to_edit.quantity = float(product_to_edit.quantity) - float(product['quantity'])
-        db.session.commit()
+def deactivate_products(invoice_id):
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    for invoice_item in invoice_items:
+        if invoice_item.invoice_item_type == 1:
+            product_id = json.loads(invoice_item.invoice_item_details)['id']
+            product_to_edit = Product.query.get(product_id)
+            product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
+            db.session.commit()
+    # for product in session.get('products', []):
+    #     print(f'wip: deaktivirane kupljene proizvode')
+    #     print(f'{product["id"]=}')
+    #     product_to_edit = Product.query.get(product['id'])
+    #     product_to_edit.quantity = float(product_to_edit.quantity) - float(product['quantity'])
+    #     db.session.commit()
     pass
 
 
