@@ -150,30 +150,30 @@ def callback_url():
     '''
     kada se digne na server PaySpotu treba dati tačan link za callback koji će se koristiti za validaciju na našem server
     koristi ovaj link za instrukcije lokalnog testiranja: https://chatgpt.com/share/03c306c0-724a-4039-bfc7-74b38f6b123e
-    $uri = "http://127.0.0.1:5000/callback_url"
-    $body = @{
-        orderID = "OrderTest47793"
-        shopID = "80729SE00124301"
-        authNumber = "719162"
-        amount = "1.05"
-        currency = "941"
-        transactionID = "8032180729SL3genpr9m6qry8"
-        result = "00"
-        paySpotOrderID = $null
-        rnd = $null
-        hash = "4ObgLzWifThwiuP7VCvhqBkSysiziyfns2L4vyfRRremdHp117LK8o8A8aArKGwPYXc15UwZ5+u/+e/vZr+JrQ=="
-        maskedPan = "534223xxxxxx1234"
-        expiryDate = "2512"
-        cardBrand = "MASTERCARD"
-        panAlias = $null
-        merchantPanAlias = $null
-        responseCode = $null
-        responseMsg = $null
-        redemptionCode = $null
-    }
+$uri = "http://127.0.0.1:5000/callback_url"
+$body = @{
+    "orderID": "MS-000000012",
+    "shopID": "80729SE00124301",
+    "authNumber": "904284",
+    "amount": "50230",
+    "currency": "941",
+    "transactionID": "8032180729SL4ehgbn396mqp8",
+    "result": "00",
+    "paySpotOrderID": null,
+    "rnd": null,
+    "hash": "ZXmXALHw9PFIoMY6znmxp7oIsx+hylPuMQGB3JfYOpyBeOPNlBGWnot4JA/3qQ4/JF+SjrDOoWoeNzg6WwGHbA==",
+    "maskedPan": "534223xxxxxx1234",
+    "expiryDate": "2512",
+    "cardBrand": "MASTERCARD",
+    "panAlias": null,
+    "merchantPanAlias": null,
+    "responseCode": null,
+    "responseMsg": null,
+    "redemptionCode": null,
+}
 
-    $response = Invoke-RestMethod -Uri $uri -Method Post -Body ($body | ConvertTo-Json) -ContentType "application/json"
-    $response
+$response = Invoke-RestMethod -Uri $uri -Method Post -Body ($body | ConvertTo-Json) -ContentType "application/json"
+$response
     '''
     secret_key_callback = os.getenv('PAYSPOT_SECRET_KEY_CALLBACK')
     data = request.json  # Dobijanje JSON podataka iz POST zahteva
@@ -205,25 +205,25 @@ def callback_url():
         print(f'** {received_hash=}')
         
         if received_hash != calculated_hash_value:
+            print(f'callback_url: Hash verification failed!')
             return 'Invalid hash!', 400
         if result != '00':
+            print(f'callback_url: {result=} Transaction failed!')
             return 'Transaction failed!', 400
-        
+        print(f'callback_url: {result=} Transaction success!')
         new_payspot_callback = PaySpotCallback(invoice_id=invoice_id,
                                                 amount=amount,
                                                 recived_at=datetime.datetime.now(),
                                                 callback_data=data)
+        print(f'** {new_payspot_callback=}')
         db.session.add(new_payspot_callback)
-        
+        print(f'** {invoice_id=}')
         invoice = Invoice.query.get(invoice_id)
         invoice.status = 'paid'
         
         db.session.commit()
-        
-        if current_user.is_authenticated:
-            user_id = current_user.id
-        else:
-            user_id = invoice.user_id
+
+        user_id = invoice.user_id
         user = User.query.get(user_id)
         
         
