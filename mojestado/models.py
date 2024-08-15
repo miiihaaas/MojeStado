@@ -213,6 +213,14 @@ class FAQ(db.Model):
     answer = db.Column(db.String(200), nullable=False)
 
 
+class PaySpotCallback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(20), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    recived_at = db.Column(db.DateTime, nullable=False)
+    callback_data = db.Column(db.JSON, nullable=False)
+
+
 with app.app_context():
     print('models: checkopint -> posle ovog koda treba da se inicira db!!')
     db.create_all()
