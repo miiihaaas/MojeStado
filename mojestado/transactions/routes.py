@@ -227,8 +227,8 @@ def callback_url():
         user = User.query.get(user_id)
         
         
-        deactivate_animals()
-        deactivate_products()
+        deactivate_animals(invoice_id)
+        deactivate_products(invoice_id)
         # send_email(user, form_object)
         # clear_cart_session()
         return jsonify({"status": "success"}), 200  # Vrati odgovor serveru
