@@ -7,7 +7,7 @@ from flask import Blueprint, flash, jsonify, redirect, render_template, request,
 from flask_login import current_user
 from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
-from mojestado.models import Animal, Invoice, User
+from mojestado.models import Animal, Invoice, PaySpotCallback, User
 from mojestado.transactions.form import GuestForm
 from mojestado.transactions.functions import calculate_hash, generate_random_string, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products
 
@@ -181,7 +181,8 @@ def callback_url():
         print(f'Received Callback Data: {data}')
         
         # Sada možeš obraditi podatke, sačuvati ih u bazi, validirati itd.
-        order_id = int(data.get('orderID').split('-')[1])
+        order_id = data.get('orderID')
+        invoice_id = int(data.get('orderID').split('-')[1])
         shop_id = data.get('shopID')
         auth_number = data.get('authNumber')
         amount = data.get('amount')
@@ -208,8 +209,17 @@ def callback_url():
         if result != '00':
             return 'Transaction failed!', 400
         
-        invoice = Invoice.query.get(order_id)
+        new_payspot_callback = PaySpotCallback(invoice_id=invoice_id,
+                                                amount=amount,
+                                                recived_at=datetime.datetime.now(),
+                                                callback_data=data)
+        db.session.add(new_payspot_callback)
+        
+        invoice = Invoice.query.get(invoice_id)
         invoice.status = 'paid'
+        
+        db.session.commit()
+        
         if current_user.is_authenticated:
             user_id = current_user.id
         else:
