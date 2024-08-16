@@ -4,10 +4,10 @@ import os
 from flask import Blueprint, app, current_app, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db
-from mojestado.animals.routes import get_animal_categorization
+from mojestado.animals.functions import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, AddProductForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
 from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email
-from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality
+from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
 from flask_login import login_user, login_required, logout_user, current_user
 
 
@@ -173,7 +173,7 @@ def my_flock(farm_id):
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
         return redirect(url_for('main.home'))
     animals = Animal.query.filter_by(farm_id=farm_id).filter_by(active=True).all()
-    fattening_animals = [animal for animal in animals if animal.fattening == True]
+    fattening_animals = Animal.query.filter_by(farm_id=farm_id).filter_by(fattening=True).all()
     if len(farm.farm_description) < 100:
         flash('Opis poljoprivrednog gazdinstva mora biti duši od 100 znakova', 'danger')
         return redirect(url_for('users.my_farm', farm_id=farm.id))
@@ -349,6 +349,11 @@ def my_market(farm_id):
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
         return redirect(url_for('main.home'))
     products = Product.query.filter_by(farm_id=farm_id).all()
+    
+    invoice_items = InvoiceItems.query.filter_by(farm_id=farm_id).filter_by(invoice_item_type=1).all()
+    for item in invoice_items:
+        print(f'** {type(item.invoice_item_details)=} {item=}')
+    
     form = AddProductForm()
     form.category.choices = [(category.id, category.product_category_name) for category in ProductCategory.query.all()]
     if request.method == 'POST':
@@ -376,6 +381,7 @@ def my_market(farm_id):
     return render_template('my_market.html', title='Moj prodavnica', 
                             user=current_user,
                             products=products,
+                            invoice_items=invoice_items,
                             form=form,
                             farm=farm)
 

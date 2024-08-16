@@ -90,7 +90,10 @@
                                 <form action="{{ url_for('farms.edit_farm_description') }}" method="POST">
                                     <input type="hidden" name="farm_id" value="{{ farm.id }}">
                                     <div class="row">
-                                        <input type="text" name="farm_description" value="{{ farm.farm_description }}" class="form-control">
+                                        <label for="farm_name">Naziv poljoprivednog gastinstva</label>
+                                        <input type="text" name="farm_name" value="{{ farm.farm_name }}" class="form-control">
+                                        <label for="farm_description">Opis poljoprivednog gastinstva</label>
+                                        <textarea class="form-control" name="farm_description" id="farm_description">{{ farm.farm_description }}</textarea>
                                         <button type="submit" class="btn btn-primary">Izmeni tekst</button>
                                     </div>
                                 </form>
