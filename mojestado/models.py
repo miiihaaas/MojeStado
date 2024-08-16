@@ -26,6 +26,7 @@ class User(db.Model, UserMixin):
     user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm_active, farm_inactive, user, user_removed, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
     registration_date = db.Column(db.DateTime, nullable=False)
     farms = db.relationship('Farm', backref='user_farm', lazy=True) #! 
+    invoices = db.relationship('Invoice', backref='user_invoice', lazy=True)
     
 
     def get_reset_token(self, expires_sec=1800):
@@ -93,6 +94,9 @@ class Animal(db.Model):
     
     fattening = db.Column(db.Boolean, nullable=False) #! podrazumevana vrednost je False, a kada kupac naruči da se tovi neka životnja onda prelazi u True
     active = db.Column(db.Boolean, nullable=False)
+    
+    #! projektovani datum završetka tova (ako se životinja izabere za tov)
+    #! invoice_id - iz koga može da se izvuče user_id, cena tova, datum početka tova
 
     animal_category = db.relationship('AnimalCategory', back_populates='animals')
     animal_race = db.relationship('AnimalRace', back_populates='animals')
@@ -164,8 +168,8 @@ class ProductCategory(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
 #     product_subcategory_name = db.Column(db.String(50), nullable=False)
 #     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
-#     product_categories = db.relationship('ProductCategory', backref='product_subcategory_product_category', lazy=True) #!
-#     products = db.relationship('Product', backref='product_subcategory_product', lazy=True) #!
+#     product_categories = db.relationship('ProductCategory', backref='product_subcategory_category', lazy=True) #!
+#     products = db.relationship('Product', backref='product_subcategory', lazy=True) #!
 #     product_sections = db.relationship('ProductSection', back_populates='product_subcategory', lazy=True)
 
 
@@ -210,11 +214,6 @@ class ProductSubcategory(db.Model):
 
 
 
-
-
-
-
-
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     datetime = db.Column(db.DateTime, nullable=False)
@@ -236,7 +235,7 @@ class InvoiceItems(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
-    invoice_item_details = db.Column(db.String(200), nullable=False)
+    invoice_item_details = db.Column(db.JSON, nullable=False)
     invoice_item_type = db.Column(db.Integer, nullable=False) #! 1 = product, 2 = animal, 3 = service, 4 = fattening
     # payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
     pass

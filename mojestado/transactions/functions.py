@@ -1,19 +1,18 @@
-import base64
-import datetime
-import hashlib
-import random
-from flask_login import current_user
-from flask import session
-import string
-import urllib.parse
+import base64, hashlib
+import datetime, os
+import random, string
 
-
-from flask import flash, json, redirect, render_template, session, url_for
-from mojestado import db
+from mojestado import db, mail
 from mojestado.models import Animal, Invoice, InvoiceItems, Product, User
 
+from flask import flash, json, redirect, render_template, session, url_for
+from flask_login import current_user
+from flask_mail import Message
 
-def generate_payment_slips(fattening_list):
+from fpdf import FPDF
+
+
+def generate_payment_slips_attach(fattening_list):
     '''
     generiše 2+ uplatnice na jednom dokumentu (A4) u fpdf, qr kod/api iz nbs
     '''
@@ -21,12 +20,70 @@ def generate_payment_slips(fattening_list):
     pass
 
 
-def generate_invoice():
+def generate_invoice_attach(invoice_id):
     '''
     generiše fakturu. dokument će biti attachovan u emali.
     '''
-    print('generisana faktura. dokument bi trebao biti attachovan u email')
-    pass
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    invoice = Invoice.query.get(invoice_id)
+    
+    filename = f'{invoice.invoice_number}.pdf'
+    
+    products = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 1]
+    animals = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 2]
+    services = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 3]
+    fattening = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 4]
+    
+    #! generisi fakturu uz pomoć fpdf
+    current_file_path = os.path.abspath(__file__)
+    project_folder = os.path.dirname(os.path.dirname((current_file_path)))
+    font_path = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed.ttf')
+    font_path_B = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed-Bold.ttf')
+    class PDF(FPDF):
+        def __init__(self, **kwargs):
+            super(PDF, self).__init__(**kwargs)
+            self.add_font('DejaVuSansCondensed', '', font_path, uni=True)
+            self.add_font('DejaVuSansCondensed', 'B', font_path_B, uni=True)
+        def header(self):
+            self.set_font('DejaVuSansCondensed', 'B', 16)
+            self.cell(0, 10, f'Faktura {invoice.invoice_number}', new_y='NEXT', align='C')
+    
+    pdf = PDF()
+    pdf.add_page()
+    #! proizvodi
+    pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Sektor', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Naziv', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Količina', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Jedinica mere', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Cena po jedinici mere', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Cena po kg', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Ukupna cena', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'PG', new_y='LAST', align='L', border=1)
+    pdf.cell(30, 10, f'Lokacija', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+    for product in products:
+        pdf.cell(30, 10, f'{product["category"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["subcategory"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["section"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["product_name"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["quantity"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["unit_of_measurement"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["product_price_per_unit"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["product_price_per_kg"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["total_price"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["farm"]}', new_y='LAST', align='L', border=1)
+        pdf.cell(30, 10, f'{product["location"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+    
+    #! živa vaga
+    #! usluge
+    #! tov (samo koji NIJE na rate?)
+    
+    path = os.path.join(project_folder, 'static', 'invoices')
+    if not os.path.exists(path):
+        os.mkdir(path)
+    pdf.output(os.path.join(path, filename))
+    return os.path.join(path, filename)
 
 
 def register_guest_user(form_object):
@@ -75,68 +132,6 @@ def calculate_hash(plaintext):
     hash_ = base64.b64encode(bytes.fromhex(sha512_hash)).decode('utf-8')
     print(f'** calculate hash: {hash_=}')
     return hash_
-
-# def check_bank_balance() -> dict:
-#     i = None
-#     print('** PAYSPOT CHECK BANK BALANCE **')
-#     company_id = 234075
-#     merchant_order_id = f'OrderTest{random.randint(1, 100000)}'  # Treba da se generiše jedinstveni ID za svaku transakciju
-#     merchant_order_amount = 1050.05  # Konvertovano u string
-#     merchant_currency_code = 941  # ISO code for RSD
-#     language = 1  # Default language ID (1 = Serbian)
-#     email = 'miiihaaas@gmail.com'  # Treba da bude email kupca
-#     customer_id = '2'  # Treba da bude ID kupca, ako je dostupan
-#     success_url = url_for('transactions.success_url', _external=True)  # Treba da bude stvarna URL adresa za uspešnu transakciju
-#     cancel_url = url_for('transactions.cancel_url', _external=True)  # Treba da bude stvarna URL adresa za otkazanu transakciju
-#     error_url = url_for('transactions.error_url', _external=True)  # Treba da bude stvarna URL adresa za grešku u transakciji
-#     request_type = 11  # Web shop platform
-#     timeout = 300  # Default timeout in seconds
-
-#     rnd = generate_random_string()
-#     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-#     secret_key = 'R1W4tPq30OU'  # Proverite da li je ovo ispravan ključ dobijen od PaySpot sistema
-    
-#     plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount}|{secret_key}"
-#     hash_value = calculate_hash(plaintext)
-    
-#     data = {
-#         'companyId': company_id,
-#         'merchantOrderID': merchant_order_id,
-#         'merchantOrderAmount': merchant_order_amount,
-#         'merchantCurrencyCode': merchant_currency_code,
-#         'language': language,
-#         'email': email,
-#         'customerId': customer_id,
-#         'successURL': success_url,
-#         'cancelURL': cancel_url,
-#         'errorURL': error_url,
-#         'hash': hash_value,
-#         'rnd': rnd,
-#         'currentDate': current_date,
-#         'requestType': request_type,
-#         'timeout': timeout
-#     }
-    
-#     headers = {
-#         'Content-Type': 'application/x-www-form-urlencoded',  # Koristimo form-encoded sadržaj
-#         'Accept': 'application/json'
-#     }
-
-#     data_encoded = urllib.parse.urlencode(data)  # Kodiramo podatke
-    
-#     try:
-#         response = requests.post('https://test.nsgway.rs:50009/api/ecommerce/submit', data=data_encoded, headers=headers)
-#         print(f'Status code: {response.status_code}')
-#         print(f'Response headers: {response.headers}')
-#         response.raise_for_status()
-#         print(f'Response content: {response.content}')
-#         return response.json()
-#     except requests.exceptions.RequestException as e:
-#         print(f'An error occurred: {e}')
-#         return None
-
-
-
 
 
 
@@ -234,14 +229,6 @@ def deactivate_animals(invoice_id):
             animal_to_edit = Animal.query.get(animal_id)
             animal_to_edit.active = False
             db.session.commit()
-    # print(f'wip: {session.get("animals", [])=}')
-    # for animal in session.get('animals', []):
-    #     print(f'wip: deaktivirane kupljene životinje')
-    #     print(f'{animal["id"]=}')
-    #     animal_to_edit = Animal.query.get(animal['id'])
-    #     animal_to_edit.active = False
-    #     db.session.commit()
-    pass
 
 
 def deactivate_products(invoice_id):
@@ -252,40 +239,40 @@ def deactivate_products(invoice_id):
             product_to_edit = Product.query.get(product_id)
             product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
             db.session.commit()
-    # for product in session.get('products', []):
-    #     print(f'wip: deaktivirane kupljene proizvode')
-    #     print(f'{product["id"]=}')
-    #     product_to_edit = Product.query.get(product['id'])
-    #     product_to_edit.quantity = float(product_to_edit.quantity) - float(product['quantity'])
-    #     db.session.commit()
-    pass
 
 
-def send_email(user, form_object):
+def send_email(user, invoice_id):
     '''
     - ako je na rate šalje fiskalni račun (dobija od firme Fiscomm) i sve uplatnice (generiše portal)
     -- fiskalni račnu obugvata ukupnu sumu novca za plaćanje, stim što se odmah sa računa skida suma koja nije za tov (preko PaySpot firma), a ostatak se plaća preko uplatnica (koje generiše portal)
     - ako nije na rate šalje samo fiskalni račun (dobija od firme Fiscomm)
     '''
-    cart_data = json.loads(form_object.get('cartData'))
-    print(f'{cart_data=}')
-    fattening_list = cart_data['fattening']
-    na_rate = False
-    print(f'{fattening_list=}')
-    for fattening in fattening_list:
-        if int(fattening['br_rata']) > 1:
-            na_rate = True
-            break
-    if na_rate:
-        print('wip: faktura i uplatnice')
-        payment_slips = generate_payment_slips(fattening_list) # generiše 2+ uplatnice na jednom dokumentu (A4)
-    else:
-        print('wip: samo faktura')
-    invoice_file = generate_invoice()
-    to = user.email
+    
+    #! proveravam da li je na rate
+    #! invoice_items čiji je type = 4 (fattening)
+    
+    payment_slips = [] #! ako je prazna lista onda NIJE na rate
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    for invoice_item in invoice_items:
+        if invoice_item.invoice_item_type == 4:
+            fattening = json.loads(invoice_item.invoice_item_details)
+            if fattening['installment_options'] > 1:
+                print('wip: ova usluga je na rate')
+                new_payment_slip = generate_payment_slips_attach(fattening)
+                payment_slips.append(new_payment_slip) #! ako lista NIJE prazna onda je na rate
+    print(f'{payment_slips=}')
+    
+    invoice_attach = generate_invoice_attach(invoice_id)
+
+    to = [user.email]
     bcc = ['admin@example.com']
-    subject = "Potvrda transakcije"
-    body = f"Poštovani/a {user.name},\n\nVaša transakcija je uspešno izvršena.\n\nDetalji kupovine:\n{cart_data}\n\nHvala na poverenju!"
+    subject = "Potvrda kupovine"
+    if payment_slips:
+        body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
+        message = Message(subject=subject, sender='Wqo2M@example.com', recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
+    else:
+        body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalje kupovine možete da vidite u prilogu.\n\nHvala na poverenju!"
+        message = Message(subject=subject, sender='Wqo2M@example.com', recipients=to, bcc=bcc, attachments=[invoice_attach])
     
     print(f"To: {to}")
     print(f"Subject: {subject}")
@@ -293,4 +280,11 @@ def send_email(user, form_object):
     
     # TODO: Implement actual email sending logic here
     # For now, we'll just print the email details
-    print('wip: Email poslat')
+    message.html = body
+    
+    try:
+        mail.send(message)
+        print('wip: Email poslat')
+    except Exception as e:
+        print(f'Error sending email: {e}')
+    

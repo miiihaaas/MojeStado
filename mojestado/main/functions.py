@@ -3,29 +3,6 @@ from flask import session
 from mojestado.models import Invoice
 
 
-def define_next_invoice_number():
-    try:
-        invoices = Invoice.query.all()
-        if not invoices:
-            next_invoice_number = 1
-        else:
-            invoice_number_list = [invoice.id for invoice in invoices if isinstance(invoice.id, int)]
-            if not invoice_number_list:
-                next_invoice_number = 1
-            else:
-                max_invoice_number = max(invoice_number_list)
-                next_invoice_number = max_invoice_number + 1
-        
-        # Formatiranje broja fakture kao string sa vodećim nulama
-        formatted_invoice_number = f"{next_invoice_number:09d}"
-        
-        return formatted_invoice_number
-    except Exception as e:
-        # Logovanje greške
-        print(f"Došlo je do greške pri određivanju sledećeg broja fakture: {str(e)}")
-        # Vraćanje podrazumevanog broja u slučaju greške
-        return "000000000"
-
 
 def clear_cart_session():
     session.pop('animals', None)

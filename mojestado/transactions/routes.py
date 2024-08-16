@@ -229,7 +229,7 @@ $response
         
         deactivate_animals(invoice_id)
         deactivate_products(invoice_id)
-        # send_email(user, form_object)
+        send_email(user, invoice_id)
         # clear_cart_session()
         return jsonify({"status": "success"}), 200  # Vrati odgovor serveru
 

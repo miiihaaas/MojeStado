@@ -65,7 +65,7 @@
                         {% for product in products %}
                         <tr>
                             <td>{{ product.product_category.product_category_name }}</td>
-                            <td>{{ product.product_subcategory_product.product_subcategory_name }}</td>
+                            <td>{{ product.product_subcategory.product_subcategory_name }}</td>
                             <td>{{ product.product_name }}</td>
                             <td>{{ product.unit_of_measurement }}</td>
                             <td>{{ product.product_price_per_unit }}</td>
@@ -159,6 +159,7 @@
                     <tr>
                         <th>Kategorija proizvoda</th>
                         <th>Podkategorija proizvoda</th>
+                        <th>Naziv</th>
                         <th>Jedinica mere</th>
                         <th>Cena po jedinici mere</th>
                         <th>datum prodaje</th>
@@ -168,16 +169,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for product in products %}
+                    {% for invoice_item in invoice_items %}
                     <tr>
-                        <td>data</td>
-                        <td>data</td>
-                        <td>data</td>
-                        <td>data</td>
-                        <td>data</td>
-                        <td>data</td>
-                        <td>data</td>
-                        <td>data</td>
+                        <td>{{ invoice_item.invoice_item_details["category"] }}</td>
+                        <td>{{ invoice_item.invoice_item_details["subcategory"] }}</td>
+                        <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
+                        <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
+                        <td>{{ invoice_item.invoice_item_details["product_price_per_unit"] }}</td>
+                        <td>{{ invoice_item.invoice_items_invoice.datetime }}</td>
+                        <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
+                        <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
+                        <td>{{ invoice_item.invoice_items_invoice.user_invoice.name }} {{ invoice_item.invoice_items_invoice.user_invoice.surname }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

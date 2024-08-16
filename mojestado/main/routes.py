@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, session
 from flask import  render_template, flash, redirect, url_for, request
 from flask_login import current_user
 from mojestado import app, db
-from mojestado.main.functions import clear_cart_session, define_next_invoice_number, get_cart_total
+from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import FAQ, Animal, AnimalCategory, Product
 from mojestado.transactions.functions import calculate_hash, generate_random_string
 
@@ -181,7 +181,7 @@ def add_product_to_cart(product_id):
     
     new_product = {column.name: getattr(product, column.name) for column in product.__table__.columns}
     new_product['category'] = product.product_category.product_category_name
-    new_product['subcategory'] = product.product_subcategory_product.product_subcategory_name
+    new_product['subcategory'] = product.product_subcategory.product_subcategory_name
     new_product['section'] = product.product_section.product_section_name
     new_product['farm'] = product.farm_product.farm_name
     new_product['location'] = product.farm_product.municipality_farm.municipality_name
@@ -214,32 +214,17 @@ def view_cart():
                 submit_button = 'na_rate'
                 break
 
-    company_id = os.getenv('PAYSPOT_COMPANY_ID')
-    new_invoice_id = define_next_invoice_number()
-    rnd = generate_random_string()
-    merchant_order_id = f'MS-{new_invoice_id}'
+
     merchant_order_amount, installment_total = get_cart_total()
-    print(f'*** ** *{merchant_order_amount=}')
-    print(f'*** ** *{installment_total=}')
     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    secret_key = 'R1W4tPq30OU'  # Proverite da li je ovo ispravan ključ dobijen od PaySpot sistema
-    
-    plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
-    hash_value = calculate_hash(plaintext)
-    
-    print(f'* view_chart: {rnd=}')
-    print(f'* view_chart: {hash_value=}')
+
     
     return render_template('view_cart.html', 
                             animals=animals, 
                             products=products, 
                             submit_button=submit_button, 
                             fattening=fattening,
-                            services=services,
-                            company_id=company_id,
-                            rnd=rnd,
-                            hash_value=hash_value, 
-                            merchant_order_id=merchant_order_id, 
+                            services=services, 
                             merchant_order_amount=merchant_order_amount,
                             installment_total=installment_total,
                             current_date=current_date)

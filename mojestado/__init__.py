@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_apscheduler import APScheduler
 
 
 load_dotenv()
@@ -41,13 +42,18 @@ login_manager.login_message_category = 'info'
 app.config['JSON_AS_ASCII'] = False #! da ne bude ascii već utf8
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER') # dodati u .env: 'mail.popis.online'
 app.config['MAIL_PORT'] = os.getenv('MAIL_PORT') # dodati u .env: 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER') # https://www.youtube.com/watch?v=IolxqkL7cD8&ab_channel=CoreySchafer   ////// os.environ.get vs os.getenv
-app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS') # https://www.youtube.com/watch?v=IolxqkL7cD8&ab_channel=CoreySchafer -- za 2 step verification: https://support.google.com/accounts/answer/185833
-
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS').lower() in ['true', 'on', '1']
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL').lower() in ['true', 'on', '1']
+app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 mail = Mail(app)
 
+
+# Dodajte ove linije za inicijalizaciju APScheduler-a
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 from mojestado.animals.routes import animals
 from mojestado.farms.routes import farms
@@ -55,6 +61,8 @@ from mojestado.main.routes import main
 from mojestado.marketplace.routes import marketplace
 from mojestado.transactions.routes import transactions
 from mojestado.users.routes import users
+from mojestado.animals.functions import schedule_daily_weight_gain  # Dodajte ovu liniju
+
 # print('__init__ checkpoint 9')
 
 
@@ -64,3 +72,6 @@ app.register_blueprint(main)
 app.register_blueprint(marketplace)
 app.register_blueprint(transactions)
 app.register_blueprint(users)
+
+# Pozovite funkciju za zakazivanje zadatka
+schedule_daily_weight_gain(scheduler)
