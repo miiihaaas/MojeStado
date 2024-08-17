@@ -26,7 +26,14 @@
                     <td>{{ farm.user_farm.phone}}</td>
                     <td>{{ farm.user_farm.email}}</td>
                     <td>data</td>
-                    <td><a class="btn btn-primary" href="{{ url_for('users.my_profile', user_id=farm.user_id ) }}">Edit</a> | delete</td>
+                    <td>
+                        {% if farm.user_farm.user_type == 'farm_active' %}
+                        <a class="btn btn-primary" href="{{ url_for('users.my_profile', user_id=farm.user_id ) }}">Edit</a>
+                        <a href="{{ url_for('users.deactivate_farm_user', user_id=farm.user_id ) }}" class="btn btn-danger">Deaktiviraj PG</a>
+                        {% elif farm.user_farm.user_type == 'farm_inactive' %}
+                        <a href="{{ url_for('users.activate_farm_user', user_id=farm.user_id ) }}" class="btn btn-success">Aktiviraj PG</a>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

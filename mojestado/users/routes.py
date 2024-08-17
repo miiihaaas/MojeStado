@@ -7,7 +7,7 @@ from mojestado import bcrypt, db
 from mojestado.animals.functions import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, AddProductForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
 from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email
-from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
+from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Invoice, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
 from flask_login import login_user, login_required, logout_user, current_user
 
 
@@ -351,8 +351,11 @@ def my_market(farm_id):
     products = Product.query.filter_by(farm_id=farm_id).all()
     
     invoice_items = InvoiceItems.query.filter_by(farm_id=farm_id).filter_by(invoice_item_type=1).all()
+    
+    total_sales = 0.0
     for item in invoice_items:
         print(f'** {type(item.invoice_item_details)=} {item=}')
+        total_sales += item.invoice_item_details['total_price']
     
     form = AddProductForm()
     form.category.choices = [(category.id, category.product_category_name) for category in ProductCategory.query.all()]
@@ -382,6 +385,7 @@ def my_market(farm_id):
                             user=current_user,
                             products=products,
                             invoice_items=invoice_items,
+                            total_sales=total_sales,
                             form=form,
                             farm=farm)
 
@@ -413,14 +417,34 @@ def get_product_sections():
 
 @users.route("/my_fattening/<int:user_id>", methods=['GET', 'POST'])
 def my_fattening(user_id):
+    '''
+    Prikazane samo životinje u tovu za ulogovoanog kupca
+    '''
     user = User.query.get_or_404(user_id)
-    return render_template('my_fattening.html', title='Moj stado', user=user)
+    my_invoices = Invoice.query.filter_by(user_id=user_id).filter_by(status="paid").all()
+    my_invoices = [invoice.id for invoice in my_invoices]
+    print(f'{my_invoices=}')
+    animals = Animal.query.filter(Animal.fattening == True, Animal.intended_for == "tov").all()
+    my_fattening_animals = [animal for animal in animals if animal.invoice_id in my_invoices]
+    print(f'{animals=}')
+    print(f'{my_fattening_animals=}')
+    return render_template('my_fattening.html', title='Moj stado', 
+                            my_fattening_animals=my_fattening_animals, 
+                            user=user)
 
 
 @users.route("/my_shop/<int:user_id>", methods=['GET', 'POST'])
 def my_shop(user_id):
     user = User.query.get_or_404(user_id)
-    return render_template('my_shop.html', title='Moj prodavnica', user=user)
+    my_invoices = Invoice.query.filter_by(user_id=user_id).filter_by(status="paid").all()
+    my_invoices = [invoice.id for invoice in my_invoices]
+    print(f'{my_invoices=}')
+    my_invoice_items = InvoiceItems.query.all()
+    my_invoice_items = [invoice_item for invoice_item in my_invoice_items if (invoice_item.invoice_id in my_invoices and invoice_item.invoice_item_type in [1, 2])]
+    print(f'{my_invoice_items=}')
+    return render_template('my_shop.html', title='Moj prodavnica', 
+                            my_invoice_items=my_invoice_items, 
+                            user=user)
 
 
 #! ispod je za admin !#
@@ -434,7 +458,61 @@ def settings():
     if current_user.user_type != 'admin':
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
-    return render_template('settings.html', title='Settings')
+
+    if request.method == 'POST':
+        print(f'{request.form=}')
+        for key, value in request.form.items():
+            print(f'{key=}; {value=}')
+            category = AnimalCategorization.query.filter_by(id=key).first()
+            category.fattening_price = value
+        db.session.commit()
+    
+    categorization = AnimalCategorization.query.filter_by(intended_for="tov").all()
+    print(f'{categorization=}')
+    return render_template('settings.html', title='Settings',
+                            categorization=categorization)
+
+
+@users.route('/deactivate_farm_user/<int:user_id>')
+def deactivate_farm_user(user_id):
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    user = User.query.get_or_404(user_id)
+    if user.user_type in ['user', 'user_removed', 'guest', 'admin']:
+        flash('Nije moguće menjati status krosinika jer oni nemaju farme', 'danger')
+        return redirect(url_for('users.admin_view_farms'))
+    if user.user_type != 'farm_active':
+        flash('PG nije aktivno', 'danger')
+        return redirect(url_for('users.admin_view_farms'))
+
+    user.user_type = 'farm_inactive'
+    db.session.commit()
+    flash('PG je deaktivirano.', 'success')
+    return redirect(url_for('users.admin_view_farms'))
+
+
+@users.route('/activate_farm_user/<int:user_id>')
+def activate_farm_user(user_id):
+    '''
+    #! ovde možda bude potrebno da se doda mogućnost povezivanja ugovora... možda kroz modal i formu u modalu za attach fajla
+    '''
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    user = User.query.get_or_404(user_id)
+    if user.user_type in ['user', 'user_removed', 'guest', 'admin']:
+        flash('Nije mogu se aktivirati PG jer oni nemaju farme', 'danger')
+        return redirect(url_for('users.admin_view_farms'))
+    if user.user_type != 'farm_inactive':
+        flash('PG je već aktivno', 'danger')
+        return redirect(url_for('users.admin_view_farms'))
+
+    user.user_type = 'farm_active'
+    db.session.commit()
+    flash('PG je aktivirano.', 'success')
+    return redirect(url_for('users.admin_view_farms'))
+
 
 
 @users.route("/admin_view_farms", methods=['GET', 'POST'])
@@ -473,10 +551,11 @@ def admin_view_purchases():
     if current_user.user_type != 'admin':
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
-    # purchases = Purchase.query.all() #! dodati klasu u models.py
+    invoice_items = InvoiceItems.query.all()
     return render_template('admin_view_purchases.html', 
                             purchases=[], 
-                            title='Prikaz narudžbi')
+                            title='Prikaz narudžbi',
+                            invoice_items=invoice_items)
 
 
 @users.route("/admin_view_overview", methods=['GET', 'POST'])

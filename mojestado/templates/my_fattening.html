@@ -65,40 +65,29 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for animal in my_fattening_animals %}
                         <tr>
-                            <td>6478-83608</td>
-                            <td>Ovca</td>
-                            <td>Šilježe</td>
-                            <td>Vlaška vitoroga</td>
-                            <td>35kg</td>
-                            <td>45kg</td>
-                            <td>8</td>
-                            <td>Da</td>
-                            <td>Ne</td>
-                            <td>PG Panić</td>
-                            <td>Gornji Milanovac</td>
-                            <td>Karton grla</td>
-                            <td>6300 rsd</td>
-                            <td>15000 rsd</td>
-                            <td></td>
+                            <td>{{ animal.animal_id }}</td>
+                            <td>{{ animal.animal_category.animal_category_name }}</td>
+                            <td>{{ animal.animal_categorization.subcategory  }}</td>
+                            <td>{{ animal.animal_race.animal_race_name }}</td>
+                            <td>{{ animal.current_weight }}kg</td>
+                            <td>{{ animal.wanted_weight }}kg</td>
+                            <td>{{ animal.fattening_finish_date }}</td>
+                            <td>{{ animal.insured }}</td>
+                            <td>{{ animal.organic_animal }}</td>
+                            <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm_animal.farm_name }}</a></td>
+                            <td>{{ animal.farm_animal.farm_city }}</td>
+                            <td>
+                                {% if animal.cardboard %}
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                {% endif %}
+                            </td>
+                            <td>data</td>
+                            <td>data</td>
+                            <td><button class="btn btn-danger">Prekid tova</button></td>
                         </tr>
-                        <tr>
-                            <td>94837-23593</td>
-                            <td>Ovca</td>
-                            <td>Šilježe</td>
-                            <td>Vlaška vitoroga</td>
-                            <td>35kg</td>
-                            <td>42kg</td>
-                            <td>12</td>
-                            <td>Ne</td>
-                            <td>Da</td>
-                            <td>PG Simović</td>
-                            <td>Čačak</td>
-                            <td>Karton grla</td>
-                            <td>7000 rsd</td>
-                            <td>18000 rsd</td>
-                            <td></td>
-                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
