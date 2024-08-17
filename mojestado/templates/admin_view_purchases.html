@@ -19,32 +19,37 @@
                 </tr>
             </thead>
             <tbody>
-                {% for purchase in purchases %}
+                {% for invoice_item in invoice_items %}
                 <tr>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
+                    <td>{{ invoice_item.invoice_items_invoice.datetime }}</td>
+                    <td>{{ invoice_item.invoice_items_invoice.user_invoice.name }} {{ invoice_item.invoice_items_invoice.user_invoice.surname }}</td>
+                    <td>{{ invoice_item.invoice_item_details["farm"] }}</td>
+                    {% if invoice_item.invoice_item_type == 1 %}
+                    <td>Proizvod</td>
+                    {% elif invoice_item.invoice_item_type == 2 %}
+                    <td>Životinja</td>
+                    {% elif invoice_item.invoice_item_type == 3 %}
+                    <td>Usluga klanja ili obrade</td>
+                    {% elif invoice_item.invoice_item_type == 4 %}
+                    <td>Tov</td>
+                    {% endif %}
+                    <td>{{ invoice_item.invoice_item_details["product_name"] }}{{ invoice_item.invoice_item_details["category"] }}</td>
+
+                    {% if invoice_item.invoice_item_type == 1 %}
+                    <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
+                    {% elif invoice_item.invoice_item_type == 2 %}
+                    <td>kg</td>
+                    {% elif invoice_item.invoice_item_type == 3 %}
+                    <td>kg</td>
+                    {% elif invoice_item.invoice_item_type == 4 %}
+                    <td>??</td>
+                    {% endif %}
+                    <td>{{ invoice_item.invoice_item_details["product_price_per_unit"] }}{{ invoice_item.invoice_item_details["price_per_kg"] }}</td>
+                    <td>{{ invoice_item.invoice_item_details["quantity"] }}{{ invoice_item.invoice_item_details["current_weight"] }}</td>
+                    <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
                     <td>pregled ugovora | ponovno generisanje ugovora</td>
                 </tr>
                 {% endfor %}
-                <tr>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>pregled ugovora | ponovno generisanje ugovora</td>
-                </tr>
             </tbody>
         </table>
     </div>

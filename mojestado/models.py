@@ -97,6 +97,9 @@ class Animal(db.Model):
     
     #! projektovani datum završetka tova (ako se životinja izabere za tov)
     #! invoice_id - iz koga može da se izvuče user_id, cena tova, datum početka tova
+    
+    fattening_finish_date = db.Column(db.Date, nullable=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=True)
 
     animal_category = db.relationship('AnimalCategory', back_populates='animals')
     animal_race = db.relationship('AnimalRace', back_populates='animals')
@@ -222,7 +225,7 @@ class Invoice(db.Model):
     status = db.Column(db.String(20), nullable=False) #! unconfirmed, confirmed
     
     invoice_items = db.relationship('InvoiceItems', backref='invoice_items_invoice', lazy=True) #!
-    pass
+    animals = db.relationship('Animal', backref='animal_invoice', lazy=True)
 
 
 # class Payment(db.Model):
