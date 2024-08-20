@@ -1,5 +1,4 @@
 from flask import session
-
 from mojestado.models import Invoice
 
 
@@ -9,6 +8,7 @@ def clear_cart_session():
     session.pop('products', None)
     session.pop('fattening', None)
     session.pop('services', None)
+    session.pop('delivery', None)
 
 
 def get_cart_total():
@@ -20,6 +20,7 @@ def get_cart_total():
     print(f'{session=}')
     cart_total = 0
     installment_total = 0
+    delivery_total = 0
     
     if 'products' in session and isinstance(session.get('products'), list):
         for product in session['products']:
@@ -40,4 +41,29 @@ def get_cart_total():
     if 'services' in session and isinstance(session.get('services'), list):
         for service in session['services']:
             cart_total += float(service['slaughterPrice']) + float(service['processingPrice'])
-    return cart_total, installment_total
+    
+    if 'products' in session and isinstance(session.get('products'), list) and cart_total < 3000: #! dodati logiku da nema životinja u korpi
+        delivery_total += 500
+    if 'animals' in session and isinstance(session.get('animals'), list):
+        for animal in session['animals']:
+            if animal['wanted_weight']:
+                print(f"{float(animal['wanted_weight'])=}")
+                delivery_price = calculate_delivery_price(float(animal['wanted_weight']))
+            else: 
+                print(f"{float(animal['current_weight'])=}")
+                delivery_price = calculate_delivery_price(float(animal['current_weight']))
+            delivery_total += delivery_price
+    return cart_total, installment_total, delivery_total
+
+
+def calculate_delivery_price(animal_price):
+    if 15 <= animal_price < 30:
+        return 1000
+    elif 30 <= animal_price < 80:
+        return 1200
+    elif 80 <= animal_price < 130:
+        return 1500
+    elif 130 <= animal_price < 200:
+        return 1800
+    elif 200 <= animal_price <= 800:
+        return 3000

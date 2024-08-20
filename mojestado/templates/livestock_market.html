@@ -111,7 +111,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card mb-3">
+                    <!-- <div class="card mb-3">
                         <div class="card-header">
                             Količina
                         </div>
@@ -121,7 +121,7 @@
                                 <input class="form-range" type="range" min="0" max="5" id="quantity_filter" name="quantity_filter">
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </form>
             </div>
             <div class="col-md-8">
@@ -133,7 +133,7 @@
                             <th>ID životinje</th>
                             <th>Potkategorija</th>
                             <th>Rasa</th>
-                            <th>Pol (ne prikazuje se kod živine)</th>
+                            <th>Pol</th>
                             <th>Trenutna masa</th>
                             <th>Cena po kg (rsd)</th>
                             <th>Ukupna (rsd)</th>
@@ -143,7 +143,7 @@
                             <th>Karton grla</th>
                             <th>PG</th>
                             <th>Lokacija</th>
-                            <th>Kupovina (korpa/tov)</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -282,7 +282,21 @@
                             <!-- Obrada usluga -->
                             <div class="mb-3 form-check" id="processingServiceWrapper">
                                 <input type="checkbox" class="form-check-input" id="processingService" name="processingService">
-                                <label class="form-check-label" for="processingService">Obrada</label>
+                                <label class="form-check-label" for="processingService">
+                                    Obrada
+                                </label>
+                                <span class="info-box"><i class="fa-solid fa-info"></i>
+                                    <span class="tooltip">
+                                        {% if animal_category_id == 1 %}
+                                        <p>Francuska obrada: svinjski but, svinjska plećka, kremenadla, vrat, las kare.</p>
+                                        <p>Milanez: but, kremenadla.</p>
+                                        {% elif animal_category_id == 2 %}
+                                        <p>Čerek: prednji čerek (vrat sk, vrat bk, potplećka sk, potplećka bk, plećka sk, plećka bk, pauflek, rebra sk, grudi) i zadnji čerek (rozbratna sk, but sk, juneći biftek, ramstek).</p>
+                                        {% elif animal_category_id == 3 %}
+                                        <p>Čerek: prednjiček (vrat sk, vrat bk, potplećka sk, potplećka bk, plećka sk, plećka bk, pauflek, rebra sk, grudi) i zadnjiček (rozbratna sk, but sk, juneći biftek, ramstek).</p>
+                                        {% endif %}
+                                    </span>
+                                </span>
                             </div>
                             
                             <button type="submit" class="btn btn-primary">Kupi</button>

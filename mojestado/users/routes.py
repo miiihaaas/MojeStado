@@ -70,6 +70,7 @@ def register_user(): #! Registracija korisnika
                     password=bcrypt.generate_password_hash(form.password.data).decode('utf-8'),
                     name=form.name.data,
                     surname=form.surname.data,
+                    phone=form.phone.data,
                     address=form.address.data,
                     city=form.city.data,
                     zip_code=form.zip_code.data,
@@ -214,7 +215,8 @@ def my_flock(farm_id):
             measured_weight=form.weight.data,
             measured_date = datetime.datetime.now(),
             current_weight=form.weight.data,
-            price_per_kg=form.price.data,
+            price_per_kg_farmer=form.price.data,
+            price_per_kg=form.price.data * 1.38, #! 1.2 * 1.15 = 1.38
             total_price=form.price.data * form.weight.data,
             insured = form.insured.data,
             organic_animal = form.organic.data,
@@ -258,11 +260,13 @@ def edit_animal(animal_id):
     print(f'***{animal=}')
     animal.animal_gender = request.form.get('animal_gender')
     animal.current_weight = request.form.get('weight')
-    animal.price_per_kg = request.form.get('price')
+    animal.price_per_kg_farmer = request.form.get('price') 
+    animal.price_per_kg = float(request.form.get('price')) * 1.38
     animal.total_price = float(animal.price_per_kg) * float(animal.current_weight)
     print(f'{request.form.get("insured")=}')
     print(f'{request.form.get("organic")=}')
     print(f'{request.files.get("cardboard")=}')
+    print(f'** ** {animal.price_per_kg=}, {animal.price_per_kg=}')
     if request.form.get('insured') == 'y':
         animal.insured = True
     else:
@@ -351,6 +355,7 @@ def my_market(farm_id):
     products = Product.query.filter_by(farm_id=farm_id).all()
     
     invoice_items = InvoiceItems.query.filter_by(farm_id=farm_id).filter_by(invoice_item_type=1).all()
+    invoice_items = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_items_invoice.status in ['confirmed', 'paid']] #! pored 'confirmed' dodati i ostale ako budu bili definisni
     
     total_sales = 0.0
     for item in invoice_items:
@@ -468,7 +473,7 @@ def settings():
         db.session.commit()
     
     categorization = AnimalCategorization.query.filter_by(intended_for="tov").all()
-    print(f'{categorization=}')
+    flash('Uspesno ste sačuvali izmenjene cene.', 'success')
     return render_template('settings.html', title='Settings',
                             categorization=categorization)
 
@@ -552,6 +557,7 @@ def admin_view_purchases():
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
     invoice_items = InvoiceItems.query.all()
+    invoice_items = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_items_invoice.status in ['confirmed', 'paid']] #! pored 'confirmed' dodati i ostale ako budu bili definisni
     return render_template('admin_view_purchases.html', 
                             purchases=[], 
                             title='Prikaz narudžbi',

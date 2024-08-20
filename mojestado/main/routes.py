@@ -195,14 +195,21 @@ def add_product_to_cart(product_id):
     return redirect(url_for('marketplace.product_detail', product_id=product.id))
 
 
-@main.route('/view_cart')
+@main.route('/add_delevery_to_cart', methods=['POST'])
+def add_delevery_to_cart():
+    if 'delivery' not in session:
+        session['delivery'] = []
+    session['delivery'] = {
+        "delivery_total": request.form['delivery_total']
+    }
+
+
+@main.route('/view_cart', methods=['GET', 'POST'])
 def view_cart():
     animals = session.get('animals', [])
     products = session.get('products', [])
     fattening = session.get('fattening', [])
     services = session.get('services', [])
-    
-    print(f'*** {session=}')
     
     if not animals and not products:
         flash('Korpa je prazna!', 'info')
@@ -213,9 +220,40 @@ def view_cart():
             if int(f.get('installment_options', 0)) > 1:
                 submit_button = 'na_rate'
                 break
+            
 
-
-    merchant_order_amount, installment_total = get_cart_total()
+    merchant_order_amount, installment_total, delivery_total = get_cart_total()
+    print(f'----{merchant_order_amount=}, {installment_total=}, {delivery_total=}')
+    if request.method == 'POST':
+        print(f'POST DELIVERY: {request.form=}')
+        if request.form.get('delivery_total') == 'on':
+            session['delivery'] = {
+                "delivery_total": delivery_total,
+                "delivery_status": True
+            }
+        else:
+            session['delivery'] = {
+                "delivery_total": delivery_total,
+                "delivery_status": False
+            }
+        return redirect(url_for('main.view_cart'))
+    if 'delivery' not in session:
+        if delivery_total == 0:
+            session['delivery'] = {
+                "delivery_total": 0,
+                "delivery_status": True
+            }
+        else:
+            print(f'postoji vrednost dostave: {delivery_total=}')
+            session['delivery'] ={
+                "delivery_total": delivery_total,
+                "delivery_status": False
+            }
+    print(f'{session=}')
+    
+    delivery_status = session['delivery']['delivery_status']
+    print(f'**-**-** {delivery_status=}')
+    
     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     
@@ -227,6 +265,8 @@ def view_cart():
                             services=services, 
                             merchant_order_amount=merchant_order_amount,
                             installment_total=installment_total,
+                            delivery_total=delivery_total,
+                            delivery_status=delivery_status,
                             current_date=current_date)
 
 

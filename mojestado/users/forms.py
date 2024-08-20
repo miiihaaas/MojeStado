@@ -11,6 +11,7 @@ class RegistrationUserForm(FlaskForm):
     confirm_password = PasswordField('Potvrdite lozinku', validators=[DataRequired(), EqualTo('password')])
     name = StringField('Ime', validators=[DataRequired(), Length(min=2, max=20)])
     surname = StringField('Prezime', validators=[DataRequired(), Length(min=2, max=20)])
+    phone = StringField('Telefon', validators=[DataRequired(), Length(min=9, max=10)])
     address = StringField('Adresa', validators=[DataRequired(), Length(min=2, max=20)])
     city = StringField('Grad', validators=[DataRequired(), Length(min=2, max=20)])
     zip_code = StringField('Poštanski broj', validators=[DataRequired(), Length(min=5, max=5)])

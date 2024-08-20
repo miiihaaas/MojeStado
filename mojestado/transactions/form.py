@@ -9,6 +9,7 @@ class GuestForm(FlaskForm):
     email = EmailField('Mejl', validators=[DataRequired(), Email()])
     name = StringField('Ime', validators=[DataRequired()])
     surname = StringField('Prezime', validators=[DataRequired()])
+    phone = StringField('Telefon', validators=[DataRequired()])
     address = StringField('Adresa', validators=[DataRequired()])
     city = StringField('Mesto', validators=[DataRequired()])
     zip_code = StringField('ZIP', validators=[DataRequired()])

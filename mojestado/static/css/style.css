@@ -135,3 +135,34 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 @media (max-width: 480px) {
     .top-bar { font-size: 12px; }
 }
+
+/* dodao Mihas */
+.info-box {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.info-box .tooltip {
+    visibility: hidden;
+    width: 300px;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Pozicija iznad elementa */
+    left: 50%;
+    margin-left: -150px; /* Pomak za centriranje */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.info-box:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}

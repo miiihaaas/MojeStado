@@ -51,7 +51,7 @@
                             <th>PG</th>
                             <th>Proizvod</th>
                             <th>Količina/Masa</th>
-                            <th>Cena</th>
+                            <th>Ukupna cena</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,7 +60,7 @@
                             <td>{{ invoice_item.invoice_items_invoice.datetime }}</td>
                             <td><a href="{{ url_for('farms.farm_detail', farm_id=invoice_item.invoice_item_details['farm_id']) }}">{{ invoice_item.invoice_item_details["farm"] }}</a></td>
                             <td>{{ invoice_item.invoice_item_details["product_name"] }}{{ invoice_item.invoice_item_details["category"] }}</td>
-                            <td>{{ invoice_item.invoice_item_details["quantity"] }} {{ invoice_item.invoice_item_details["current_weight"] }}</td>
+                            <td>{{ invoice_item.invoice_item_details["quantity"] }} kom {{ invoice_item.invoice_item_details["current_weight"] }} kg</td>
                             <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
                         </tr>
                         {% endfor %}

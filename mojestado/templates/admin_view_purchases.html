@@ -2,6 +2,38 @@
 {% block content %}
 <section class="register-page firstsection mb-5">
     <div class="container">
+        <h2>Moji podaci - Admin</h2>
+        <div class="row">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.settings') }}">Podešavanja</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_farms') }}">PG</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_users') }}">Korisnici</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_purchases') }}">Kupovine</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_overview') }}">Pregledi</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_slips') }}">Izvodi</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <div class="container">
         <h2>Prikaz PG</h2>
         <table class="table table-striped">
             <thead>
@@ -13,9 +45,8 @@
                     <th>Predmet kupovine</th>
                     <th>Jedinica mere</th>
                     <th>Cena po jedinici mere</th>
-                    <th>Broj komada</th>
-                    <th>Iznos</th>
-                    <th></th>
+                    <th>Broj / masa</th>
+                    <th>Ukupan iznos</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,7 +64,11 @@
                     {% elif invoice_item.invoice_item_type == 4 %}
                     <td>Tov</td>
                     {% endif %}
-                    <td>{{ invoice_item.invoice_item_details["product_name"] }}{{ invoice_item.invoice_item_details["category"] }}</td>
+                    {% if invoice_item.invoice_item_type == 1 %}
+                    <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
+                    {% else %}
+                    <td>{{ invoice_item.invoice_item_details["category"] }}</td>
+                    {% endif %}
 
                     {% if invoice_item.invoice_item_type == 1 %}
                     <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
@@ -42,12 +77,30 @@
                     {% elif invoice_item.invoice_item_type == 3 %}
                     <td>kg</td>
                     {% elif invoice_item.invoice_item_type == 4 %}
-                    <td>??</td>
+                    <td>--</td>
                     {% endif %}
+
+                    {% if invoice_item.invoice_item_type == 4 %}
+                    <td>--</td>
+                    {% else %}
                     <td>{{ invoice_item.invoice_item_details["product_price_per_unit"] }}{{ invoice_item.invoice_item_details["price_per_kg"] }}</td>
-                    <td>{{ invoice_item.invoice_item_details["quantity"] }}{{ invoice_item.invoice_item_details["current_weight"] }}</td>
+                    {% endif %}
+
+                    {% if invoice_item.invoice_item_type == 1 %}
+                    <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
+                    {% elif invoice_item.invoice_item_type == 2 %}
+                    <td>{{ invoice_item.invoice_item_details["current_weight"] }}</td>
+                    {% elif invoice_item.invoice_item_type == 3 %}
+                    <td>{{ invoice_item.invoice_item_details["current_weight"] }}</td>
+                    {% elif invoice_item.invoice_item_type == 4 %}
+                    <td>--</td>
+                    {% endif %}
+
+                    {% if invoice_item.invoice_item_type == 4 %}
+                    <td>{{ invoice_item.invoice_item_details["fattening_price"] }}</td>
+                    {% else %}
                     <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
-                    <td>pregled ugovora | ponovno generisanje ugovora</td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

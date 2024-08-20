@@ -78,7 +78,7 @@
                         <th>Kategorija</th>
                         <th>Potkategorija</th>
                         <th>Rasa</th>
-                        <th>Pol (ne prikazuje se kod živine)</th>
+                        <th>Pol</th>
                         <th>Trenutna masa</th>
                         <th>Cena po kg (rsd)</th>
                         <th>Ukupna (rsd)</th>
@@ -213,7 +213,7 @@
                         <th>Kategorija</th>
                         <th>Potkategorija</th>
                         <th>Rasa</th>
-                        <th>Pol (ne prikazuje se kod živine)</th>
+                        <th>Pol</th>
                         <th>Trenutna masa</th>
                         <th>Željena masa</th>
                         <th>Cena tova</th>
@@ -263,6 +263,25 @@
                 </tbody>
             </table>
             <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
+            {% endif %}
+            {% if session.get('delivery') %}
+            <h3>Dostava</h3>
+            {% if delivery_total == 0 %}
+            Dostava je besplatna
+            {% else %}
+            <legend>Cena dostave sadržaja korpe</legend>
+            <input type="text" class="form-control" value="{{ delivery_total }} rsd" id="delivery_total_" name="delivery_total_" disabled>
+            {% endif %}
+            <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
+                <div class="form-check">
+                    {% if delivery_status %}
+                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total" checked>
+                    {% else %}
+                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total">
+                    {% endif %}
+                    <label for="delivery_total" class="form-check-label">Želim dostavu</label>
+                </div>
+            </form>
             {% endif %}
 
             {% if merchant_order_amount %}
@@ -346,6 +365,22 @@
         console.log("Form submission started");
         updateCartData();
         console.log("Form being submitted with cart data:", document.getElementById('cartData').value);
+    });
+</script>
+<script>
+    console.log("Cart script loading...");
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM fully loaded");
+        
+        // Dodajemo event listener na checkbox
+        var deliveryCheckbox = document.getElementById('delivery_total');
+        if (deliveryCheckbox) {
+            deliveryCheckbox.addEventListener('change', function() {
+                console.log("Checkbox changed, submitting form...");
+                document.getElementById('deliveryForm').submit();
+            });
+        }
     });
 </script>
 {% endblock scripts %}

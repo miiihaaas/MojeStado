@@ -18,6 +18,10 @@
                 {{ form.surname(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
             <div class="form-group">
+                {{ form.phone.label(class="") }}
+                {{ form.phone(class="form-control", disabled=current_user.is_authenticated) }}
+            </div>
+            <div class="form-group">
                 {{ form.address.label(class="") }}
                 {{ form.address(class="form-control", disabled=current_user.is_authenticated) }}
             </div>
