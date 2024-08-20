@@ -74,7 +74,7 @@
                         <th>Kategorija</th>
                         <th>Potkategorija</th>
                         <th>Rasa</th>
-                        <th>Pol (ne prikazuje se kod živine)</th>
+                        <th>Pol</th>
                         <th>Trenutna masa</th>
                         <th>Cena po kg (rsd)</th>
                         <th>Ukupna (rsd)</th>
@@ -194,7 +194,7 @@
                         <th>Kategorija</th>
                         <th>Potkategorija</th>
                         <th>Rasa</th>
-                        <th>Pol (ne prikazuje se kod živine)</th>
+                        <th>Pol</th>
                         <th>Trenutna masa</th>
                         <th>Željena masa</th>
                         <th>Cena tova</th>
@@ -256,6 +256,11 @@
         {% if merchant_order_amount %}
         <legend>Ukupno za uplatu: </legend> 
         <input type="text" class="form-control" value="{{ merchant_order_amount }} rsd" disabled>
+        {% endif %}
+        {% if session.get('delivery')['delivery_status'] %}
+        <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_total']}} rsd je uračunata u ukupan iznos za uplatu</p>
+        {% else %}
+        <p>Usluga dostave nije izabrana</p>
         {% endif %}
         {% if installment_total %}
         <legend>Ukupno na rate: </legend>

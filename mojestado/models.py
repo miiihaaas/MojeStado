@@ -84,6 +84,7 @@ class Animal(db.Model):
     measured_date = db.Column(db.String(20), nullable=False)  # datum merenja
     current_weight = db.Column(db.String(20), nullable=False)  # trenutna težina = preračunava se u odnosu na izmerenu težinu i datum merenja
     wanted_weight = db.Column(db.String(20), nullable=True)  # zeljena težina
+    price_per_kg_farmer = db.Column(db.String(20), nullable=False)  # cena po kg
     price_per_kg = db.Column(db.String(20), nullable=False)  # cena po kg
     total_price = db.Column(db.String(20), nullable=False)  # ukupna cena
     insured = db.Column(db.Boolean, nullable=False)  # osigurano
@@ -121,6 +122,7 @@ class AnimalCategory(db.Model):
     mass_filters = db.Column(db.JSON, nullable=True)
     animals = db.relationship('Animal', back_populates='animal_category', lazy=True)
     animal_races = db.relationship('AnimalRace', back_populates='animal_category', lazy=True)
+    animal_categorization = db.relationship('AnimalCategorization', back_populates='animal_category')
 
 
 class AnimalCategorization(db.Model):
@@ -134,46 +136,13 @@ class AnimalCategorization(db.Model):
     max_weight_gain = db.Column(db.Float, nullable=True)  # max tezina za podklasu priplodova
     fattening_price = db.Column(db.Float, nullable=False)  # cena za podklasu tova
     animals = db.relationship('Animal', back_populates='animal_categorization', lazy=True)
-
-
-# class Product(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False) #!
-#     product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False) #!
-#     product_section_id = db.Column(db.Integer, db.ForeignKey('product_section.id'), nullable=False) #!
-#     product_name = db.Column(db.String(50), nullable=False)
-#     product_description = db.Column(db.String(500), nullable=False)
-#     product_image = db.Column(db.String(20), nullable=False, default='default.jpg') #! prilagoditi da može da se stavi do 10 slika
-#     product_image_collection = db.Column(db.JSON, nullable=True)
-#     #! razraditi konverziju pakovanje (npr kajmak 1kom = 400g)
-#     unit_of_measurement = db.Column(db.String(20), nullable=False) #! jedinica mere može da bude KOM ili KG
-#     weight_conversion = db.Column(db.String(20), nullable=True) #! ako je kom onda mora da se definiše koliko 1kom ima kg
-#     #! ako je kg onda je polje konverzije prazno ili je =1
-#     product_price_per_unit = db.Column(db.String(20), nullable=False) #! da li da se ovo polje preračuna u odnosu na input vrednosti kom, konverzija?
-#     product_price_per_kg = db.Column(db.String(20), nullable=True) #! ako je jedinica mere kg, onda se prepisuje taj podatak, a ako je jedinica mere kom onda se uz pomoć podatka weight_conversion izracunava te vrednosti
-#     organic_product = db.Column(db.Boolean, nullable=False) #! organska proizvodnja
-#     #! dodati količinu/masu
-#     quantity = db.Column(db.String(20), nullable=False) #! količina/masa
-#     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False) #!
-    
-#     product_category = db.relationship('ProductCategory', back_populates='products')
-#     product_subcategories = db.relationship('ProductSubcategory', back_populates='products')
-#     product_section = db.relationship('ProductSection', back_populates='products')
+    animal_category = db.relationship('AnimalCategory', back_populates='animal_categorization')
 
 
 class ProductCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_category_name = db.Column(db.String(50), nullable=False)
     products = db.relationship('Product', back_populates='product_category', lazy=True) #!
-
-
-# class ProductSubcategory(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     product_subcategory_name = db.Column(db.String(50), nullable=False)
-#     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
-#     product_categories = db.relationship('ProductCategory', backref='product_subcategory_category', lazy=True) #!
-#     products = db.relationship('Product', backref='product_subcategory', lazy=True) #!
-#     product_sections = db.relationship('ProductSection', back_populates='product_subcategory', lazy=True)
 
 
 class ProductSection(db.Model):
@@ -226,12 +195,6 @@ class Invoice(db.Model):
     
     invoice_items = db.relationship('InvoiceItems', backref='invoice_items_invoice', lazy=True) #!
     animals = db.relationship('Animal', backref='animal_invoice', lazy=True)
-
-
-# class Payment(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     transactions = db.relationship('Transaction', backref='transaction_payment', lazy=True) #!
-#     pass
 
 
 class InvoiceItems(db.Model):

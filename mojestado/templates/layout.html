@@ -69,7 +69,11 @@
                         </li>
                         {% endif %}
                         <li class="nav-item">
+                            {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
+                            <a class="navbar-brand" href="{{ url_for('main.view_cart')}}" title="Korpa"><i class="fa-solid fa-basket-shopping fa-bounce"></i></a>
+                            {% else %}
                             <a class="navbar-brand" href="{{ url_for('main.view_cart')}}" title="Korpa"><i class="fa-solid fa-basket-shopping"></i></a>
+                            {% endif %}
                         </li>
                     </ul>
                 </div>

@@ -100,6 +100,7 @@ def register_guest_user(form_object):
     user = User(email=form_object.get('email'),
                 name=form_object.get('name'),
                 surname=form_object.get('surname'),
+                phone=form_object.get('phone'),
                 address=form_object.get('address'),
                 city=form_object.get('city'),
                 zip_code=form_object.get('zip_code'),

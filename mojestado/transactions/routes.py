@@ -81,6 +81,7 @@ def user_payment_form():
         form.email.data = current_user.email
         form.name.data = current_user.name
         form.surname.data = current_user.surname
+        form.phone.data = current_user.phone
         form.address.data = current_user.address
         form.city.data = current_user.city
         form.zip_code.data = current_user.zip_code
@@ -121,7 +122,10 @@ def make_order():
     company_id = os.environ.get('PAYSPOT_COMPANY_ID')
     rnd = generate_random_string()
     merchant_order_id = f'MS-{new_invoice.id:09}'  # Treba da se generiše jedinstveni ID za svaku transakciju
-    merchant_order_amount, installment_total = get_cart_total()
+    merchant_order_amount, installment_total, delivery_total = get_cart_total()
+    print(f'*** {session["delivery"]["delivery_status"]=}')
+    if session['delivery']['delivery_status'] == True:
+        merchant_order_amount = merchant_order_amount + delivery_total
     print(f'{merchant_order_amount=}')
     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     secret_key = os.environ.get('PAYSPOT_SECRET_KEY')

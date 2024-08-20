@@ -105,25 +105,39 @@
         </div>
         <div class="row">
             <div class="col-md-9">
-                ovde je bio slajder - ali mogu da se dodaju opcije za ažuriranje cena žive vage po potkategorijama, cena usluga i slično
                 <form action="{{ url_for('users.save_services') }}" method="POST">
                     <input type="hidden" name="farm_id" value="{{ farm.id }}">
-                    <legend>Definisanje cena usluga po kilogramu</legend>
-                    {% for service, category in farm.services.items() %}
-                    <div class="form-check">
-                        <label class="form-check-label">
-                            {{ service }}:
-                        </label>
-                        {% for category_id, price in category.items() %}
-                        <div class="form-group">
-                            <label class="" for="{{service}}_{{category_id}}">* {{ animal_categories[category_id] }}</label>
-                            <input class="form-group" type="number" id="{{service}}_{{category_id}}" name="{{service}}_{{category_id}}" value="{{ price }}">
+                    <fieldset class="border p-4">
+                        <legend class="w-auto px-2">Definisanje cena usluga po kilogramu</legend>
+                        {% for service, category in farm.services.items() %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">{{ service }}</h5>
+                            {% for category_id, price in category.items() %}
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label" for="{{service}}_{{category_id}}">
+                                    {{ animal_categories[category_id] }}
+                                </label>
+                                <div class="col-sm-8">
+                                    <input 
+                                        type="number" 
+                                        class="form-control" 
+                                        id="{{service}}_{{category_id}}" 
+                                        name="{{service}}_{{category_id}}" 
+                                        value="{{ price }}" 
+                                        step="0.01" 
+                                        required
+                                    >
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                         {% endfor %}
+                    </fieldset>
+                    <div class="text-right mt-4">
+                        <button type="submit" class="btn btn-primary">Sačuvaj</button>
                     </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-primary">Sacuvaj</button>
                 </form>
+                
             </div>
             <div class="col-md-3">
                 <div class="form-group">

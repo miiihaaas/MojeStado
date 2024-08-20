@@ -53,15 +53,12 @@
                             <th>Rasa</th>
                             <th>Trenutna masa grla</th>
                             <th>Željena masa grla</th>
-                            <th>Preostali broj hranidbenih dana</th>
+                            <th>Projektovani datum završetka tova</th>
                             <th>Osigurano</th>
                             <th>Organska proizvodnja</th>
                             <th>PG</th>
                             <th>Lokacija</th>
                             <th>Karton grla</th>
-                            <th>Cena tova</th>
-                            <th>uplaćeno za tov</th>
-                            <th>ikonica za prekid tova</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,7 +68,14 @@
                             <td>{{ animal.animal_category.animal_category_name }}</td>
                             <td>{{ animal.animal_categorization.subcategory  }}</td>
                             <td>{{ animal.animal_race.animal_race_name }}</td>
-                            <td>{{ animal.current_weight }}kg</td>
+                            <td>
+                                {{ animal.current_weight }}kg
+                                <span class="info-box"><i class="fa-solid fa-info"></i>
+                                    <span class="tooltip">
+                                        Portal se odriče odgovornosti za netačnu procenu. Procena se vrši na osnovu tabele prirasta.
+                                    </span>
+                                </span>
+                            </td>
                             <td>{{ animal.wanted_weight }}kg</td>
                             <td>{{ animal.fattening_finish_date }}</td>
                             <td>{{ animal.insured }}</td>
@@ -83,9 +87,6 @@
                                 <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
                                 {% endif %}
                             </td>
-                            <td>data</td>
-                            <td>data</td>
-                            <td><button class="btn btn-danger">Prekid tova</button></td>
                         </tr>
                         {% endfor %}
                     </tbody>
