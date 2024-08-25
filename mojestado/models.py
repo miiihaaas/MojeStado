@@ -204,7 +204,43 @@ class InvoiceItems(db.Model):
     invoice_item_details = db.Column(db.JSON, nullable=False)
     invoice_item_type = db.Column(db.Integer, nullable=False) #! 1 = product, 2 = animal, 3 = service, 4 = fattening
     # payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
+    # payments = db.relationship('Payment', backref='payment_invoice_items', lazy=True)
     pass
+
+
+class Debt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_item_id = db.Column(db.Integer, db.ForeignKey('invoice_items.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), nullable=False) #! pending, paid, overdue, canceled
+    user = db.relationship('User', backref='debts', lazy=True)
+    invoice_item = db.relationship('InvoiceItems', backref='debts', lazy=True)
+
+
+class PaymentStatement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    payment_date = db.Column(db.DateTime, nullable=False) #! izvlači iz XML fajla (<DatumIzvoda>20.05.2021</DatumIzvoda>)
+    statement_number = db.Column(db.String(20), nullable=False) #! izvlači iz XML fajla (<BrojIzvoda>108</BrojIzvoda>)
+    total_payment_amount = db.Column(db.Float, nullable=False) #! izvlači iz XML fajla (<IznosPotrazuje>40824,00</IznosPotrazuje>)
+    number_of_items = db.Column(db.Integer, nullable=False) #! izvlači iz XML fajla (for loop bi trebalo da uradi routes.py)
+    number_of_errors = db.Column(db.Integer, nullable=False)
+    payments = db.relationship('Payment', backref='payment_statement_payment', lazy=True)
+
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    invoice_item_id = db.Column(db.Integer, db.ForeignKey('invoice_items.id'), nullable=False)
+    payment_statement_id = db.Column(db.Integer, db.ForeignKey('payment_statement.id'), nullable=False)
+    purpose_of_payment = db.Column(db.String(100), nullable=True) #! svrha uplate
+    payer = db.Column(db.String(100), nullable=True) #! onaj koji je uplatio, podatak iz XML fajla za poređenje sa user_id ako treba
+    reference_number = db.Column(db.String(100), nullable=True) #! poziv na broj
+    payment_error = db.Column(db.Boolean, nullable=False)
+    user = db.relationship('User', backref='payments', lazy=True)
+    invoice_item = db.relationship('InvoiceItems', backref='payments', lazy=True)
+    # payment_statement = db.relationship('PaymentStatement', backref='payments', lazy=True)
 
 
 class FAQ(db.Model):

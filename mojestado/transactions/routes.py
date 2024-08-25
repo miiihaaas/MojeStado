@@ -1,15 +1,14 @@
 import datetime
-import hashlib
-import hmac
+import json
+import xml.etree.ElementTree as ET
 import os
-import random
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user
 from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
-from mojestado.models import Animal, Invoice, PaySpotCallback, User
+from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, generate_random_string, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products
+from mojestado.transactions.functions import calculate_hash, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products
 
 
 transactions = Blueprint('transactions', __name__)
@@ -256,3 +255,232 @@ def cancel_url():
 def error_url():
     flash('Transakcija neuspešna', 'danger')
     return redirect(url_for('main.view_cart'))
+
+
+@transactions.route('/process_payment_statment', methods=['POST'])
+def process_payment_statment():
+    print(f'** *{request.form=}')
+    if request.method == 'POST' and ('importButton' in request.form):
+        file = request.files['fileUpload']
+        if file.filename == '':
+            error_message = 'Nije izabran CML fajl.'
+            print(error_message)
+            flash(error_message, 'danger')
+            return render_template('admin_view_slips.html', title='Izvodi')
+        tree = ET.parse(file)
+        root = tree.getroot()
+        
+        # Pristupanje atributima u elementu 'Zaglavlje'
+        zaglavlje_element = root.find('.//Zaglavlje')
+        if zaglavlje_element is not None:
+            datum_izvoda_element = zaglavlje_element.attrib.get('DatumIzvoda')
+            broj_izvoda_element = zaglavlje_element.attrib.get('BrojIzvoda')
+            iznos_potrazuje_element = zaglavlje_element.attrib.get('PotrazniPromet')
+        else:
+            flash("Greška prilikom čitanja zaglavlja XML fajla.", "danger")
+            return redirect(url_for('users.admin_view_slips'))
+        # Pronalaženje broja pojavljivanja elementa <Stavka>
+        broj_pojavljivanja = len(root.findall('.//Stavke'))
+        print(f'** {broj_pojavljivanja=}')
+        
+        #todo: implementacija provere da li je učitani izvod već u bazi
+        
+        stavke = []
+        for stavka in root.findall('Stavke'):
+            podaci = {}
+            podaci['RacunZaduzenja'] = stavka.attrib.get('BrojRacunaPrimaocaPosiljaoca') #! onaj ko plaća
+            podaci['NazivZaduzenja'] = stavka.attrib.get('NalogKorisnik') #! ime onog ko plaća
+            # podaci['MestoZaduzenja'] = stavka.find('MestoZaduzenja').text #? izgleda da ne treba
+            # podaci['IzvorInformacije'] = stavka.find('IzvorInformacije').text #? izgleda da ne treba
+            # podaci['ModelPozivaZaduzenja'] = stavka.find('ModelPozivaZaduzenja').text #? izgleda da ne treba
+            # podaci['PozivZaduzenja'] = stavka.find('PozivZaduzenja').text #? izgleda da ne treba
+            # podaci['SifraPlacanja'] = stavka.find('SifraPlacanja').text #? izgleda da ne treba
+            podaci['Iznos'] = stavka.attrib.get('Potrazuje')
+            # podaci['RacunOdobrenja'] = stavka.find('RacunOdobrenja').text #! onom kome se plaća ||| izgleda da ne treba
+            # podaci['NazivOdobrenja'] = stavka.find('NazivOdobrenja').text #? izgleda da ne treba
+            # podaci['MestoOdobrenja'] = stavka.find('MestoOdobrenja').text #? izgleda da ne treba
+            # podaci['ModelPozivaOdobrenja'] = stavka.find('ModelPozivaOdobrenja').text #? izgleda da ne treba
+            # podaci['PozivOdobrenja'] = stavka.find('PozivOdobrenja').text if stavka.find('PozivOdobrenja').text else "-" #! ako nije None onda preuzmi vrednost iz xml, akoj je None onda mu dodeli "-"
+            podaci['SvrhaDoznake'] = stavka.attrib.get('Opis') #! ovo je svrha uplate:  isti princip kao gornji red 
+            #! jedno od ova dva je svrha uplate: podaci['SvrhaDoznake'] = stavka.attrib.get('Opis') #! ovo je svrha uplate:  isti princip kao gornji red 
+            podaci['PozivNaBrojApp'] = stavka.attrib.get('PozivNaBrojKorisnika')
+            # podaci['DatumValute'] = stavka.find('DatumValute').text #? izgleda da ne treba
+            # podaci['PodatakZaReklamaciju'] = stavka.find('PodatakZaReklamaciju').text #? izgleda da ne treba
+            # podaci['VremeUnosa'] = stavka.find('VremeUnosa').text #? izgleda da ne treba
+            # podaci['VremeIzvrsenja'] = stavka.find('VremeIzvrsenja').text #? izgleda da ne treba
+            # podaci['StatusNaloga'] = stavka.find('StatusNaloga').text #? izgleda da ne treba
+            # podaci['TipSloga'] = stavka.find('TipSloga').text #? izgleda da ne treba
+            
+            provera_validnosti_poziva_na_broj(podaci)
+            
+            stavke.append(podaci)
+        
+        print(f'ako je uvezi izvod: vraćaj na istu stranu')
+        flash(f'Uspešno učitan XML fajl.', 'success')
+        return render_template('admin_view_slips.html', 
+                                title='Izvodi',
+                                broj_izvoda_element=broj_izvoda_element,
+                                datum_izvoda_element=datum_izvoda_element,
+                                iznos_potrazuje_element=iznos_potrazuje_element,
+                                broj_pojavljivanja=broj_pojavljivanja,
+                                stavke=stavke)
+    if request.method == 'POST' and ('saveAndProcessButton' in request.form):
+        print(f'ako je sačuvaj i rasknjiži: ----')
+        print(f'{request.form=}')
+        statement_number = int(request.form['statement_number'])
+        payment_date = datetime.datetime.strptime(request.form['payment_date'], '%d.%m.%Y')
+        total_payment_amount = float(request.form['total_payment_amount'].replace(',', '.'))
+        number_of_items = int(request.form['number_of_items'])
+        print(f'** {statement_number=}; {payment_date=}')
+        existing_payment_statement = PaymentStatement.query.filter_by(payment_date=payment_date, 
+                                                                        statement_number=statement_number).first()
+        if existing_payment_statement:
+            error_message = f'Uplata za dati datum ({payment_date}) i broj računa ({statement_number}) već postoji u bazi. Izaberite novi XML fajl i pokušajte ponovo.'
+            flash(error_message, 'danger')
+            return redirect(url_for('users.admin_view_slips'))
+        new_payment_statement = PaymentStatement(payment_date=payment_date,
+                                                statement_number=statement_number,
+                                                total_payment_amount=total_payment_amount,
+                                                number_of_items=number_of_items,
+                                                number_of_errors=0)
+        db.session.add(new_payment_statement)
+        db.session.commit()
+        #TODO: dodati u tabelu pyments svaku stavku
+        uplatioci = request.form.getlist('uplatilac')
+        iznosi = request.form.getlist('iznos')
+        pozivi_na_broj = request.form.getlist('poziv_na_broj')
+        svrha_uplate = request.form.getlist('svrha_uplate')
+        
+        records = []
+        for i in range(len(iznosi)):
+            records.append({
+                'uplatilac': uplatioci[i],
+                'iznos': iznosi[i],
+                'poziv_na_broj': pozivi_na_broj[i],
+                'svrha_uplate': svrha_uplate[i],
+                'payment_statement_id': new_payment_statement.id
+            })
+        number_of_errors = 0
+        user_ids = [str(user.id).zfill(4) for user in User.query.filter_by(user_type='user').all()]
+        invoice_items_ids = [str(invoice_item.id).zfill(4) for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()]
+        for record in records:
+            user_id = record['poziv_na_broj'][-4:] #! provali ovde koji deo iz poziva na broj je user_id
+            invoice_item_id = record['poziv_na_broj'][:4] #! provali ovde koji deo iz poziva na broj je invoice_item_id
+            amaunt = float(record['iznos'].replace(',', '.'))
+            payment_error = False
+            if (user_id not in user_ids) or (invoice_item_id not in invoice_items_ids):
+                user_id = 1
+                invoice_item_id = 0
+                payment_error = True
+                number_of_errors += 1
+            new_payment = Payment(amount=amaunt,
+                                user_id=user_id,
+                                invoice_item_id=invoice_item_id,
+                                payment_statement_id=new_payment_statement.id,
+                                purpose_of_payment=record['svrha_uplate'],
+                                payer=record['uplatilac'],
+                                reference_number=record['poziv_na_broj'],
+                                payment_error=payment_error)
+            db.session.add(new_payment)
+            db.session.commit()
+        new_payment_statement.number_of_errors = number_of_errors
+        db.session.commit()
+        flash(f'Uspešno ste uvezli izvod broj: {new_payment_statement.statement_number}), od datuma {new_payment_statement.payment_date.strftime("%d.%m.%Y.")}', 'success')
+        return redirect(url_for('users.admin_view_slips'))
+    payment_statements = PaymentStatement.query.all()
+    print(f'{payment_statements=}')
+
+    return render_template('admin_view_slips.html', payment_statments=payment_statements)
+
+@transactions.route("/edit_payment_statement/<int:payment_statement_id>", methods=['GET', 'POST'])
+def edit_payment_statement(payment_statement_id):
+    payment_statement = PaymentStatement.query.get_or_404(payment_statement_id)
+    payments = Payment.query.filter_by(payment_statement_id=payment_statement_id).all()
+    users = User.query.filter_by(user_type='user').all()
+    users_data = [
+        {
+            'user_id': 0,
+            'user_name': 'Ignorisana',
+            'user_surname': 'uplata'
+        }
+    ]
+    for user in users:
+        user_data = {
+            'user_id': user.id,
+            'user_name': user.name,
+            'user_surname': user.surname
+        }
+        users_data.append(user_data)
+    print(f'** {users_data=}')
+    invoice_items = InvoiceItems.query.filter_by(invoice_item_type=4).all()
+    invoice_item_ids = []
+    invoice_items_data = [
+        {
+            'invoice_item_id': 0,
+            'invoice_item_animal': '',
+            'invoice_item_farm': ''
+        }
+    ]
+    for invoice_item in invoice_items:
+        invoice_item_data = {
+            'invoice_item_id': invoice_item.id,
+            'invoice_item_animal': invoice_item.invoice_item_details.get('category', 'N/A'),
+            'invoice_item_farm': invoice_item.invoice_item_details.get('farm', 'N/A')
+        }
+        invoice_items_data.append(invoice_item_data)
+        invoice_item_ids.append(invoice_item.id)
+    print(f'** {invoice_items_data=}')
+    return render_template('edit_payment_statement.html', 
+                            payment_statement=payment_statement,
+                            payments=payments,
+                            users=json.dumps(users_data),
+                            invoice_items=json.dumps(invoice_items_data),
+                            invoice_item_ids=invoice_item_ids)
+
+
+@transactions.route("/submit_records", methods=['POST'])
+def submit_records():
+    data = request.get_json()
+    print(f'{data=}')
+    print('izmena postojećeg izvoda')
+    payment_statement_id=data['payment_statement_id']
+    payments = Payment.query.filter_by(payment_statement_id=payment_statement_id).all()
+    debts = Debt.query.all()
+    all_reference_numbers = [f'{debt.user_id:05d}-{debt.invoice_item_id:06d}' for debt in debts]
+    all_reference_numbers.append('00001-000000')
+    print(f'{all_reference_numbers=}')
+    
+    number_of_errors = 0
+    user_ids = [user.id for user in User.query.filter_by(user_type='user').all()]
+    invoice_items_ids = [invoice_item.id for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()]
+    print(f'{user_ids=}')
+    print(f'{invoice_items_ids=}')
+    for i in range(len(data['records'])):
+        record_id = data['records'][i]['record_id']
+        user_id = data['records'][i]['user_id']
+        invoice_item_id = data['records'][i]['invoice_item_id']
+        print(f'{record_id=}, {user_id=}, {invoice_item_id=}')
+        if (user_id not in user_ids) or (invoice_item_id not in invoice_items_ids):
+            print(f'**** debug, nema u listama user_ids i invoice_items_ids, {user_id=} vs {user_ids}, {invoice_item_id=} vs {invoice_items_ids}')
+            user_id = 1
+            invoice_item_id = 0
+        edit_payment = Payment.query.get(record_id)
+        edit_payment.user_id = user_id
+        edit_payment.invoice_item_id = invoice_item_id
+        reference_number = f'{user_id:05d}-{invoice_item_id:06d}'
+        if reference_number == '00001-000000':
+            number_of_errors += 1
+            edit_payment.payment_error = True
+        elif reference_number in all_reference_numbers:
+            edit_payment.payment_error = False
+        else:
+            number_of_errors += 1
+            edit_payment.payment_error = True
+        edit_payment.reference_number = reference_number
+        db.session.commit()
+    payment_statement = PaymentStatement.query.get(payment_statement_id)
+    payment_statement.number_of_errors = number_of_errors
+    db.session.commit()
+    flash(f'Uspešno su sačuvane izmene u uplati broj: {payment_statement.statement_number}, od datuma {payment_statement.payment_date.strftime("%d.%m.%Y.")}', 'success')
+
+    return str(payment_statement_id)

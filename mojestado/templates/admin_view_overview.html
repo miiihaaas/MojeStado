@@ -51,20 +51,12 @@
                 <tr>
                     <td>{{ user.id }}</td>
                     <td>{{ user.name }} {{ user.surname }}</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
+                    <td>{{ user.debts_total or 0 }}</td>
+                    <td>{{ user.payments_total or 0 }}</td>
+                    <td>{{ user.saldo or 0 }}</td>
                     <td><a href="{{ url_for('users.admin_view_overview_user', user_id=user.id) }}" class="btn btn-primary">pregled</a></td>
                 </tr>
                 {% endfor %}
-                <tr>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>data</td>
-                    <td>pregled kartice pojedinačnog korisnika</td>
-                </tr>
             </tbody>
         </table>
     </div>

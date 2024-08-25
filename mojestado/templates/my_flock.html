@@ -104,6 +104,7 @@
                                     data-category="{{ animal.animal_category.animal_category_name }}"
                                     data-subcategory="{{ animal.animal_categorization.subcategory }}"
                                     data-race="{{ animal.animal_race.animal_race_name }}"
+                                    data-mindjusha="{{ animal.animal_id }}"
                                     data-gender="{{ animal.animal_gender }}"
                                     data-weight="{{ animal.current_weight }}"
                                     data-price="{{ animal.price_per_kg_farmer }}"
@@ -154,6 +155,10 @@
                                     <div class ="form-group">
                                         {{ form.race.label }}
                                         {{ form.race (class="form-select form-select-lg", id="race") }}
+                                    </div>
+                                    <div class ="form-group">
+                                        {{ form.animal_id.label }}
+                                        {{ form.animal_id (class="form-control form-control-lg", id="animal_id") }}
                                     </div>
                                     <div class ="form-group">
                                         {{ form.animal_gender.label }}
@@ -220,6 +225,10 @@
                                 </div>
                                 <form action="" method="post" enctype="multipart/form-data">
                                     {{ form.hidden_tag() }}
+                                    <div class ="form-group">
+                                        {{ form.animal_id.label }}
+                                        <input type="text" class="form-control form-control-lg" id="mindjusha" name="mindjusha">
+                                    </div>
                                     <div class="form-group">
                                         {{ form.animal_gender.label }}
                                         {{ form.animal_gender(class="form-select form-select-lg", id="animal_gender") }}
@@ -391,6 +400,8 @@
             modal.find('#category').val($(this).data('category'));
             modal.find('#subcategory').val($(this).data('subcategory'));
             modal.find('#race').val($(this).data('race'));
+            modal.find('#mindjusha').val($(this).data('mindjusha'));
+            console.log($(this).data('mindjusha'));
             modal.find('#animal_gender').val($(this).data('gender'));
             modal.find('#weight').val($(this).data('weight'));
             modal.find('#price').val($(this).data('price'));

@@ -3,13 +3,13 @@ import json
 import os
 from flask import Blueprint, app, current_app, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
+from flask_login import login_user, login_required, logout_user, current_user
+from sqlalchemy import func
 from mojestado import bcrypt, db
 from mojestado.animals.functions import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, AddProductForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
 from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email
-from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Invoice, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
-from flask_login import login_user, login_required, logout_user, current_user
-
+from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Debt, Invoice, Payment, PaymentStatement, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
 
 users = Blueprint('users', __name__)
 
@@ -200,14 +200,10 @@ def my_flock(farm_id):
             return redirect(url_for('users.my_flock', farm_id=farm.id))
         print(f'category_id: {category_id}')
         animals = Animal.query.all()
-        if len(animals) > 0:
-            animal_max_id = max([animal.id for animal in animals]) + 1
-        else:
-            animal_max_id = 1
             
         print(f'{form.cardboard.data=}')
         new_animal = Animal(
-            animal_id=f'{farm.id:05}-{int(form.category.data):02}-{animal_max_id:06}',
+            animal_id=form.animal_id.data,
             animal_category_id = form.category.data,
             animal_categorization_id=category_id,
             animal_race_id = form.race.data,
@@ -258,6 +254,7 @@ def remove_animal(animal_id):
 def edit_animal(animal_id):
     animal = Animal.query.get_or_404(animal_id)
     print(f'***{animal=}')
+    animal.animal_id = request.form.get('mindjusha')
     animal.animal_gender = request.form.get('animal_gender')
     animal.current_weight = request.form.get('weight')
     animal.price_per_kg_farmer = request.form.get('price') 
@@ -571,12 +568,36 @@ def admin_view_overview():
     if current_user.user_type != 'admin':
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
+    # debts = Debt.query.filter_by(status='pendig').all()
+    # payments = Payment.query.filter_by(status='pendig').all()
     users = User.query.filter_by(user_type='user').all()
+    for user in users:
+        user_debts_total = db.session.query(func.sum(Debt.amount)).filter_by(user_id=user.id).scalar()
+        user_payments_total = db.session.query(func.sum(Payment.amount)).filter_by(user_id=user.id).scalar()
+        user.debts_total = user_debts_total
+        user.payments_total = user_payments_total
+        user.saldo = (user_debts_total or 0) - (user_payments_total or 0)
+
     return render_template('admin_view_overview.html',
                             users=users,
                             title='Pregled stanja')
 
 
+# @users.route("/admin_view_overview_user/<int:user_id>", methods=['GET', 'POST'])
+# def admin_view_overview_user(user_id):
+#     if not current_user.is_authenticated:
+#         return redirect(url_for('main.home'))
+#     if current_user.user_type != 'admin':
+#         flash('Nemate pravo pristupa', 'danger')
+#         return redirect(url_for('main.home'))
+#     user = User.query.get_or_404(user_id)
+#     debts = Debt.query.filter_by(user_id=user.id).all()
+#     payments = Payment.query.filter_by(user_id=user.id).all()
+#     for debt in debts:
+#         pass
+#     return render_template('admin_view_overview_user.html',
+#                             user=user,
+#                             title='Pregled stanja korisnika')
 @users.route("/admin_view_overview_user/<int:user_id>", methods=['GET', 'POST'])
 def admin_view_overview_user(user_id):
     if not current_user.is_authenticated:
@@ -584,9 +605,60 @@ def admin_view_overview_user(user_id):
     if current_user.user_type != 'admin':
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
+    
+    # Dohvati korisnika
     user = User.query.get_or_404(user_id)
+    
+    # Dohvati dugovanja i uplate
+    debts = Debt.query.filter_by(user_id=user.id).all()
+    payments = Payment.query.filter_by(user_id=user.id).all()
+    
+    # Kreiraj listu za prikaz tabela po tovovima
+    tovovi = {}
+    saldo = 0
+    
+    # Obradi dugovanja i uplate
+    for debt in debts:
+        # Kreiraj listu za svaki tov (invoice_item_type 4 - tov)
+        if debt.invoice_item.invoice_item_type == 4:
+            tov_id = debt.invoice_item_id
+            if tov_id not in tovovi:
+                tovovi[tov_id] = []
+            
+            tovovi[tov_id].append({
+                'date': debt.invoice_item.invoice_items_invoice.datetime,
+                'description': "Zaduženje: " + debt.invoice_item.invoice_item_details.get('description', 'N/A'),
+                'debt': debt.amount,
+                'debt_id': debt.id,
+                'payment': 0,
+                'payment_statement_id': None,
+                'saldo': saldo - debt.amount,  # Računanje salda
+                'type': 'debt'
+            })
+            saldo -= debt.amount
+    
+    for payment in payments:
+        tov_id = payment.invoice_item_id
+        if payment.invoice_item.invoice_item_type == 4:
+            if tov_id not in tovovi:
+                tovovi[tov_id] = []
+            
+            tovovi[tov_id].append({
+                'date': payment.payment_statement_payment.payment_date,
+                'description': "Uplata za: " + payment.invoice_item.invoice_item_details.get('description', 'N/A'),
+                'debt': 0,
+                'debt_id': None,
+                'payment': payment.amount,
+                'payment_statement_id': payment.payment_statement_id,
+                'saldo': saldo + payment.amount,  # Računanje salda
+                'type': 'payment'
+            })
+            saldo += payment.amount
+    print(f'** {tovovi=}')
     return render_template('admin_view_overview_user.html',
                             user=user,
+                            tovovi=tovovi,
+                            saldo=saldo,
                             title='Pregled stanja korisnika')
 
 
@@ -597,8 +669,11 @@ def admin_view_slips():
     if current_user.user_type != 'admin':
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
+    payment_statements = PaymentStatement.query.all()
+    print(f'{payment_statements=}')
     return render_template('admin_view_slips.html',
-                            title='Pregled PG')
+                            title='Pregled',
+                            payment_statements=payment_statements)
 
 
 @users.route("/admin_edit_profile/<int:user_id>", methods=['GET', 'POST'])
