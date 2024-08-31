@@ -56,14 +56,14 @@ def get_cart_total():
     return cart_total, installment_total, delivery_total
 
 
-def calculate_delivery_price(animal_price):
-    if 15 <= animal_price < 30:
+def calculate_delivery_price(animal_weight):
+    if 1 <= animal_weight < 30:
         return 1000
-    elif 30 <= animal_price < 80:
+    elif 30 <= animal_weight < 80:
         return 1200
-    elif 80 <= animal_price < 130:
+    elif 80 <= animal_weight < 130:
         return 1500
-    elif 130 <= animal_price < 200:
+    elif 130 <= animal_weight < 200:
         return 1800
-    elif 200 <= animal_price <= 800:
+    elif 200 <= animal_weight <= 800:
         return 3000

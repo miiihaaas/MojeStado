@@ -37,10 +37,12 @@ def generate_payment_slips_attach(invoice_item):
     data_list = []
     qr_code_images = []
     path = f'{project_folder}/static/payment_slips/'
-    broj_rata = int(json.loads(invoice_item.invoice_item_details)['installment_options'])
-    
+    invoice_item_details = invoice_item.invoice_item_details
+    print(f'{invoice_item_details=}')
+    broj_rata = int(invoice_item_details['installment_options'])
+    print(f'** {broj_rata=}, {type(broj_rata)=}')
     for i in range(1, broj_rata+1):
-        iznos_duga = float(json.loads(invoice_item.invoice_item_details)['fattening_price'])
+        iznos_duga = float(invoice_item.invoice_item_details['fattening_price'])
         iznos_rate = iznos_duga/broj_rata
         print(f'{iznos_duga=}, {broj_rata=}, {iznos_rate=}')
         uplatilac = invoice_item.invoice_items_invoice.user_invoice.name + ' ' + invoice_item.invoice_items_invoice.user_invoice.surname
@@ -50,7 +52,7 @@ def generate_payment_slips_attach(invoice_item):
         svrha_uplate = f'Uplata za uslugu tova - rata {i}'
         
         new_data = {
-            'user_id': invoice_item.invoice_items_invoice.user_invoice.user_id,
+            'user_id': invoice_item.invoice_items_invoice.user_invoice.id,
             'uplatilac': invoice_item.invoice_items_invoice.user_invoice.name + ' ' + invoice_item.invoice_items_invoice.user_invoice.surname,
             'svrha_uplate': f'Uplata za uslugu tova - rata {i}',
             'primalac': 'Naša imperija doo',
@@ -72,7 +74,7 @@ def generate_payment_slips_attach(invoice_item):
             "C": "1",
             "R": "265178031000308698",
             "N": "Naša imperija doo", #! da li treba adresa? Kneza Grbovića 10 || 14242 Miionica
-            "I": iznos_rate,
+            "I": f'RSD{str(round(iznos_rate, 2)).replace(".", ",")}',
             "P": uplatilac,
             "SF": sifra_placanja,
             "S": svrha_uplate if len(svrha_uplate) < 36 else svrha_uplate[:35], #! za generisanje QR koda maksimalno može da bude 35 karaktera
@@ -114,25 +116,25 @@ def generate_payment_slips_attach(invoice_item):
         if counter % 3 == 1:
             pdf.add_page()
             y = 0
-            y_qr = 50
+            y_qr = 53
             pdf.line(210/3, 10, 210/3, 237/3)
             pdf.line(2*210/3, 10, 2*210/3, 237/3)
         elif counter % 3 == 2:
             print(f'druga trećina')
             y = 99
-            y_qr = 149
+            y_qr = 152
             pdf.line(210/3, 110, 210/3, 99+237/3)
             pdf.line(2*210/3, 110, 2*210/3, 99+237/3)
         elif counter % 3 == 0:
             print(f'treća trećina')
             y = 198
-            y_qr = 248
+            y_qr = 251
             pdf.line(210/3, 210, 210/3, 198+237/3)
             pdf.line(2*210/3, 210, 2*210/3, 198+237/3)
         pdf.set_font('DejaVuSansCondensed', 'B', 16)
         pdf.set_y(y_qr)
         pdf.set_x(2*170/3)
-        pdf.image(f'{project_folder}/static/payment_slips/qr_code/{qr_code_images[i]}' , w=25)
+        # pdf.image(f'{project_folder}/static/payment_slips/qr_code/{qr_code_images[i]}' , w=25)
         if i < len(qr_code_images):
             pdf.image(f'{project_folder}/static/payment_slips/qr_code/{qr_code_images[i]}' , w=25)
         else:

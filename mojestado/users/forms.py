@@ -75,7 +75,7 @@ class AddAnimalForm(FlaskForm):
     subcategory = SelectField('Podkategorija', choices=[])
     race = SelectField('Rasa', choices=[])
     intended_for = SelectField('Namena', choices=['tov', 'priplod'])
-    animal_id = IntegerField('ID zivotinje', validators=[DataRequired(), Length(min=10, max=10)])
+    animal_id = IntegerField('ID zivotinje', validators=[Length(min=10, max=10)])
     weight = FloatField('Težina (kg)', validators=[DataRequired()])
     price = FloatField('Cena po kg', validators=[DataRequired()])
     insured = BooleanField('Osigurano')

@@ -149,7 +149,11 @@
                     <tbody>
                         {% for animal in animals %}
                         <tr>
-                            <td>{{ animal.animal_id }}</td>
+                            <td>
+                            {% if animal.animal_id %}
+                                {{ animal.animal_id }}
+                            {% endif %}
+                            </td>
                             <td>{{ animal.animal_categorization.subcategory }}</td>
                             <td>{{ animal.animal_race.animal_race_name }}</td>
                             <td>{{ animal.animal_gender }}</td>

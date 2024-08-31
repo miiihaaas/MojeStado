@@ -2,13 +2,13 @@ import datetime
 import json
 import xml.etree.ElementTree as ET
 import os
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_login import current_user
 from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products
+from mojestado.transactions.functions import calculate_hash, generate_payment_slips_attach, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products
 
 
 transactions = Blueprint('transactions', __name__)
@@ -237,6 +237,37 @@ $response
         return jsonify({"status": "success"}), 200  # Vrati odgovor serveru
 
     return jsonify({"error": "No data received"}), 400
+
+
+@transactions.route('/callback_local_test', methods=['GET', 'POST'])
+def callback_local_test():
+    print(f'callback_local_test: {request.form=}')  # Promena: koristimo request.form umesto request.args
+    invoice_id = int(request.form.get('merchantOrderID').split('-')[1])
+    amount = float(request.form.get('merchantOrderAmount'))
+    data = {
+        'test': 'test'
+    }
+    new_payspot_callback = PaySpotCallback(invoice_id=invoice_id,
+                                        amount=amount,
+                                        recived_at=datetime.datetime.now(),
+                                        callback_data=data)
+    print(f'** {new_payspot_callback=}')
+    db.session.add(new_payspot_callback)
+    print(f'** {invoice_id=}')
+    invoice = Invoice.query.get(invoice_id)
+    invoice.status = 'paid'
+
+    db.session.commit()
+
+    user_id = invoice.user_id
+    user = User.query.get(user_id)
+
+
+    deactivate_animals(invoice_id)
+    deactivate_products(invoice_id)
+    send_email(user, invoice_id)
+    # clear_cart_session()
+    return redirect(url_for('main.view_cart'))
 
 
 @transactions.route('/success_url', methods=['GET'])
@@ -484,3 +515,19 @@ def submit_records():
     flash(f'Uspešno su sačuvane izmene u uplati broj: {payment_statement.statement_number}, od datuma {payment_statement.payment_date.strftime("%d.%m.%Y.")}', 'success')
 
     return str(payment_statement_id)
+
+@transactions.route('/generate_payment_slips/<int:payment_statement_id>', methods=['GET', 'POST'])
+def generate_payment_slips(payment_statement_id):
+    invoice_item = InvoiceItems.query.get_or_404(payment_statement_id)
+    filename = generate_payment_slips_attach(invoice_item)
+    current_file_path = os.path.abspath(__file__)
+    project_folder = os.path.dirname(os.path.dirname(current_file_path))
+    filepath = os.path.join(project_folder, 'static', 'payment_slips', filename)
+    
+    # Relativna putanja do fajla za klijentsku stranu
+    file_url = url_for('static', filename=f'payment_slips/{filename}', _external=True)
+    
+    flash('Generisana uplatnica', 'success')
+    
+    # Preusmeravanje na generisani PDF fajl
+    return redirect(file_url)

@@ -1,11 +1,14 @@
 import datetime
 import json
+from operator import itemgetter
 import os
-from flask import Blueprint, app, current_app, jsonify
+from flask import Blueprint, current_app, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
 from flask_login import login_user, login_required, logout_user, current_user
+from flask_mail import Message
+from itsdangerous import Serializer
 from sqlalchemy import func
-from mojestado import bcrypt, db
+from mojestado import bcrypt, db, app, mail
 from mojestado.animals.functions import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, AddProductForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
 from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email
@@ -13,6 +16,28 @@ from mojestado.models import Animal, AnimalCategorization, AnimalCategory, Anima
 
 users = Blueprint('users', __name__)
 
+
+def generate_confirmation_token(user):
+    s = Serializer(app.config['SECRET_KEY'])
+    return s.dumps(user.email, salt=app.config['SECURITY_PASSWORD_SALT'])
+
+
+def confirm_token(token, expiration=1800):
+    s = Serializer(app.config['SECRET_KEY'])
+    try:
+        email = s.loads(token, salt=app.config['SECURITY_PASSWORD_SALT'], max_age=expiration)
+    except:
+        return False
+    return email
+
+
+def send_confirmation_email(user):
+    token = generate_confirmation_token(user)
+    confirm_url = url_for('users.confirm_email', token=token, _external=True)
+    html = render_template('confirm_email.html', confirm_url=confirm_url)
+    subject = "Molimo potvrdite svoju registraciju"
+    msg = Message(subject=subject, recipients=[user.email], html=html, sender=current_app.config['MAIL_DEFAULT_SENDER'])
+    mail.send(msg)
 
 @users.route("/register_farm", methods=['GET', 'POST'])
 def register_farm(): #! Registracija poljoprivrednog gazdinstva
@@ -31,7 +56,7 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                     PBG=form.pbg.data,
                     JMBG=form.jmbg.data,
                     MB=form.mb.data,
-                    user_type='farm_inactive', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
+                    user_type='farm_unverified', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
                     registration_date=datetime.date.today()
                     )
         db.session.add(user)
@@ -49,9 +74,11 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                     services={"klanje": {"1": "0", "2": "0", "3": "0", "4": "0", "5": "0", "6": "0", "7": "0", "8": "0"}, "obrada": {"1": "0", "2": "0", "3": "0"}})
         db.session.add(farm)
         db.session.commit()
+        
+        # Slanje mejla za potvrdu registracije
+        send_confirmation_email(user)
+        
         flash(f'Uspesno ste poslali zahtev za registraciju. Na Vaš mejl je poslat ugovor pomoću koga se završava registracija.', 'success')
-        #! napisati kod za generisanje ugovora i slanje ugovora na mejl
-        # send_contract(user) #! aktivirati ovaj kod kada se postavi funkcionalnost slanja mejla
         return redirect(url_for('main.home'))
     elif request.method == 'GET':
         return render_template('register_farm.html', 
@@ -75,17 +102,36 @@ def register_user(): #! Registracija korisnika
                     city=form.city.data,
                     zip_code=form.zip_code.data,
                     JMBG=form.jmbg.data,
-                    user_type='user', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
+                    user_type='user_unverified', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
                     registration_date = datetime.date.today()
                     )
         db.session.add(user)
         db.session.commit()
+        send_confirmation_email(user)
         flash(f'Uspesno ste se poslali zahtev za registraciju. Na Vašu mejl adresu je poslat link za potvrdu registracije.', 'success')
         #! nastaviti kod za slanje mejla korisniku
-        # send_conformation_email(user) #! aktiviraj ovaj kod kada se postavi funkcionalnost slanja mejla
         return redirect(url_for('main.home'))
     return render_template('register_user.html', title='Registracija korisnika',
                             form=form)
+
+users.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = confirm_token(token)
+    except:
+        flash('Link za potvrdu je neispravan ili je istekao.', 'danger')
+        return redirect(url_for('users.login'))
+    user = User.query.filter_by(email=email).first_or_404()
+    if user.user_type == 'user':
+        flash('Vas email je vec potvrđen', 'info')
+    else:
+        if user.user_type == 'user_unverified':
+            user.user_type = 'user'
+        elif user.user_type == 'farm_unverified':
+            user.user_type = 'farm_inactive'
+        db.session.commit()
+        flash('Vas nalog je u spešno potvrđen', 'success')
+    return redirect(url_for('main.home'))
 
 @users.route("/login", methods=['GET', 'POST'])
 def login():
@@ -606,20 +652,13 @@ def admin_view_overview_user(user_id):
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
     
-    # Dohvati korisnika
     user = User.query.get_or_404(user_id)
-    
-    # Dohvati dugovanja i uplate
     debts = Debt.query.filter_by(user_id=user.id).all()
     payments = Payment.query.filter_by(user_id=user.id).all()
     
-    # Kreiraj listu za prikaz tabela po tovovima
     tovovi = {}
-    saldo = 0
     
-    # Obradi dugovanja i uplate
     for debt in debts:
-        # Kreiraj listu za svaki tov (invoice_item_type 4 - tov)
         if debt.invoice_item.invoice_item_type == 4:
             tov_id = debt.invoice_item_id
             if tov_id not in tovovi:
@@ -632,10 +671,8 @@ def admin_view_overview_user(user_id):
                 'debt_id': debt.id,
                 'payment': 0,
                 'payment_statement_id': None,
-                'saldo': saldo - debt.amount,  # Računanje salda
                 'type': 'debt'
             })
-            saldo -= debt.amount
     
     for payment in payments:
         tov_id = payment.invoice_item_id
@@ -650,15 +687,23 @@ def admin_view_overview_user(user_id):
                 'debt_id': None,
                 'payment': payment.amount,
                 'payment_statement_id': payment.payment_statement_id,
-                'saldo': saldo + payment.amount,  # Računanje salda
                 'type': 'payment'
             })
-            saldo += payment.amount
-    print(f'** {tovovi=}')
+
+    # Sort transactions by date and calculate saldo for each tov
+    for tov_id, transactions in tovovi.items():
+        transactions.sort(key=itemgetter('date'))
+        saldo = 0
+        for transaction in transactions:
+            saldo = saldo - transaction['debt'] + transaction['payment']
+            transaction['saldo'] = saldo
+
+    total_saldo = sum(transactions[-1]['saldo'] for transactions in tovovi.values() if transactions)
+
     return render_template('admin_view_overview_user.html',
                             user=user,
                             tovovi=tovovi,
-                            saldo=saldo,
+                            total_saldo=total_saldo,
                             title='Pregled stanja korisnika')
 
 

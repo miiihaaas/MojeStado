@@ -57,7 +57,7 @@
                     <td>{{ transaction.saldo }}</td>
                     <td>
                         {% if transaction.type == 'debt' %}
-                        <a href="#" class="btn btn-secondary">Generiši uplatnicu</a>
+                        <a href="{{ url_for('transactions.generate_payment_slips', payment_statement_id=tov_id )}}" target="_blank" class="btn btn-secondary">Generiši uplatnicu</a>
                         {% elif transaction.type == 'payment' %}
                         <a href="{{ url_for('transactions.edit_payment_statement', payment_statement_id=transaction.payment_statement_id) }}" class="btn btn-primary">Pogledaj izvod</a>
                         {% endif %}
@@ -67,7 +67,8 @@
             </tbody>
         </table>
         {% endfor %}
-        <h4>Ukupni saldo: {{ saldo }}</h4>
+        <h4>Ukupni saldo: {{ total_saldo }}</h4>
+        <button class="btn btn-primary">Izvoz u pdf</button>
     </div>
 </section>
 {% endblock %}

@@ -138,23 +138,32 @@
             saveAndProcessButton.prop('disabled', false)
         }
     });
-    </script>
-    <script>
-        const rows = document.querySelectorAll('#payment_statments_data tbody tr');
-    
-        rows.forEach(row => {
-        const tds = row.querySelectorAll('td');
-        let containsZero = false;
-    
-        tds.forEach(td => {
-            if (td.textContent.includes('(0)')) {
-            containsZero = true;
+</script>
+<script>
+    const rows = document.querySelectorAll('#payment_statments_data tbody tr');
+
+    rows.forEach(row => {
+    const tds = row.querySelectorAll('td');
+    let containsZero = false;
+
+    tds.forEach(td => {
+        if (td.textContent.includes('(0)')) {
+        containsZero = true;
+        }
+    });
+
+    if (!containsZero) {
+        row.style.backgroundColor = 'rgba(255,0,0,0.1)';
+    }
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#payment_statments_data').DataTable({
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
             }
         });
-    
-        if (!containsZero) {
-            row.style.backgroundColor = 'rgba(255,0,0,0.1)';
-        }
-        });
+    });
 </script>
 {% endblock scripts %}

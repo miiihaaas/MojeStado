@@ -69,7 +69,11 @@
                     <tbody>
                         {% for animal in animals %}
                         <tr>
-                            <td>{{ animal.animal_id }}</td>
+                            <td>
+                            {% if animal.animal_id %}
+                                {{ animal.animal_id }}
+                            {% endif %}
+                            </td>
                             <td>{{ animal.animal_category.animal_category_name }}</td>
                             <td>{{ animal.animal_categorization.subcategory }}</td>
                             <td>{{ animal.animal_race.animal_race_name }}</td>
@@ -156,13 +160,13 @@
                                         {{ form.race.label }}
                                         {{ form.race (class="form-select form-select-lg", id="race") }}
                                     </div>
-                                    <div class ="form-group">
+                                    <div class="form-group" id="animalIdGroup">
                                         {{ form.animal_id.label }}
-                                        {{ form.animal_id (class="form-control form-control-lg", id="animal_id") }}
+                                        {{ form.animal_id(class="form-control form-control-lg", id="animal_id") }}
                                     </div>
-                                    <div class ="form-group">
+                                    <div class="form-group" id="animalGenderGroup">
                                         {{ form.animal_gender.label }}
-                                        {{ form.animal_gender (class="form-select form-select-lg", id="animal_gender") }}
+                                        {{ form.animal_gender(class="form-select form-select-lg", id="animal_gender") }}
                                     </div>
                                     <div class ="form-group">
                                         {{ form.weight.label }}
@@ -293,7 +297,7 @@
                             <td>{{ animal.animal_gender }}</td>
                             <td>{{ animal.current_weight }}</td>
                             <td>{{ animal.wanted_weight }}</td>
-                            <td>data</td>
+                            <td>{{ animal.fattening_finish_date }}</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
                             <td>
@@ -361,6 +365,14 @@
     
         $('#category').change(function() {
             const category = $(this).val();
+            console.log('selektovana vrednost je:' + category);
+            if (parseInt(category) > 5) {
+                $('#animalIdGroup').hide();
+                $('#animalGenderGroup').hide();
+            } else {
+                $('#animalIdGroup').show();
+                $('#animalGenderGroup').show();
+            }
     
             // AJAX poziv za subcategories
             if ($('#subcategory-group').is(':visible')) {
@@ -423,7 +435,7 @@
     $(document).ready(function() {
         $('#Data').DataTable({
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
+                url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
             }
         });
     });
