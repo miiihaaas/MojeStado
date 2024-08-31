@@ -1,9 +1,14 @@
 import base64, hashlib
+import io
 import datetime, os
 import random, string
 
+import requests
+
+from PIL import Image
+
 from mojestado import db, mail
-from mojestado.models import Animal, Invoice, InvoiceItems, Product, User
+from mojestado.models import Animal, Debt, Invoice, InvoiceItems, Product, User
 
 from flask import flash, json, redirect, render_template, session, url_for
 from flask_login import current_user
@@ -11,13 +16,235 @@ from flask_mail import Message
 
 from fpdf import FPDF
 
+current_file_path = os.path.abspath(__file__)
+project_folder = os.path.dirname(os.path.dirname((current_file_path)))
+print(f'{current_file_path=}')
+print(f'{project_folder=}')
 
-def generate_payment_slips_attach(fattening_list):
+font_path = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed.ttf')
+font_path_B = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed-Bold.ttf')
+
+
+def add_fonts(pdf):
+    pdf.add_font('DejaVuSansCondensed', '', font_path, uni=True)
+    pdf.add_font('DejaVuSansCondensed', 'B', font_path_B, uni=True)
+
+
+def generate_payment_slips_attach(invoice_item):
     '''
     generiše 2+ uplatnice na jednom dokumentu (A4) u fpdf, qr kod/api iz nbs
     '''
-    print('generisane uplatnice na jednom dokumentu (A4). dokument će biti attachovan u email')
-    pass
+    data_list = []
+    qr_code_images = []
+    path = f'{project_folder}/static/payment_slips/'
+    invoice_item_details = invoice_item.invoice_item_details
+    print(f'{invoice_item_details=}')
+    broj_rata = int(invoice_item_details['installment_options'])
+    print(f'** {broj_rata=}, {type(broj_rata)=}')
+    for i in range(1, broj_rata+1):
+        iznos_duga = float(invoice_item.invoice_item_details['fattening_price'])
+        iznos_rate = iznos_duga/broj_rata
+        print(f'{iznos_duga=}, {broj_rata=}, {iznos_rate=}')
+        uplatilac = invoice_item.invoice_items_invoice.user_invoice.name + ' ' + invoice_item.invoice_items_invoice.user_invoice.surname
+        sifra_placanja = f'189'
+        model='00'
+        poziv_na_broj = f'{invoice_item.invoice_items_invoice.user_id:05d}-{invoice_item.id:06d}'
+        svrha_uplate = f'Uplata za uslugu tova - rata {i}'
+        
+        new_data = {
+            'user_id': invoice_item.invoice_items_invoice.user_invoice.id,
+            'uplatilac': invoice_item.invoice_items_invoice.user_invoice.name + ' ' + invoice_item.invoice_items_invoice.user_invoice.surname,
+            'svrha_uplate': f'Uplata za uslugu tova - rata {i}',
+            'primalac': 'Naša imperija doo',
+            'sifra_placanja': '189',
+            'valuta': 'RSD',
+            'iznos': iznos_rate,
+            'racun_primaoca': '265178031000308698',
+            'model': '00', #! ili 97?
+            'poziv_na_broj': poziv_na_broj,
+        }
+        data_list.append(new_data)
+        
+        
+        print(f'{uplatilac=}')
+        print('generisane uplatnice na jednom dokumentu (A4). dokument će biti attachovan u email')
+        qr_data = {
+            "K": "PR",
+            "V": "01",
+            "C": "1",
+            "R": "265178031000308698",
+            "N": "Naša imperija doo", #! da li treba adresa? Kneza Grbovića 10 || 14242 Miionica
+            "I": f'RSD{str(round(iznos_rate, 2)).replace(".", ",")}',
+            "P": uplatilac,
+            "SF": sifra_placanja,
+            "S": svrha_uplate if len(svrha_uplate) < 36 else svrha_uplate[:35], #! za generisanje QR koda maksimalno može da bude 35 karaktera
+            "RO": f'{model}{poziv_na_broj}'
+        }
+        print(f'{qr_data=}')
+        #! dokumentacija: https://ips.nbs.rs/PDF/Smernice_Generator_Validator_latinica_feb2023.pdf
+        #! dokumentacija: https://ips.nbs.rs/PDF/pdfPreporukeNovoLat.pdf
+        url = 'https://nbs.rs/QRcode/api/qr/v1/gen/250'
+        headers = { 'Content-Type': 'application/json' }
+        response = requests.post(url, headers=headers, json=qr_data)
+        print(f'{response=}')
+        if response.status_code == 500:
+            print(response.content)
+            print(response.headers)
+            response_data = response.json()
+            if 'error_message' in response_data:
+                error_message = response_data['error_message']
+                print(f"Error message: {error_message}")
+
+        if response.status_code == 200:
+            qr_code_image = Image.open(io.BytesIO(response.content))
+            qr_code_filename = f'qr_{i}.png'
+            folder_path = os.path.join(project_folder, 'static', 'payment_slips', f'qr_code')
+            os.makedirs(folder_path, exist_ok=True)  # Ako folder ne postoji, kreira ga
+            qr_code_filepath = os.path.join(folder_path, qr_code_filename)
+            qr_code_image.save(qr_code_filepath)
+            with open(qr_code_filepath, 'wb') as file:
+                file.write(response.content)
+            qr_code_images.append(qr_code_filename)
+    
+    class PDF(FPDF):
+        def __init__(self, **kwargs):
+            super(PDF, self).__init__(**kwargs)
+    pdf = PDF()
+    add_fonts(pdf)
+    counter = 1
+    for i, uplatnica in enumerate(data_list):
+        if counter % 3 == 1:
+            pdf.add_page()
+            y = 0
+            y_qr = 53
+            pdf.line(210/3, 10, 210/3, 237/3)
+            pdf.line(2*210/3, 10, 2*210/3, 237/3)
+        elif counter % 3 == 2:
+            print(f'druga trećina')
+            y = 99
+            y_qr = 152
+            pdf.line(210/3, 110, 210/3, 99+237/3)
+            pdf.line(2*210/3, 110, 2*210/3, 99+237/3)
+        elif counter % 3 == 0:
+            print(f'treća trećina')
+            y = 198
+            y_qr = 251
+            pdf.line(210/3, 210, 210/3, 198+237/3)
+            pdf.line(2*210/3, 210, 2*210/3, 198+237/3)
+        pdf.set_font('DejaVuSansCondensed', 'B', 16)
+        pdf.set_y(y_qr)
+        pdf.set_x(2*170/3)
+        # pdf.image(f'{project_folder}/static/payment_slips/qr_code/{qr_code_images[i]}' , w=25)
+        if i < len(qr_code_images):
+            pdf.image(f'{project_folder}/static/payment_slips/qr_code/{qr_code_images[i]}' , w=25)
+        else:
+            raise ValueError(f'Ne postoji QR kod slika za uplatnicu broj {counter}.')
+        pdf.set_y(y+8)
+        pdf.cell(2*190/3,8, f"NALOG ZA UPLATU", new_y='LAST', align='R', border=0)
+        pdf.cell(190/3,8, f"IZVEŠTAJ O UPLATI", new_y='NEXT', new_x='LMARGIN', align='R', border=0)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.cell(63,4, f"Uplatilac", new_y='NEXT', new_x='LMARGIN', align='L', border=0)
+        pdf.multi_cell(57, 4, f'''{uplatnica['uplatilac']}\r\n{''}''', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        pdf.cell(63,4, f"Svrha uplate", new_y='NEXT', new_x='LMARGIN', align='L', border=0)
+        pdf.multi_cell(57,4, f'''{uplatnica['svrha_uplate']}\r\n{''}\r\n{''}''', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        pdf.cell(63,4, f"Primalac", new_y='NEXT', new_x='LMARGIN', align='L', border=0)
+        pdf.multi_cell(57,4, f'''{uplatnica['primalac']}\r\n{''}''', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        pdf.cell(95,1, f"", new_y='NEXT', new_x='LMARGIN', align='L', border=0)
+        pdf.set_y(y + 15)
+        pdf.set_x(73)
+        pdf.set_font('DejaVuSansCondensed', '', 8)
+        pdf.multi_cell(13,3, f"Šifra plaćanja", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(7,3, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(13,3, f"Valuta", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(10,3, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(13,3, f"Iznos", new_y='NEXT', align='L', border=0)
+        pdf.set_x(73)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.multi_cell(13,6, f"{uplatnica['sifra_placanja']}", new_y='LAST', align='L', border=1)
+        pdf.multi_cell(7,6, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(13,6, f"RSD", new_y='LAST', align='L', border=1)
+        pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(22,6, f"{uplatnica['iznos']}", new_y='NEXT', align='L', border=1)
+        pdf.set_x(73)
+        pdf.set_font('DejaVuSansCondensed', '', 8)
+        pdf.multi_cell(65,5, f"Račun primaoca", new_y='NEXT', align='L', border=0)
+        pdf.set_x(73)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.multi_cell(65,6, f"{uplatnica['racun_primaoca']}", new_y='NEXT', align='L', border=1)
+        pdf.set_x(73)
+        pdf.set_font('DejaVuSansCondensed', '', 8)
+        pdf.multi_cell(65,5, f"Model i poziv na broj (odobrenje)", new_y='NEXT', align='L', border=0)
+        pdf.set_x(73)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.multi_cell(10,6, f"{uplatnica['model']}", new_y='LAST', align='L', border=1)
+        pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(45,6, f"{uplatnica['poziv_na_broj']}", new_y='LAST', align='L', border=1)
+        pdf.set_y(y + 15)
+        pdf.set_x(141)
+        pdf.set_font('DejaVuSansCondensed', '', 8)
+        pdf.multi_cell(13,3, f"Šifra plaćanja", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(7,3, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(13,3, f"Valuta", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(10,3, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(13,3, f"Iznos", new_y='NEXT', align='L', border=0)
+        pdf.set_x(141)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.multi_cell(13,6, f"{uplatnica['sifra_placanja']}", new_y='LAST', align='L', border=1)
+        pdf.multi_cell(7,6, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(13,6, f"RSD", new_y='LAST', align='L', border=1)
+        pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(22,6, f"{uplatnica['iznos']}", new_y='NEXT', align='L', border=1)
+        pdf.set_x(141)
+        pdf.set_font('DejaVuSansCondensed', '', 8)
+        pdf.multi_cell(65,5, f"Račun primaoca", new_y='NEXT', align='L', border=0)
+        pdf.set_x(141)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.multi_cell(65,6, f"{uplatnica['racun_primaoca']}", new_y='NEXT', align='L', border=1)
+        pdf.set_x(141)
+        pdf.set_font('DejaVuSansCondensed', '', 8)
+        pdf.multi_cell(65,5, f"Model i poziv na broj (odobrenje)", new_y='NEXT', align='L', border=0)
+        pdf.set_x(141)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.multi_cell(10,6, f"{uplatnica['model']}", new_y='LAST', align='L', border=1)
+        pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
+        pdf.multi_cell(45,6, f"{uplatnica['poziv_na_broj']}", new_y='NEXT', align='L', border=1)
+        pdf.set_x(141)
+        pdf.set_font('DejaVuSansCondensed', '', 10)
+        pdf.cell(63,4, f"Uplatilac", new_y='NEXT', align='L', border=0)
+        pdf.set_x(141)
+        pdf.multi_cell(57, 4, f'''{uplatnica['uplatilac']}\r\n{''}''', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        pdf.set_x(141)
+        pdf.cell(63,4, f"Svrha uplate", new_y='NEXT', new_x='LMARGIN', align='L', border=0)
+        pdf.set_x(141)
+        pdf.multi_cell(57,4, f'''{uplatnica['svrha_uplate']}\r\n{''}\r\n{''}''', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        
+        pdf.line(10, 99, 200, 99)
+        pdf.line(10, 198, 200, 198)
+        counter += 1
+        
+    file_name = f'uplatnica_{invoice_item.id}.pdf'
+    pdf.output(path + file_name)
+        
+    #! briše QR kodove nakon dodavanja na uplatnice
+    folder_path = f'{project_folder}/static/payment_slips/qr_code/'
+    # Provjeri da li je putanja zaista direktorijum
+    if os.path.isdir(folder_path):
+        # Prolazi kroz sve fajlove u direktorijumu
+        for filename in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, filename)
+            # Provjeri da li je trenutni element fajl
+            if os.path.isfile(file_path) and os.path.exists(file_path):
+                # Obriši fajl
+                os.remove(file_path)
+                print(f"Fajl '{file_path}' je uspješno obrisan.")
+        print("Svi QR kodovi su uspešno obrisani.")
+    else:
+        print("Navedena putanja nije direktorijum.")
+    # file_name = f'{project_folder}static/payment_slips/uplatnice.pdf' #!
+    # file_name = f'uplatnice.pdf' #!
+
+    print(f'debug na samom kraju uplatice_gen(): {file_name=}')
+    return file_name
 
 
 def generate_invoice_attach(invoice_id):
@@ -257,9 +484,10 @@ def send_email(user, invoice_id):
     for invoice_item in invoice_items:
         if invoice_item.invoice_item_type == 4:
             fattening = json.loads(invoice_item.invoice_item_details)
-            if fattening['installment_options'] > 1:
+            if fattening['installment_options'] > 1: #! onda je na rate i tada treba da se zaduži
+                create_debt(user, invoice_item)
                 print('wip: ova usluga je na rate')
-                new_payment_slip = generate_payment_slips_attach(fattening)
+                new_payment_slip = generate_payment_slips_attach(invoice_item)
                 payment_slips.append(new_payment_slip) #! ako lista NIJE prazna onda je na rate
     print(f'{payment_slips=}')
     
@@ -268,7 +496,7 @@ def send_email(user, invoice_id):
     to = [user.email]
     bcc = ['admin@example.com']
     subject = "Potvrda kupovine"
-    if payment_slips:
+    if payment_slips: #! ako lista NIJE prazna onda je na rate
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
         message = Message(subject=subject, sender='Wqo2M@example.com', recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
     else:
@@ -288,4 +516,38 @@ def send_email(user, invoice_id):
         print('wip: Email poslat')
     except Exception as e:
         print(f'Error sending email: {e}')
+
+
+def create_debt(user, invoice_item):
+    new_debt = Debt(
+        invoice_item_id=invoice_item.id,
+        user_id=user.id,
+        amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
+        status='pending'
+    )
+    db.session.add(new_debt)
+    db.session.commit()
+
+
+def provera_validnosti_poziva_na_broj(podaci):
+    debts = Debt.query.all()
+    all_reference_numbers = [f'{record.user_id:06d}-{record.invoice_item_id:09d}' for record in debts]
     
+    
+    if len(podaci['PozivNaBrojApp']) == 7: #!izmeni vrednost kada definišeš generisanje poziva na broj
+        # proverava da li je forma '0001001' i dodaje crtu tako da bude 0001-001
+        formated_poziv_odobrenja = f"{podaci['PozivNaBrojApp'][:4]}-{podaci['PozivNaBrojApp'][4:]}"
+        if formated_poziv_odobrenja in all_reference_numbers:
+            podaci['Validnost'] = True
+        else:
+            podaci['Validnost'] = False
+    elif len(podaci['PozivNaBrojApp']) == 8:
+        # proverava da li je forma '0001-001'
+        if podaci['PozivNaBrojApp'] in all_reference_numbers:
+            podaci['Validnost'] = True
+        else:
+            podaci['Validnost'] = False
+    else:
+        # nije dobar poziv na broj
+        podaci['Validnost'] = False
+    return podaci

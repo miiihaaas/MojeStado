@@ -1,0 +1,218 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="register-page">
+    <div class="container">
+        <h2>Moji podaci - Admin</h2>
+        <div class="row">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.settings') }}">Podešavanja</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_farms') }}">PG</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_users') }}">Korisnici</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_purchases') }}">Kupovine</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_overview') }}">Pregledi</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('users.admin_view_slips') }}">Izvodi</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <h3>Pregled izvoda: {{ payment_statement.statement_number }} ({{ payment_statement.payment_date }})</h3>
+        </div>
+    </div>
+    <div>
+        <table id="data" class="table table-striped dataTable no-footer invoices">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Korisnik</th>
+                    <th>Poziv na broj</th>
+                    <th>ID Korisnika</th>
+                    <th>invoice_item_id</th>
+                    <th>?Detalji usluge?</th>
+                    <th>Svrha uplate</th>
+                    <th>Uplatilac</th>
+                    <th>Iznos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                {% if payment.payment_error %}
+                <tr class="bg-danger">
+                {% else %}
+                <tr>
+                {% endif %}
+                    <td>{{ payment.id }}</td>
+                    <td>
+                        {% if payment.user_id == 0 %}
+                        <input type="text" class="form-control" value="Ignorisana uplata" readonly>
+                        {% elif payment.user_id == 1 %}
+                        <input type="text" class="form-control" value="Greška" readonly>
+                        {% else %}
+                        <a href="{{ url_for('users.admin_view_overview_user', user_id=payment.user_id) }}" class="btn btn-primary">{{ payment.user.name }} {{ payment.user.surname }}</a>
+                        {% endif %}
+                    </td>
+                    <td>{{ payment.reference_number }}</td>
+                    <td><input id="user_id_{{ payment.id }}" class="form-control" type="text" value="{{ '{:05d}'.format(payment.user_id) }}"></td>
+                    <td><input id="invoice_item_id_{{ payment.id }}" class="form-control" type="text" value="{{ '{:06d}'.format(payment.invoice_item_id) }}"></td>
+                    <td>
+                        {% if payment.user_id == 1 %}
+                        <input type="text" class="form-control" value="Greška" readonly>
+                        {% elif payment.invoice_item_id == 0 %}
+                        <input type="text" class="form-control" value="Ignorisana uplata" readonly>
+                        {% elif payment.invoice_item_id in invoice_item_ids %}
+                        <input type="text" class="form-control" value="{{ payment }}">
+                        {% else %}
+                        <input type="text" class="form-control" value="Greška">
+                        {% endif %}
+                    </td>
+                    <td>{{ payment.purpose_of_payment }}</td>
+                    <td>{{ payment.payer }}</td>
+                    <td>{{ payment.amount }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button class="btn btn-secondary" id="save_button">Sačuvaj</button>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function get_user_name(userId) {
+        var users = JSON.parse('{{ users|safe }}');
+        console.log('iz promenjive - users: ', users)
+        var user = users.find(function (s) {
+            console.log('iz funkcije - s: ', s)
+            return s.user_id === parseInt(userId);
+        });
+        if (user) {
+            return user.user_name + ' ' + user.user_surname;
+        }
+        return 'Ne postoji korisnik sa tim ID';
+    }
+    function get_invoice_item_name(invoiceItemId) {
+        var invoice_items = JSON.parse('{{ invoice_items|safe }}');
+        var invoice_item = invoice_items.find(function (s) {
+            console.log('iz funkcije - s: ', s)
+            return s.invoice_item_id === parseInt(invoiceItemId);
+        });
+        if (invoice_item) {
+            return invoice_item.invoice_item_animal + ' - (' + invoice_item.invoice_item_farm + ')';
+        }
+        return 'Ne postoji usluga sa tim ID';
+    }
+    $(document).ready(function() {
+        // Kreiranje tabele
+        var table = $('#data').DataTable({
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json"
+            },
+            "lengthMenu": [50, 100, 200, 400, 800],
+            "pageLength": 800,
+        });
+        // Promena vrednosti u koloni 'ID korisnika'
+        $('#data tbody').on('input', 'input[id^="user_id_"]', function () {
+            var row = table.row($(this).closest('tr'));
+            var userId = $(this).val();
+            var userDetails = get_user_name(userId)
+            console.log('debuging - red: ', row)
+            console.log('debuging - userId: ', userId)
+            console.log('debuging - userDetails: ', userDetails)
+            // Pristupamo input elementu u koloni 'Korisnik' unutar trenutnog reda
+            var $userInput = $(this).closest('tr').find('td:eq(1) input');
+
+            // Postavljanje nove vrednosti u input elementu
+            $userInput.val(userDetails);
+
+            row.invalidate().draw();
+            // Fokusiranje input polja nakon ažuriranja vrednosti
+            $(this).focus();
+        });
+        // Promena vrednosti u koloni 'ID usluge'
+        $('#data tbody').on('input', 'input[id^="invoice_item_id_"]', function() {
+            var row = table.row($(this).closest('tr'));
+            var invoiceItemId = $(this).val();
+            var invoiceItemDetails = get_invoice_item_name(invoiceItemId);
+            console.log('debuging - red: ', row)
+            console.log('debuging - invoiceItemId: ', invoiceItemId)
+            console.log('debuging - invoiceItemDetails: ', invoiceItemDetails)
+            // Pristupamo input elementu u koloni 'Učenik' unutar trenutnog reda
+            var $invoiceItemInput = $(this).closest('tr').find('td:eq(5) input');
+
+            // Postavljanje nove vrednosti u input elementu
+            $invoiceItemInput.val(invoiceItemDetails);
+
+            row.invalidate().draw();
+            // Fokusiranje input polja nakon ažuriranja vrednosti
+            $(this).focus();
+        });
+        const buttonSave = $('#save_button');
+        buttonSave.on('click', (event) => {
+            console.log('test radi - pritisnuto je dugme sačuvaj. nastavi kodiranje')
+            var paymentStatementId;
+            var url = new URL(window.location.href); // Dohvaćanje trenutnog URL-a stranice
+            var pathname = url.pathname;  // Dohvaćanje putanje URL-a
+            var parts = pathname.split('/'); // Razdvajanje putanje na dijelove koristeći "/"
+            if (parts.length > 0) {
+                var lastPart = parts[parts.length-1]; // Dohvaćanje posljednjeg dijela putanje
+                paymentStatementId = parseInt(lastPart); // Pretvaranje posljednjeg dijela u broj
+            }
+            console.log('student Payment Id: ',paymentStatementId)
+            var table = $('#data');
+            var rows = table.find('tr');
+            console.log('redovi: ', rows)
+            console.log('broj redova: ', rows.length)
+            var records = []
+            for (var i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const recordId = parseInt($(row).find('td:nth-child(1)').text());
+                const userIdInput = $(row).find('td:nth-child(4) input'); // Dohvati input polje iz stupca 'ID korisnika'
+                const invoiceItemIdInput = $(row).find('td:nth-child(5) input'); // Dohvati input polje iz stupca 'ID invoice item'
+                const userId = parseInt(userIdInput.val()); // Dohvati vrijednost iz input polja 'ID korisnika'
+                const invoiceItemId = parseInt(invoiceItemIdInput.val()); // Dohvati vrijednost iz input polja 'ID invoice item'
+                records.push({
+                    'record_id': recordId,
+                    'user_id': userId,
+                    'invoice_item_id': invoiceItemId,
+                })
+            }
+            console.log('izmenjeni podaci za čuvanje: ', records)
+            console.log(JSON.stringify(records));
+            const output = {
+                'payment_statement_id': paymentStatementId,
+                'records': records
+            }
+            $.ajax({
+                url: '../submit_records', //!!!!
+                method: 'POST',
+                data: JSON.stringify(output),
+                contentType: 'application/json',
+                success: function(response) {
+                    // Uspešan AJAX zahtjev
+                    // Preusmjeravanje na edit debt stranicu
+                    var editDebtUrl = "{{ url_for('transactions.edit_payment_statement', payment_statement_id='1') }}";
+                    editDebtUrl = editDebtUrl.replace(/1(?=[^1]*$)/, response);
+                    window.location.href = editDebtUrl;
+                }
+            })
+        })
+    });
+</script>
+{% endblock %}

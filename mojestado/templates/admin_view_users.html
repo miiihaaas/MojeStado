@@ -35,7 +35,7 @@
     </div>
     <div class="container">
         <h2>Prikaz korisnika</h2>
-        <table class="table table-striped">
+        <table class="table table-striped" id="Data">
             <thead>
                 <tr>
                     <th>Datum registracije</th>
@@ -66,4 +66,16 @@
         </table>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#Data').DataTable({
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
+            }
+        });
+    });
+</script>
 {% endblock %}

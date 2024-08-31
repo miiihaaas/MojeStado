@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import FloatField, StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
+from wtforms import FloatField, IntegerField, StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from mojestado.models import User
@@ -75,6 +75,7 @@ class AddAnimalForm(FlaskForm):
     subcategory = SelectField('Podkategorija', choices=[])
     race = SelectField('Rasa', choices=[])
     intended_for = SelectField('Namena', choices=['tov', 'priplod'])
+    animal_id = IntegerField('ID zivotinje', validators=[Length(min=10, max=10)])
     weight = FloatField('Težina (kg)', validators=[DataRequired()])
     price = FloatField('Cena po kg', validators=[DataRequired()])
     insured = BooleanField('Osigurano')

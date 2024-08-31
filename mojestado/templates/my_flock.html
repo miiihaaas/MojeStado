@@ -69,7 +69,11 @@
                     <tbody>
                         {% for animal in animals %}
                         <tr>
-                            <td>{{ animal.animal_id }}</td>
+                            <td>
+                            {% if animal.animal_id %}
+                                {{ animal.animal_id }}
+                            {% endif %}
+                            </td>
                             <td>{{ animal.animal_category.animal_category_name }}</td>
                             <td>{{ animal.animal_categorization.subcategory }}</td>
                             <td>{{ animal.animal_race.animal_race_name }}</td>
@@ -104,6 +108,7 @@
                                     data-category="{{ animal.animal_category.animal_category_name }}"
                                     data-subcategory="{{ animal.animal_categorization.subcategory }}"
                                     data-race="{{ animal.animal_race.animal_race_name }}"
+                                    data-mindjusha="{{ animal.animal_id }}"
                                     data-gender="{{ animal.animal_gender }}"
                                     data-weight="{{ animal.current_weight }}"
                                     data-price="{{ animal.price_per_kg_farmer }}"
@@ -155,9 +160,13 @@
                                         {{ form.race.label }}
                                         {{ form.race (class="form-select form-select-lg", id="race") }}
                                     </div>
-                                    <div class ="form-group">
+                                    <div class="form-group" id="animalIdGroup">
+                                        {{ form.animal_id.label }}
+                                        {{ form.animal_id(class="form-control form-control-lg", id="animal_id") }}
+                                    </div>
+                                    <div class="form-group" id="animalGenderGroup">
                                         {{ form.animal_gender.label }}
-                                        {{ form.animal_gender (class="form-select form-select-lg", id="animal_gender") }}
+                                        {{ form.animal_gender(class="form-select form-select-lg", id="animal_gender") }}
                                     </div>
                                     <div class ="form-group">
                                         {{ form.weight.label }}
@@ -220,6 +229,10 @@
                                 </div>
                                 <form action="" method="post" enctype="multipart/form-data">
                                     {{ form.hidden_tag() }}
+                                    <div class ="form-group">
+                                        {{ form.animal_id.label }}
+                                        <input type="text" class="form-control form-control-lg" id="mindjusha" name="mindjusha">
+                                    </div>
                                     <div class="form-group">
                                         {{ form.animal_gender.label }}
                                         {{ form.animal_gender(class="form-select form-select-lg", id="animal_gender") }}
@@ -284,7 +297,7 @@
                             <td>{{ animal.animal_gender }}</td>
                             <td>{{ animal.current_weight }}</td>
                             <td>{{ animal.wanted_weight }}</td>
-                            <td>data</td>
+                            <td>{{ animal.fattening_finish_date }}</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
                             <td>
@@ -352,6 +365,14 @@
     
         $('#category').change(function() {
             const category = $(this).val();
+            console.log('selektovana vrednost je:' + category);
+            if (parseInt(category) > 5) {
+                $('#animalIdGroup').hide();
+                $('#animalGenderGroup').hide();
+            } else {
+                $('#animalIdGroup').show();
+                $('#animalGenderGroup').show();
+            }
     
             // AJAX poziv za subcategories
             if ($('#subcategory-group').is(':visible')) {
@@ -391,6 +412,8 @@
             modal.find('#category').val($(this).data('category'));
             modal.find('#subcategory').val($(this).data('subcategory'));
             modal.find('#race').val($(this).data('race'));
+            modal.find('#mindjusha').val($(this).data('mindjusha'));
+            console.log($(this).data('mindjusha'));
             modal.find('#animal_gender').val($(this).data('gender'));
             modal.find('#weight').val($(this).data('weight'));
             modal.find('#price').val($(this).data('price'));
@@ -412,7 +435,7 @@
     $(document).ready(function() {
         $('#Data').DataTable({
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
+                url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
             }
         });
     });

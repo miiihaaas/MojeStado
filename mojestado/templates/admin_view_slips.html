@@ -34,7 +34,136 @@
         </div>
     </div>
     <div class="container">
-        <h2>Izvodi</h2>
-    </div>
+        <form action="{{ url_for('transactions.process_payment_statment') }}" method="POST" enctype="multipart/form-data">
+            <h2>Učitavanje izvoda</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="fileUpload">Učitaj izvod (XML format):</label>
+                        <input type="file" class="form-control-file" id="fileUpload" name="fileUpload" accept=".xml">
+                    </div>
+                    <button type="submit" class="btn btn-secondary" id="importButton" name="importButton" disabled>Uvezi izvod</button>
+                    <button type="submit" class="btn btn-secondary" id="saveAndProcessButton" name="saveAndProcessButton" disabled>Sačuvaj i rasknjiži uplate</button>
+                </div>
+                <div class="col-md-6">
+                    {% if broj_izvoda_element %}
+                    <div class="row">
+                        <div class="col">
+                            <label for="statement_number">Broj izvoda</label>
+                            <input class="form-control" id="statement_number" name="statement_number" value="{{ broj_izvoda_element }}" readonly>
+                            <label for="payment_date">Datum izvoda</label>
+                            <input class="form-control" id="payment_date" name="payment_date" value="{{ datum_izvoda_element }}" readonly>
+                        </div>
+                        <div class="col">
+                            <label for="statment_nubmer">Iznos potražuje</label>
+                            <input class="form-control mb-2" id="c" name="total_payment_amount" type="text" value="{{ iznos_potrazuje_element }}"  readonly>
+                            <label for="number_of_items">Broj uplata</label>
+                            <input class="form-control" id="number_of_items" name="number_of_items" type="text" value="{{ broj_pojavljivanja }}"  readonly>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if stavke %}
+            <hr>
+            <table id="data" class="table table-striped dataTable no-footer invoices" role="grid" aria-describedby="data_info">
+                <thead>
+                    <tr>
+                        <th>Broj bankovnog računa</th>
+                        <th>Uplatilac</th>
+                        <th>Iznos</th>
+                        <th>Poziv na broj</th>
+                        <th>Svrha uplate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stavke %}
+                    <tr>
+                        <td><input type="text" class="form-control" value="{{ item['RacunZaduzenja'] }}" readonly></td>
+                        <td><textarea name="uplatilac" class="form-control" readonly>{{ item['NazivZaduzenja'] }}</textarea></td>
+                        <td><input name="iznos" type="text" class="form-control" value="{{ item['Iznos'] }}" readonly></td>
+                        <td><input name="poziv_na_broj" type="text" class="form-control poziv-odobrenja-input {{ item['Validnost'] }}" value="{{ item['PozivNaBrojApp'] }}" readonly></td>
+                        <td><textarea name="svrha_uplate" class="form-control" readonly>{{ item['SvrhaDoznake'] }}</textarea></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <hr>
+            {% if payment_statements %}
+                <h2>Arhiva izvoda</h2>
+                <table id="payment_statments_data" class="table table-striped dataTable no-footer invoices" role="grid" aria-describedby="data_info" style="width: 968px;">
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Broj izvoda</th>
+                            <th>Ukupna uplata</th>
+                            <th>Broj stavki (broj greškaka)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment_statement in payment_statements %}
+                        <tr>
+                            <td>{{ payment_statement.payment_date }}</td>
+                            <td>{{ payment_statement.statement_number }}</td>
+                            <td>{{ payment_statement.total_payment_amount }}</td>
+                            <td>{{ payment_statement.number_of_items }} ({{ payment_statement.number_of_errors }})</td>
+                            <td><a href="{{ url_for('transactions.edit_payment_statement', payment_statement_id=payment_statement.id) }}"><i class="fa fa-magnifying-glass"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            {% endif %}
+        </div>
+    </form>
 </section>
 {% endblock %}
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        var fileInput = $('#fileUpload');
+        var importButton = $('#importButton');
+        var saveAndProcessButton = $('#saveAndProcessButton');
+        
+        fileInput.on('change', function() {
+            if (fileInput.get(0).files.length > 0) {
+                importButton.prop('disabled', false);
+            } else {
+                importButton.prop('disabled', true);
+            }
+        });
+        if ($('#data').length) {
+            saveAndProcessButton.prop('disabled', false)
+        }
+    });
+</script>
+<script>
+    const rows = document.querySelectorAll('#payment_statments_data tbody tr');
+
+    rows.forEach(row => {
+    const tds = row.querySelectorAll('td');
+    let containsZero = false;
+
+    tds.forEach(td => {
+        if (td.textContent.includes('(0)')) {
+        containsZero = true;
+        }
+    });
+
+    if (!containsZero) {
+        row.style.backgroundColor = 'rgba(255,0,0,0.1)';
+    }
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#payment_statments_data').DataTable({
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
+            }
+        });
+    });
+</script>
+{% endblock scripts %}
