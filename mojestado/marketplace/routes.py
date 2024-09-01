@@ -12,6 +12,7 @@ marketplace = Blueprint('marketplace', __name__)
 
 @marketplace.route('/livestock_market/<int:animal_category_id>', methods=['GET', 'POST'])
 def livestock_market(animal_category_id):
+    
     municipality_filter_list = Municipality.query.all()
     animal_categories = AnimalCategory.query.all()
     if animal_category_id == 0:
