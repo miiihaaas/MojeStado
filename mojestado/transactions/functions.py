@@ -542,7 +542,7 @@ def provera_validnosti_poziva_na_broj(podaci):
         else:
             podaci['Validnost'] = False
     elif len(podaci['PozivNaBrojApp']) == 8:
-        # proverava da li je forma '0001-001'
+        # proverava da li je forma '000001-000000001'
         if podaci['PozivNaBrojApp'] in all_reference_numbers:
             podaci['Validnost'] = True
         else:
