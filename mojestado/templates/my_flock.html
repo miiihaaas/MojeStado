@@ -80,7 +80,7 @@
                             <td>{{ animal.animal_gender }}</td>
                             <td>{{ animal.current_weight }}</td>
                             <td>{{ animal.price_per_kg_farmer }}</td>
-                            <td>{{ animal.total_price / 1.38 }}</td>
+                            <td>{{ animal.total_price | float / 1.38 }}</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
                             <td>
