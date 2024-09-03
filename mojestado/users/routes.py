@@ -114,7 +114,7 @@ def register_user(): #! Registracija korisnika
     return render_template('register_user.html', title='Registracija korisnika',
                             form=form)
 
-users.route('/confirm/<token>')
+@users.route('/confirm/<token>')
 def confirm_email(token):
     try:
         email = confirm_token(token)

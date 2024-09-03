@@ -134,7 +134,7 @@ class AnimalCategorization(db.Model):
     max_weight = db.Column(db.Float, nullable=True)  # max tezina za podklasu tova
     min_weight_gain = db.Column(db.Float, nullable=True)  # min tezina za podklasu priplodova
     max_weight_gain = db.Column(db.Float, nullable=True)  # max tezina za podklasu priplodova
-    fattening_price = db.Column(db.Float, nullable=False)  # cena za podklasu tova
+    fattening_price = db.Column(db.Float, nullable=True)  # cena za podklasu tova
     animals = db.relationship('Animal', back_populates='animal_categorization', lazy=True)
     animal_category = db.relationship('AnimalCategory', back_populates='animal_categorization')
 
@@ -147,7 +147,7 @@ class ProductCategory(db.Model):
 
 class ProductSection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_section_name = db.Column(db.String(20), nullable=False)
+    product_section_name = db.Column(db.String(50), nullable=False)
     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id'), nullable=False)
     product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False)
     products = db.relationship('Product', back_populates='product_section', lazy=True)
