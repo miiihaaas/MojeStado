@@ -19,13 +19,13 @@ users = Blueprint('users', __name__)
 
 def generate_confirmation_token(user):
     s = Serializer(app.config['SECRET_KEY'])
-    return s.dumps(user.email, salt=app.config['SECURITY_PASSWORD_SALT'])
+    return s.dumps(user.email)
 
 
 def confirm_token(token, expiration=1800):
     s = Serializer(app.config['SECRET_KEY'])
     try:
-        email = s.loads(token, salt=app.config['SECURITY_PASSWORD_SALT'], max_age=expiration)
+        email = s.loads(token, max_age=expiration)
     except:
         return False
     return email
