@@ -484,7 +484,7 @@ def send_email(user, invoice_id):
     for invoice_item in invoice_items:
         if invoice_item.invoice_item_type == 4:
             fattening = json.loads(invoice_item.invoice_item_details)
-            if fattening['installment_options'] > 1: #! onda je na rate i tada treba da se zaduži
+            if int(fattening['installment_options']) > 1: #! onda je na rate i tada treba da se zaduži
                 create_debt(user, invoice_item)
                 print('wip: ova usluga je na rate')
                 new_payment_slip = generate_payment_slips_attach(invoice_item)
