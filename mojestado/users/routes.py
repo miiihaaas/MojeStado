@@ -403,7 +403,7 @@ def my_market(farm_id):
     total_sales = 0.0
     for item in invoice_items:
         print(f'** {type(item.invoice_item_details)=} {item=}')
-        total_sales += item.invoice_item_details['total_price']
+        total_sales += float(item.invoice_item_details['total_price'])
     
     form = AddProductForm()
     form.category.choices = [(category.id, category.product_category_name) for category in ProductCategory.query.all()]

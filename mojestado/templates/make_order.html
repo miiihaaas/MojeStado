@@ -282,7 +282,7 @@
             <input type="hidden" name="errorURL" value="{{ url_for('transactions.error_url', _external=True) }}" />
             <input type="hidden" name="email" value='{{ user.email }}' />
             <input type="hidden" name="customerId" value='123456789' />
-            <input type="hidden" name="requestType" value='11'/>
+            <input type="hidden" name="requestType" value='10'/> <!-- 11 za normalnu transakciju, 10 za split transakcije -->
             <input type="hidden" name="hash" value='{{ hash_value }}' />
             <input type="hidden" name="rnd" value='{{ rnd }}' />
             <input type="hidden" name="timeout" value='600' />
