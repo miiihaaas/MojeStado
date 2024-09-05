@@ -37,12 +37,12 @@ def generate_payment_slips_attach(invoice_item):
     data_list = []
     qr_code_images = []
     path = f'{project_folder}/static/payment_slips/'
-    invoice_item_details = invoice_item.invoice_item_details
+    invoice_item_details = json.loads(invoice_item.invoice_item_details)
     print(f'{invoice_item_details=}')
     broj_rata = int(invoice_item_details['installment_options'])
     print(f'** {broj_rata=}, {type(broj_rata)=}')
     for i in range(1, broj_rata+1):
-        iznos_duga = float(invoice_item.invoice_item_details['fattening_price'])
+        iznos_duga = float(invoice_item_details['fattening_price'])
         iznos_rate = iznos_duga/broj_rata
         print(f'{iznos_duga=}, {broj_rata=}, {iznos_rate=}')
         uplatilac = invoice_item.invoice_items_invoice.user_invoice.name + ' ' + invoice_item.invoice_items_invoice.user_invoice.surname
@@ -498,10 +498,10 @@ def send_email(user, invoice_id):
     subject = "Potvrda kupovine"
     if payment_slips: #! ako lista NIJE prazna onda je na rate
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
-        message = Message(subject=subject, sender='Wqo2M@example.com', recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
+        message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
     else:
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalje kupovine možete da vidite u prilogu.\n\nHvala na poverenju!"
-        message = Message(subject=subject, sender='Wqo2M@example.com', recipients=to, bcc=bcc, attachments=[invoice_attach])
+        message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach])
     
     print(f"To: {to}")
     print(f"Subject: {subject}")
