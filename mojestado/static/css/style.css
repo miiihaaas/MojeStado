@@ -1,5 +1,5 @@
 body { font-family: 'Montserrat', sans-serif; font-weight: 500; }
-h1, h2, h3, h4, h5, .main-menu a { font-family: "Roboto Slab", serif; }
+h1, h2, h3, h4, h5, .main-menu a { /*font-family: "Roboto Slab", serif;*/ }
 /*.column { margin: 0; }*/
 .row { padding: 0; }
 .top-bar { background-color: #5e4432; color: #fff; text-transform: uppercase; font-size: 16px; }
@@ -15,7 +15,7 @@ h1, h2, h3, h4, h5, .main-menu a { font-family: "Roboto Slab", serif; }
 .mr-3 { margin-right: 2em; }
 .mr-4 { margin-right: 3em; }
 .mr-5 { margin-right: 4em; }
-.btn { border-radius: .3rem; font-family: "Roboto Slab", serif; font-size: 24px; font-weight: 600; }
+.btn { border-radius: .3rem; /*font-family: "Roboto Slab", serif;*/ font-size: 24px; font-weight: 600; }
 .btn-primary { color: #5e4432;  background-color: #fff; border-color: #fff; }
 .btn-check:focus+.btn-primary, .btn-primary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
 .btn-check:active+.btn-primary, .btn-check:checked+.btn-primary, .btn-primary.active, .btn-primary:active, .show>.btn-primary.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
@@ -32,7 +32,10 @@ h1, h2, h3, h4, h5, .main-menu a { font-family: "Roboto Slab", serif; }
 .navbar-brand { font-size: inherit; }
 .m-left-auto { margin-left: auto; }
 .m-right-auto { margin-right: auto; }
+#waitDiv { opacity: 0; }
+.blacktext { color: #4e3829 !important; text-shadow: 0 0 15px #fff; }
 
+nav.navbar-dark { background-color: rgba(94, 68, 50, 0.5); }
 header.hero .navbar .container { align-items: flex-start; }
 header.hero .navbar-nav .nav-link { text-transform: uppercase; margin-left: 20px; }
 header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover, header.hero .navbar-nav .nav-link.active { border-bottom: 3px solid #e0bd5d;}
@@ -97,7 +100,8 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .contactpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
 .faqpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
 .farmpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
-.registerpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
+.registerfarmpage { background: url(../images/hero-register-2.jpg) no-repeat center center; background-size: cover; }
+.registerpage { background: url(../images/hero-register-1.jpg) no-repeat center center; background-size: cover; }
 .loginpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
 .productspage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
 .firstsection { padding-top: 50px; }
@@ -110,7 +114,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 
 .sidebar .card { border: none; border-bottom: 1px solid #5e4432; border-radius: 0; }
 .sidebar .card:last-child { border-bottom: 0 !important; }
-.sidebar .card-header { font-family: "Roboto Slab", serif; font-weight: 700; font-size: 24px; color: #5e4432; background-color: transparent; border-bottom: 0; }
+.sidebar .card-header { /*font-family: "Roboto Slab", serif;*/ font-weight: 700; font-size: 24px; color: #5e4432; background-color: transparent; border-bottom: 0; }
 
 footer.footer { padding: 30px 0; color: #ddd4cb; }
 footer.footer .navbar-nav li { width: 100%; }
