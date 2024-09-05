@@ -12,7 +12,7 @@ from mojestado.models import Animal, Debt, Invoice, InvoiceItems, Product, User
 
 from flask import flash, json, redirect, render_template, session, url_for
 from flask_login import current_user
-from flask_mail import Message
+from flask_mail import Message, Attachment
 
 from fpdf import FPDF
 
@@ -244,7 +244,7 @@ def generate_payment_slips_attach(invoice_item):
     # file_name = f'uplatnice.pdf' #!
 
     print(f'debug na samom kraju uplatice_gen(): {file_name=}')
-    return file_name
+    return os.path.join(path, filename)
 
 
 def generate_invoice_attach(invoice_id):
@@ -482,9 +482,9 @@ def send_email(user, invoice_id):
     payment_slips = [] #! ako je prazna lista onda NIJE na rate
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
     for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 4:
+        if invoice_item.invoice_item_type == 4: #! razmatra samo usluge tova (4)
             fattening = json.loads(invoice_item.invoice_item_details)
-            if int(fattening['installment_options']) > 1: #! onda je na rate i tada treba da se zaduži
+            if int(fattening['installment_options']) > 1: #! Ako je na rate, generišu se uplatnice i zaduži
                 create_debt(user, invoice_item)
                 print('wip: ova usluga je na rate')
                 new_payment_slip = generate_payment_slips_attach(invoice_item)
@@ -496,12 +496,28 @@ def send_email(user, invoice_id):
     to = [user.email]
     bcc = ['admin@example.com']
     subject = "Potvrda kupovine"
+
+    # Primer kreiranja attachment objekta
+    attachment = Attachment(filename=invoice_attach, data=open(invoice_attach, "rb").read(), content_type="application/pdf")
+
     if payment_slips: #! ako lista NIJE prazna onda je na rate
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
-        message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
+        attachments = [invoice_attach] + payment_slips
+        # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
     else:
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalje kupovine možete da vidite u prilogu.\n\nHvala na poverenju!"
-        message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach])
+        attachments = [invoice_attach]
+        # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach])
+        
+    message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
+    message.body = body
+    message.html = body
+    for attachment in attachments:
+        try:
+            with open(attachment, 'rb') as f:
+                message.attach(os.path.basename(attachment), "application/pdf", f.read())
+        except Exception as e:
+            print(f"Greška prilikom dodavanja priloga: {attachment}. Greška: {e}")
     
     print(f"To: {to}")
     print(f"Subject: {subject}")
