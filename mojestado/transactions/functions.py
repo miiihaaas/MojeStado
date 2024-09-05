@@ -230,8 +230,8 @@ def generate_payment_slips_attach(invoice_item):
     # Provjeri da li je putanja zaista direktorijum
     if os.path.isdir(folder_path):
         # Prolazi kroz sve fajlove u direktorijumu
-        for file_name in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, file_name)
+        for qr_file in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, qr_file)
             # Provjeri da li je trenutni element fajl
             if os.path.isfile(file_path) and os.path.exists(file_path):
                 # Obriši fajl
@@ -556,7 +556,7 @@ def send_email(user, invoice_id):
 
     if payment_slips: #! ako lista NIJE prazna onda je na rate
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
-        attachments = [invoice_attach] + payment_slips
+        attachments = [invoice_attach] + [new_payment_slip]
         # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
     else:
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalje kupovine možete da vidite u prilogu.\n\nHvala na poverenju!"
