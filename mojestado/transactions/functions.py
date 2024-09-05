@@ -36,7 +36,7 @@ def generate_payment_slips_attach(invoice_item):
     '''
     data_list = []
     qr_code_images = []
-    path = f'{project_folder}/static/payment_slips/'
+    path = os.path.join(project_folder, 'static', 'payment_slips')
     invoice_item_details = json.loads(invoice_item.invoice_item_details)
     print(f'{invoice_item_details=}')
     broj_rata = int(invoice_item_details['installment_options'])
@@ -223,15 +223,15 @@ def generate_payment_slips_attach(invoice_item):
         counter += 1
         
     file_name = f'uplatnica_{invoice_item.id}.pdf'
-    pdf.output(path + file_name)
+    pdf.output(os.path.join(path, file_name))
         
     #! briše QR kodove nakon dodavanja na uplatnice
-    folder_path = f'{project_folder}/static/payment_slips/qr_code/'
+    folder_path = os.path.join(project_folder, 'static', 'payment_slips', 'qr_code')
     # Provjeri da li je putanja zaista direktorijum
     if os.path.isdir(folder_path):
         # Prolazi kroz sve fajlove u direktorijumu
-        for filename in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, filename)
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
             # Provjeri da li je trenutni element fajl
             if os.path.isfile(file_path) and os.path.exists(file_path):
                 # Obriši fajl
@@ -244,7 +244,7 @@ def generate_payment_slips_attach(invoice_item):
     # file_name = f'uplatnice.pdf' #!
 
     print(f'debug na samom kraju uplatice_gen(): {file_name=}')
-    return os.path.join(path, filename)
+    return os.path.join(path, file_name)
 
 
 def generate_invoice_attach(invoice_id):
@@ -254,12 +254,12 @@ def generate_invoice_attach(invoice_id):
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
     invoice = Invoice.query.get(invoice_id)
     
-    filename = f'{invoice.invoice_number}.pdf'
+    file_name = f'{invoice.invoice_number}.pdf'
     
-    products = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 1]
-    animals = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 2]
-    services = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 3]
-    fattening = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_item_type == 4]
+    products = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 1]
+    animals = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 2]
+    services = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 3]
+    fattening = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 4]
     
     #! generisi fakturu uz pomoć fpdf
     current_file_path = os.path.abspath(__file__)
@@ -273,44 +273,101 @@ def generate_invoice_attach(invoice_id):
             self.add_font('DejaVuSansCondensed', 'B', font_path_B, uni=True)
         def header(self):
             self.set_font('DejaVuSansCondensed', 'B', 16)
-            self.cell(0, 10, f'Faktura {invoice.invoice_number}', new_y='NEXT', align='C')
+            self.cell(0, 10, f'Faktura {invoice.invoice_number}', new_x='LMARGIN', new_y='NEXT', align='C')
     
     pdf = PDF()
-    pdf.add_page()
+    pdf.add_page(orientation='L')
     #! proizvodi
-    pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Sektor', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Naziv', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Količina', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Jedinica mere', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Cena po jedinici mere', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Cena po kg', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Ukupna cena', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'PG', new_y='LAST', align='L', border=1)
-    pdf.cell(30, 10, f'Lokacija', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
-    for product in products:
-        pdf.cell(30, 10, f'{product["category"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["subcategory"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["section"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["product_name"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["quantity"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["unit_of_measurement"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["product_price_per_unit"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["product_price_per_kg"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["total_price"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["farm"]}', new_y='LAST', align='L', border=1)
-        pdf.cell(30, 10, f'{product["location"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
-    
+    if products:
+        pdf.set_fill_color(200, 200, 200)  # Svetlo siva boja
+        pdf.set_font('DejaVuSansCondensed', 'B', 7)
+        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Sektor', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Naziv', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(15, 10, f'Količina', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(20, 10, f'Jedinica mere', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Cena po jedinici mere', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(20, 10, f'Cena po kg', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(20, 10, f'Ukupna cena', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'PG', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Lokacija', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
+        # pdf.set_fill_color(255, 255, 255)  # Svetlo siva boja
+        pdf.set_font('DejaVuSansCondensed', '', 7)
+        for product in products:
+            pdf.cell(30, 10, f'{product["category"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{product["subcategory"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{product["section"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{product["product_name"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{product["quantity"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{product["unit_of_measurement"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{product["product_price_per_unit"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{product["product_price_per_kg"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{product["total_price"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{product["farm"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{product["location"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
     #! živa vaga
+    if animals:
+        # pdf.set_fill_color(200, 200, 200)  # Svetlo siva boja
+        pdf.set_font('DejaVuSansCondensed', 'B', 7)
+        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Rasa', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(10, 10, f'Pol', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(15, 10, f'Masa', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(20, 10, f'Cena po kg', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(20, 10, f'Ukupna cena', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Osigurano', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Organsko', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'PG', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Lokacija', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
+        # pdf.set_fill_color(255, 255, 255)  # Svetlo siva boja
+        pdf.set_font('DejaVuSansCondensed', '', 7)
+        for animal in animals:
+            pdf.cell(30, 10, f'{animal["category"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{animal["subcategory"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{animal["race"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(10, 10, f'{animal["animal_gender"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{animal["current_weight"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{animal["price_per_kg"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{animal["total_price"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{animal["insured"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{animal["organic_animal"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{animal["farm"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{animal["location"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
     #! usluge
+    if services:
+        pdf.set_font('DejaVuSansCondensed', 'B', 7)
+        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Rasa', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(10, 10, f'Pol', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(15, 10, f'Masa', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Usluga', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Cena', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
+        pdf.set_font('DejaVuSansCondensed', '', 7)
+        for service in services:
+            pdf.cell(30, 10, f'{service["category"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{service["subcategory"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{service["race"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(10, 10, f'{service["animal_gender"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{service["current_weight"]}', new_y='LAST', align='L', border=1)
+            if service['slaughterService'] == True and service['processingPrice'] > 0:
+                pdf.cell(30, 10, f'Klanje i obrada', new_y='LAST', align='L', border=1)
+                pdf.cell(30, 10, f'{service["slaughterPrice"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+            elif service['slaughterService']:
+                pdf.cell(30, 10, f'Klanje', new_y='LAST', align='L', border=1)
+                pdf.cell(30, 10, f'{service["slaughterPrice"] + service["processingPrice"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+        pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
     #! tov (samo koji NIJE na rate?)
     
     path = os.path.join(project_folder, 'static', 'invoices')
     if not os.path.exists(path):
         os.mkdir(path)
-    pdf.output(os.path.join(path, filename))
-    return os.path.join(path, filename)
+    pdf.output(os.path.join(path, file_name))
+    return os.path.join(path, file_name)
 
 
 def register_guest_user(form_object):
@@ -495,10 +552,7 @@ def send_email(user, invoice_id):
 
     to = [user.email]
     bcc = ['admin@example.com']
-    subject = "Potvrda kupovine"
-
-    # Primer kreiranja attachment objekta
-    attachment = Attachment(filename=invoice_attach, data=open(invoice_attach, "rb").read(), content_type="application/pdf")
+    subject = "Potvrda kupovine na portalu Moje Stado"
 
     if payment_slips: #! ako lista NIJE prazna onda je na rate
         body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
@@ -512,6 +566,7 @@ def send_email(user, invoice_id):
     message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
     message.body = body
     message.html = body
+    print(f'{attachments=}')
     for attachment in attachments:
         try:
             with open(attachment, 'rb') as f:
