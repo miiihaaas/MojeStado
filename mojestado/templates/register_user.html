@@ -18,7 +18,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <form action="" method="POST" class="col-md-12 d-flex">
+                <form action="" method="POST" class="col-md-12 d-flex flex-wrap">
                     {{ form.hidden_tag() }}
                     <div class="col-md-4 plr-10">
                         <div class="form-group">
@@ -70,12 +70,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="agreement" name="agreement">
-                        <label class="form-check-label" for="agreement">Slažem se sa <a href="#">ugovorom</a></label>
-                    </div>
-                    <div>
-                        {{ form.submit(class="btn btn-primary", id="submit", disabled="disabled") }}
+                    <div class="col-md-12 plr-10">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="agreement" name="agreement">
+                            <label class="form-check-label" for="agreement">Slažem se sa <a href="#">ugovorom</a></label>
+                        </div>
+                        <div>
+                            {{ form.submit(class="btn btn-primary", id="submit", disabled="disabled") }}
+                        </div>
                     </div>
                 </form>
             </div>
