@@ -128,7 +128,7 @@ def add_fattening_to_chart():
     new_fattening['feeding_days'] = request.form.get('feedingDays') or request.form.get('feedingDays_')
     print(f'**** {request.form.get("installmentPayment")=}')
     if request.form.get('installmentPayment') or request.form.get('installmentPayment_') == 'on':
-        new_fattening['installment_options'] = request.form.get('installmentOptions') or request.form.get('installmentOptions_')
+        new_fattening['installment_options'] = int(request.form.get('installmentOptions')) or int(request.form.get('installmentOptions_'))
     else:
         new_fattening['installment_options'] = 1
     new_fattening['installment_price'] = request.form.get('installmentPrice')
