@@ -97,6 +97,10 @@ section.faq { background-image: url('../images/texture-1.jpg'); padding: 50px 0;
 section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../images/drawing-bg.jpg) no-repeat center bottom; background-size: contain; }
 .form-box { background-color: #f5f5f5; border-radius: 10px; padding: 20px 10px; }
 .form-box h4 { padding: 0 0 20px 10px; }
+.formsubmit { justify-content: center; align-items: center; gap: 20px; padding-top: 50px; }
+.select2-container--default .select2-selection--single { border: 1px solid #ccc; border-radius: 6px; }
+.select2-container .select2-selection--single { height: 48px; }
+.select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 45px; }
 
 .page-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
 .page-hero-txt { color:#fff; font-weight: 600; }

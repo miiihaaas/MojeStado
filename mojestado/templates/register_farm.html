@@ -18,58 +18,71 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <form action="" method="POST">
+                <form action="" method="POST" class="col-md-12 d-flex flex-wrap">
                     {{ form.hidden_tag() }}
-                    <div class="form-group">
-                        {{ form.email.label }}
-                        {{ form.email(class="form-control form-control-lg", id="email" ) }}
+                    <div class="col-md-4 plr-10">
+                        <div class="form-group">
+                            {{ form.email.label }}
+                            {{ form.email(class="form-control form-control-lg", id="email" ) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password.label }}
+                            {{ form.password(class="form-control form-control-lg", id="password") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.confirm_password.label }}
+                            {{ form.confirm_password(class="form-control form-control-lg", id="confirm_password") }}
+                        </div>
                     </div>
-                    <div class="form-group">
-                        {{ form.password.label }}
-                        {{ form.password(class="form-control form-control-lg", id="password") }}
+                    <div class="col-md-8 form-box">
+                        <h4>Poslovni podaci</h4>
+                        <div class="col-md-12 d-flex">
+                            <div class="form-group col-md-6 plr-10">
+                                {{ form.name.label }}
+                                {{ form.name(class="form-control form-control-lg", id="name") }}
+                            </div>
+                            <div class="form-group col-md-6 plr-10">
+                                {{ form.surname.label }}
+                                {{ form.surname(class="form-control form-control-lg", id="surname") }}
+                            </div>
+                        </div>
+                        <div class="col-md-12 d-flex">
+                            <div class="form-group col-md-4 plr-10">
+                                {{ form.address.label }}
+                                {{ form.address(class="form-control form-control-lg", id="address") }}
+                            </div>
+                            <div class="form-group col-md-4 plr-10">
+                                {{ form.city.label }}
+                                {{ form.city(class="form-control form-control-lg", id="city") }}
+                            </div>
+                            <div class="select-group col-md-4 plr-10">
+                                {{ form.municipality.label }}
+                                {{ form.municipality(class="form-select form-select-lg", id="municipality") }}
+                            </div>
+                        </div>
+                        <div class="col-md-12 d-flex">
+                            <div class="form-group col-md-3 plr-10">
+                                {{ form.phone.label }}
+                                {{ form.phone(class="form-control form-control-lg", id="phone") }}
+                            </div>
+                            <div class="form-group col-md-3 plr-10">
+                                {{ form.jmbg.label }}
+                                {{ form.jmbg(class="form-control form-control-lg", id="jmbg") }}
+                            </div>
+                            <div class="form-group col-md-3 plr-10">
+                                {{ form.pbg.label }}
+                                {{ form.pbg(class="form-control form-control-lg", id="pbg") }}
+                            </div>
+                            <div class="form-group col-md-3 plr-10">
+                                {{ form.mb.label }}
+                                {{ form.mb(class="form-control form-control-lg", id="mb") }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        {{ form.confirm_password.label }}
-                        {{ form.confirm_password(class="form-control form-control-lg", id="confirm_password") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.name.label }}
-                        {{ form.name(class="form-control form-control-lg", id="name") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.surname.label }}
-                        {{ form.surname(class="form-control form-control-lg", id="surname") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.address.label }}
-                        {{ form.address(class="form-control form-control-lg", id="address") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.city.label }}
-                        {{ form.city(class="form-control form-control-lg", id="city") }}
-                    </div>
-                    <div class="select-group">
-                        {{ form.municipality.label }}
-                        {{ form.municipality(class="form-select form-select-lg", id="municipality") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.phone.label }}
-                        {{ form.phone(class="form-control form-control-lg", id="phone") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.jmbg.label }}
-                        {{ form.jmbg(class="form-control form-control-lg", id="jmbg") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.pbg.label }}
-                        {{ form.pbg(class="form-control form-control-lg", id="pbg") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.mb.label }}
-                        {{ form.mb(class="form-control form-control-lg", id="mb") }}
-                    </div>
-                    <div>
-                        {{ form.submit(class="btn btn-primary") }}
+                    <div class="col-md-12 plr-10 d-flex formsubmit">
+                        <div>
+                            {{ form.submit(class="btn btn-secondary") }}
+                        </div>
                     </div>
                 </form>
             </div>
