@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, session
 from flask import  render_template, flash, redirect, url_for, request
 from flask_login import current_user
 from mojestado import app, db
-from mojestado.main.functions import clear_cart_session, get_cart_total
+from mojestado.main.functions import clear_cart_session, get_cart_total, send_faq_email
 from mojestado.models import FAQ, Animal, AnimalCategory, Product
 from mojestado.transactions.functions import calculate_hash, generate_random_string
 
@@ -34,8 +34,11 @@ def faq():
     faq = FAQ.query.all()
     if request.method == 'POST':
         print(f'{request.form=}')
-        flash('Uspesno ste poslali pitanje!', 'success')
+        flash('Uspesno ste poslali pitanje timu portala "Moje stado"!', 'success')
         #! razviti funkciju koja će da pošalje mejl sa pitanjem vlasniku portala
+        email = request.form['email']
+        question = request.form['question']
+        send_faq_email(email, question)
         return render_template('faq.html', title='Najžešće postavljena pitanja',
                                 faq=faq)
     return render_template('faq.html', title='Najčešće postavljena pitanja',

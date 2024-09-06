@@ -259,7 +259,8 @@ def generate_invoice_attach(invoice_id):
     products = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 1]
     animals = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 2]
     services = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 3]
-    fattening = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 4]
+    fattening = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if (invoice_item.invoice_item_type == 4 and json.loads(invoice_item.invoice_item_details)['installment_options'] > 1)]
+    print(f'{fattening=}')
     
     #! generisi fakturu uz pomoć fpdf
     current_file_path = os.path.abspath(__file__)
@@ -277,9 +278,11 @@ def generate_invoice_attach(invoice_id):
     
     pdf = PDF()
     pdf.add_page(orientation='L')
+    pdf.set_fill_color(200, 200, 200)  # Svetlo siva boja
     #! proizvodi
     if products:
-        pdf.set_fill_color(200, 200, 200)  # Svetlo siva boja
+        pdf.set_font('DejaVuSansCondensed', 'B', 10)
+        pdf.cell(0, 10, f'Proizvodi', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
         pdf.set_font('DejaVuSansCondensed', 'B', 7)
         pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
         pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
@@ -309,6 +312,8 @@ def generate_invoice_attach(invoice_id):
         pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
     #! živa vaga
     if animals:
+        pdf.set_font('DejaVuSansCondensed', 'B', 10)
+        pdf.cell(0, 10, f'Živa vaga', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
         # pdf.set_fill_color(200, 200, 200)  # Svetlo siva boja
         pdf.set_font('DejaVuSansCondensed', 'B', 7)
         pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
@@ -339,6 +344,8 @@ def generate_invoice_attach(invoice_id):
         pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
     #! usluge
     if services:
+        pdf.set_font('DejaVuSansCondensed', 'B', 10)
+        pdf.cell(0, 10, f'Usluge', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
         pdf.set_font('DejaVuSansCondensed', 'B', 7)
         pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
         pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
@@ -361,7 +368,31 @@ def generate_invoice_attach(invoice_id):
                 pdf.cell(30, 10, f'Klanje', new_y='LAST', align='L', border=1)
                 pdf.cell(30, 10, f'{service["slaughterPrice"] + service["processingPrice"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
         pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
+    
     #! tov (samo koji NIJE na rate?)
+    if fattening:
+        pdf.set_font('DejaVuSansCondensed', 'B', 10)
+        pdf.cell(0, 10, f'Tov', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
+        pdf.set_font('DejaVuSansCondensed', 'B', 7)
+        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Rasa', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(10, 10, f'Pol', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(15, 10, f'Željena masa', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(15, 10, f'Cena tova', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(15, 10, f'Br hranidbenih dana', new_y='LAST', align='L', border=1, fill=True)
+        pdf.cell(30, 10, f'Br rata', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
+        pdf.set_font('DejaVuSansCondensed', '', 7)
+        for fattening_item in fattening:
+            pdf.cell(30, 10, f'{fattening_item["category"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{fattening_item["subcategory"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{fattening_item["race"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(10, 10, f'{fattening_item["animal_gender"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{fattening_item["desired_weight"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{fattening_item["fattening_price"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{fattening_item["feeding_days"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{fattening_item["installment_options"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+    
     
     path = os.path.join(project_folder, 'static', 'invoices')
     if not os.path.exists(path):
@@ -551,21 +582,23 @@ def send_email(user, invoice_id):
     invoice_attach = generate_invoice_attach(invoice_id)
 
     to = [user.email]
-    bcc = ['admin@example.com']
-    subject = "Potvrda kupovine na portalu Moje Stado"
+    bcc = [os.environ.get('MAIL_ADMIN')]
+    subject = 'Potvrda kupovine na portalu "Moje stado"'
 
     if payment_slips: #! ako lista NIJE prazna onda je na rate
-        body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
+        # body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
         attachments = [invoice_attach] + [new_payment_slip]
+        na_rate = True
         # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
     else:
-        body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalje kupovine možete da vidite u prilogu.\n\nHvala na poverenju!"
+        # body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalje kupovine možete da vidite u prilogu.\n\nHvala na poverenju!"
         attachments = [invoice_attach]
+        na_rate = False
         # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach])
         
     message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
-    message.body = body
-    message.html = body
+    # message.body = body
+    message.html = render_template('confirm_invoice.html', na_rate=na_rate)
     print(f'{attachments=}')
     for attachment in attachments:
         try:
@@ -576,11 +609,10 @@ def send_email(user, invoice_id):
     
     print(f"To: {to}")
     print(f"Subject: {subject}")
-    print(f"Body: {body}")
+    # print(f"Body: {body}")
     
     # TODO: Implement actual email sending logic here
     # For now, we'll just print the email details
-    message.html = body
     
     try:
         mail.send(message)

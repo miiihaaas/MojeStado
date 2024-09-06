@@ -1,5 +1,10 @@
+import os
+
 from flask import session
-from mojestado.models import Invoice
+from flask_mail import Message
+
+from mojestado import mail
+
 
 
 
@@ -67,3 +72,17 @@ def calculate_delivery_price(animal_weight):
         return 1800
     elif 200 <= animal_weight <= 800:
         return 3000
+
+
+def send_faq_email(email, question):
+    sender = email
+    subject = 'Novo pitanje na portalu "Moje stado"'
+    body = f'Pitanje: {question}'
+    
+    message = Message(subject=subject, sender=sender, recipients=[os.environ.get('MAIL_ADMIN'), sender], body=body)
+    
+    try:
+        mail.send(message)
+        print('wip: email sa pitanjem korisnika poslat adminu portala')
+    except Exception as e:
+        print(f'Greška slajna mejla: {e}')
