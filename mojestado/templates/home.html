@@ -8,8 +8,7 @@
                     <div class="ml-5">
                         <h1 class="wht-text">Povezujemo poljoprivrednike sa direktnim kupcima</h1>
                         <div class="home-hero-txt mb-5">
-                            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
-                            Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                            Cilj ove platforme je da poveže registrovana poljoprivredna gazdinstava i kupce, da olakša plasman i kupovinu poljoprivrednih proizvoda i onlajn uzgoj stoke.
                         </div>
                         {% if not current_user.is_authenticated %}
                         <a class="btn btn-primary mr-1 mb-3" href="#registracija">Registrujte se danas!</a>
@@ -25,13 +24,13 @@
         <div class="container">
             <h2 class="section-title text-center">Živa vaga</h2>
             <div class="text-center mt-5 mb-5">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt<br>
-                ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci<br>
-                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+                Živa vaga je strana platforme koja se odnosi na sva grla stoke i svu ostalu živinu.
+                Podrazumeva i grla koja su u tovu i ona koja su odmah u prodaji. Tu lako možete pronaći
+                ponudu grla svih poljoprivrednih gazdinstava..
             </div>
             <div class="row">
                 <div class="container">
-                    <section class="logo-carousel slider" data-arrows="true">
+                    <section class="logo-carousel slider" data-arrows="true" id="waitDiv">
                         {% for category in animal_categories %}
                         <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}"><p>{{ category.animal_category_name }}</p></a></div>
                         {% endfor %}
@@ -45,9 +44,9 @@
         <div class="container">
             <h2 class="section-title text-center">Gotovi proizvodi</h2>
             <div class="text-center mb-5 mt-5">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt<br>
-                ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci<br>
-                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+                Gotovi proizvodi, odnosno onlajn pijaca, strana je na platformi „Moje stado“ koja plasira
+                sve gotove proizvode i polu-proizvode poljoprivrednih gazdinstava krajnjim potrošačima.
+                Ovde možete pronaći i pretražiti ponudu svih gotovih i polu-gotovih proizvoda registrovanih poljoprivrednih gazdinstava.
             </div>
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
                 <div class="col">
@@ -139,9 +138,7 @@
         <div class="container">
             <h2 class="section-title text-center">Farme</h2>
             <div class="text-center mb-5 mt-5">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt<br>
-                ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci<br>
-                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                Farme je strana platforme „Moje stado“ na kojoj poljoprivredna gazdinstva predstavljaju sebe i svoje usluge.
             </div>
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-3"> 
                 <div class="col">

@@ -151,30 +151,20 @@
                     <div class="row">
                         <div class="col-md-6 border-right pr-50 mb-5">
                             <h2 class="mb-3">Registracija korisnika</h2>
-                            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam 
-                                nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam 
-                                erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
-                                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo 
-                                consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate 
-                                velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis 
-                                at vero eros et accumsan et iusto odio dignissim qui blandit praesent 
-                                luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-                                Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse 
-                                molestie consequat, vel illum dolore eu feugiat nulla facilisis</p>
+                            <p>Fizičko lice, odnosno krajnji korisnik, kupac,  na strani za registrovanje 
+                                fizičkih lica treba da popuni određene podatke, kao što su: mejl, lozinka, 
+                                ime i prezime, adresa, grad, poštanski broj i JMBG, zatim pročita ugovor 
+                                i uslove poslovanja i štiklira da se slaže sa navedenim i pritisne opciju „registruj se“. </p>
                             <a class="btn btn-secondary" href="{{ url_for('users.register_user') }}">Registruj se</a>
                         </div>
                         <div class="col-md-6 pl-50">
                             <h2 class="mb-3">Registracija PG</h2>
-                            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam 
-                                nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam 
-                                erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci 
-                                tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo 
-                                consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate 
-                                velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis 
-                                at vero eros et accumsan et iusto odio dignissim qui blandit praesent 
-                                luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-                                Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse 
-                                molestie consequat, vel illum dolore eu feugiat nulla facilisis</p>
+                            <p>Registracija poljoprivrednih gazdinstava: Vlasnik, odnosno nosilac PG, 
+                                treba da popuni određene podatke kao što su: mejl, lozinka, ime i prezime, 
+                                adresa, grad, poštanski broj i JMBG, zatim pročita i potpiše ugovor 
+                                i uslove poslovanja i da se slaže sa navedenim. Pritisne opciju „registruj se“ 
+                                i tako pošalje zahtev. U ovom slučaju ugovori se potpisuju lično, 
+                                a ukoliko su ulovi ispunjeni, platforma odobrava zahtev za registraciju PG</p>
                             <a class="btn btn-secondary" href="{{ url_for('users.register_farm') }}">Registruj PG</a>
                         </div>
                     </div>
@@ -230,7 +220,8 @@
         <!-- DataTables JS -->
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
-        <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js"></script>
+        <!--<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js"></script>-->
+        <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/slick.min.js') }}"></script>
         <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/slider.js') }}"></script>
 
         {% block scripts %}{% endblock %}
@@ -302,5 +293,13 @@
                 });
             });
         </script> -->
+        <script>
+            // Fade in the hero section after 3 seconds
+            window.addEventListener("load", function() {
+                setTimeout(function() {
+                    document.getElementById("waitDiv").style.opacity = "1";
+                }, 1000);
+            });
+        </script>
     </body>
 </html>
