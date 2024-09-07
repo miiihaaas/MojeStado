@@ -37,7 +37,7 @@
     <div class="container">
         <h2>Pregled stanja: {{ user.name }} {{ user.surname }}</h2>
         {% for tov_id, transactions in tovovi.items() %}
-        <h3>Tov ID: {{ tov_id }}</h3>
+        <h3>Tov ID: {{ tov_id }}</h3> <button class="btn btn-danger">Prekini tov ({{ tov_id }})</button>
         <table class="table table-striped">
             <thead>
                 <tr>

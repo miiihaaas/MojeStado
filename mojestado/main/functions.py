@@ -77,7 +77,9 @@ def calculate_delivery_price(animal_weight):
 def send_faq_email(email, question):
     sender = email
     subject = 'Novo pitanje na portalu "Moje stado"'
-    body = f'Pitanje: {question}'
+    body = f'''
+Pitanje: {question}
+Odgovor slati na mejl: {sender}'''
     
     message = Message(subject=subject, sender=sender, recipients=[os.environ.get('MAIL_ADMIN'), sender], body=body)
     
