@@ -11,7 +11,7 @@ from sqlalchemy import func
 from mojestado import bcrypt, db, app, mail
 from mojestado.animals.functions import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, AddProductForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
-from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email
+from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email, send_contract_to_farmer
 from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Debt, Invoice, Payment, PaymentStatement, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
 
 users = Blueprint('users', __name__)
@@ -34,7 +34,9 @@ def confirm_token(token, expiration=1800):
 def send_confirmation_email(user):
     token = generate_confirmation_token(user)
     confirm_url = url_for('users.confirm_email', token=token, _external=True)
-    html = render_template('confirm_email.html', confirm_url=confirm_url)
+    html = render_template('message_html_confirm_email.html',
+                            user=user,
+                            confirm_url=confirm_url)
     subject = "Molimo potvrdite svoju registraciju"
     msg = Message(subject=subject, recipients=[user.email], html=html, sender=current_app.config['MAIL_DEFAULT_SENDER'])
     mail.send(msg)
@@ -44,36 +46,56 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
     form = RegistrationFarmForm()
     form.municipality.choices = [(municipality.id, f'{municipality.municipality_name} ({municipality.municipality_zip_code})') for municipality in db.session.query(Municipality).all()]
     if form.validate_on_submit():
+        user_email_list = [user.email for user in User.query.all()]
         municipality = Municipality.query.get(form.municipality.data)
-        user = User(email=form.email.data, 
-                    password=bcrypt.generate_password_hash(form.password.data).decode('utf-8'),
-                    name=form.name.data,
-                    surname=form.surname.data,
-                    address=form.address.data,
-                    city=form.city.data,
-                    zip_code=municipality.municipality_zip_code,
-                    phone=form.phone.data,
-                    PBG=form.pbg.data,
-                    JMBG=form.jmbg.data,
-                    MB=form.mb.data,
-                    user_type='farm_unverified', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
-                    registration_date=datetime.date.today()
-                    )
-        db.session.add(user)
-        db.session.commit()
-        farm = Farm(farm_name="Definisati naziv farme",
-                    farm_address=form.address.data,
-                    farm_city=form.city.data,
-                    farm_zip_code=municipality.municipality_zip_code,
-                    farm_municipality_id=municipality.id,
-                    farm_phone=form.phone.data,
-                    farm_description="Definisati opis farme",
-                    registration_date=datetime.date.today(),
-                    user_id=user.id,
-                    farm_image_collection=[],
-                    services={"klanje": {"1": "0", "2": "0", "3": "0", "4": "0", "5": "0", "6": "0", "7": "0", "8": "0"}, "obrada": {"1": "0", "2": "0", "3": "0"}})
-        db.session.add(farm)
-        db.session.commit()
+        if form.email.data not in user_email_list:
+            user = User(email=form.email.data, 
+                        password=bcrypt.generate_password_hash(form.password.data).decode('utf-8'),
+                        name=form.name.data,
+                        surname=form.surname.data,
+                        address=form.address.data,
+                        city=form.city.data,
+                        zip_code=municipality.municipality_zip_code,
+                        phone=form.phone.data,
+                        PBG=form.pbg.data,
+                        JMBG=form.jmbg.data,
+                        MB=form.mb.data,
+                        user_type='farm_unverified', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
+                        registration_date=datetime.date.today()
+                        )
+            farm = Farm(farm_name="Definisati naziv farme",
+                        farm_address=form.address.data,
+                        farm_city=form.city.data,
+                        farm_zip_code=municipality.municipality_zip_code,
+                        farm_municipality_id=municipality.id,
+                        farm_phone=form.phone.data,
+                        farm_description="Definisati opis farme",
+                        registration_date=datetime.date.today(),
+                        user_id=user.id,
+                        farm_image_collection=[],
+                        services={"klanje": {"1": "0", "2": "0", "3": "0", "4": "0", "5": "0", "6": "0", "7": "0", "8": "0"}, "obrada": {"1": "0", "2": "0", "3": "0"}})
+            db.session.add(farm)
+            db.session.commit()
+        else:
+            user = User.query.filter_by(email=form.email.data).first()
+            if user.user_type == 'farm_unverified':
+                user.password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+                user.name = form.name.data
+                user.surname=form.surname.data
+                user.address=form.address.data
+                user.city=form.city.data
+                user.zip_code=municipality.municipality_zip_code
+                user.phone=form.phone.data
+                user.PBG=form.pbg.data
+                user.JMBG=form.jmbg.data
+                user.MB=form.mb.data
+                user.user_type='farm_unverified' #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
+                user.registration_date=datetime.date.today()
+                db.session.commit()
+            else:
+                flash(f'Već postoji korisnik sa mejlom {form.email.data}.', 'danger')
+                return redirect(url_for('main.home'))
+        
         
         # Slanje mejla za potvrdu registracije
         send_confirmation_email(user)
@@ -128,6 +150,7 @@ def confirm_email(token):
         if user.user_type == 'user_unverified':
             user.user_type = 'user'
         elif user.user_type == 'farm_unverified':
+            send_contract_to_farmer(user)
             user.user_type = 'farm_inactive'
         db.session.commit()
         flash('Vas nalog je u spešno potvrđen', 'success')
@@ -601,6 +624,13 @@ def admin_view_purchases():
         return redirect(url_for('main.home'))
     invoice_items = InvoiceItems.query.all()
     invoice_items = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_items_invoice.status in ['confirmed', 'paid']] #! pored 'confirmed' dodati i ostale ako budu bili definisni
+    # Parsiranje invoice_item_details za svaki invoice_item
+    for invoice_item in invoice_items:
+        if isinstance(invoice_item.invoice_item_details, str):  # Proveri da li je string pre nego što pokušaš da parsiraš
+            try:
+                invoice_item.invoice_item_details = json.loads(invoice_item.invoice_item_details)
+            except json.JSONDecodeError:
+                invoice_item.invoice_item_details = {}  # Postavi na prazan dict ako parsiranje ne uspe
     return render_template('admin_view_purchases.html', 
                             purchases=[], 
                             title='Prikaz narudžbi',
@@ -666,7 +696,8 @@ def admin_view_overview_user(user_id):
             
             tovovi[tov_id].append({
                 'date': debt.invoice_item.invoice_items_invoice.datetime,
-                'description': "Zaduženje: " + debt.invoice_item.invoice_item_details.get('description', 'N/A'),
+                'description': "Zaduženje: " + debt.invoice_item.invoice_item_details['category'],
+                # 'description': "Zaduženje: " + json.loads(debt.invoice_item.invoice_item_details)['category'],
                 'debt': debt.amount,
                 'debt_id': debt.id,
                 'payment': 0,
@@ -682,7 +713,8 @@ def admin_view_overview_user(user_id):
             
             tovovi[tov_id].append({
                 'date': payment.payment_statement_payment.payment_date,
-                'description': "Uplata za: " + payment.invoice_item.invoice_item_details.get('description', 'N/A'),
+                'description': "Uplata za: " + payment.invoice_item.invoice_item_details['category'],
+                # 'description': "Uplata za: " + json.loads(payment.invoice_item.invoice_item_details)['category'],
                 'debt': 0,
                 'debt_id': None,
                 'payment': payment.amount,

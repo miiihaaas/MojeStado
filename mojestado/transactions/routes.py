@@ -455,8 +455,10 @@ def edit_payment_statement(payment_statement_id):
     for invoice_item in invoice_items:
         invoice_item_data = {
             'invoice_item_id': invoice_item.id,
-            'invoice_item_animal': invoice_item.invoice_item_details.get('category', 'N/A'),
-            'invoice_item_farm': invoice_item.invoice_item_details.get('farm', 'N/A')
+            'invoice_item_animal': invoice_item.invoice_item_details['category'],
+            'invoice_item_farm': invoice_item.invoice_item_details['farm']
+            # 'invoice_item_animal': json.loads(invoice_item.invoice_item_details)['category'],
+            # 'invoice_item_farm': json.loads(invoice_item.invoice_item_details)['farm']
         }
         invoice_items_data.append(invoice_item_data)
         invoice_item_ids.append(invoice_item.id)
@@ -507,7 +509,6 @@ def submit_records():
         else:
             number_of_errors += 1
             edit_payment.payment_error = True
-        edit_payment.reference_number = reference_number
         db.session.commit()
     payment_statement = PaymentStatement.query.get(payment_statement_id)
     payment_statement.number_of_errors = number_of_errors
@@ -519,10 +520,14 @@ def submit_records():
 @transactions.route('/generate_payment_slips/<int:payment_statement_id>', methods=['GET', 'POST'])
 def generate_payment_slips(payment_statement_id):
     invoice_item = InvoiceItems.query.get_or_404(payment_statement_id)
-    filename = generate_payment_slips_attach(invoice_item)
-    current_file_path = os.path.abspath(__file__)
-    project_folder = os.path.dirname(os.path.dirname(current_file_path))
-    filepath = os.path.join(project_folder, 'static', 'payment_slips', filename)
+    # Ova funkcija vraća apsolutnu putanju
+    full_file_path = generate_payment_slips_attach(invoice_item)
+    filename = os.path.basename(full_file_path)
+    # Generišite relativni URL do fajla za klijentsku stranu
+    file_url = url_for('static', filename=f'payment_slips/{filename}', _external=True)
+    # current_file_path = os.path.abspath(__file__)
+    # project_folder = os.path.dirname(os.path.dirname(current_file_path))
+    # filepath = os.path.join(project_folder, 'static', 'payment_slips', filename)
     
     # Relativna putanja do fajla za klijentsku stranu
     file_url = url_for('static', filename=f'payment_slips/{filename}', _external=True)

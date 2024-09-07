@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potvrda registracije - Moje stado</title>
+    <title>Obaveštenje o prodaji i stanju proizvoda - Moje stado</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,6 +23,16 @@
         h1 {
             color: #2c3e50;
             margin-bottom: 20px;
+        }
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .details {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
         }
         .btn {
             display: inline-block;
@@ -46,14 +56,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>Dobrodošli na portal "Moje stado"</h1>
-        <p>Poštovani korisniče,</p>
-        <p>Hvala vam na registraciji na našem portalu. Da biste završili proces registracije i aktivirali svoj nalog, molimo vas da kliknete na dugme ispod:</p>
-        <p>
-            <a href="{{ confirm_url }}" class="btn">Potvrdi registraciju</a>
+        <h1>Obaveštenje o prodaji i stanju proizvoda</h1>
+        <p>Poštovani,</p>
+        <p>Ovim putem Vas obaveštavamo da je izvršena <span class="highlight">nova kupovina</span>. Detalji o prodatoj količini i trenutnom stanju proizvoda su prikazani u nastavku:</p>
+        
+        <div class="details">
+            <p><strong>Proizvod:</strong> {{ product_name }}</p>
+            <p><strong>Prodato:</strong> {{ quantity_sold }}</p>
+            <p><strong>Trenutno stanje:</strong> {{ quantity }}</p>
+        </div>
+        
+        <p>Molimo Vas da prema potrebi izvršite ažuriranje količina gotovih proizvoda. Za ažuriranje stanja, možete koristiti dugme ispod:</p>
+        
+        <p style="text-align: center;">
+            <a href="{{ url_for('marketplace.product_detail', product_id=product_id, _external=True) }}" class="btn">Ažuriraj stanje proizvoda</a>
         </p>
-        <p>Ako niste vi pokrenuli ovu registraciju, molimo vas da ignorišete ovu poruku.</p>
-        <p>Srdačan pozdrav,<br>Tim portala "Moje stado"</p>
+        
+        <p>Zahvaljujemo se na saradnji i srdačno Vas pozdravljamo.</p>
     </div>
     <div class="footer">
         <p>&copy; 2024 Moje stado. Sva prava zadržana.</p>

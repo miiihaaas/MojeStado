@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ugovor za registraciju na portal "Moje stado" - Potrebna akcija</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .address {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ugovor za registraciju poljoprivrednog gazdinstva na portal "Moje stado"</h1>
+        <p>Poštovani,</p>
+        <p>Zahvaljujemo se što ste uneli podatke za registraciju na portal "Moje stado". U prilogu ovog mejla nalazi se <span class="highlight">ugovor koji je potrebno da potpišete</span> kako biste mogli da počnete sa prodajom svojih proizvoda na našem portalu.</p>
+        
+        <p>Molimo Vas da potpisan ugovor pošaljete putem pošte na sledeću adresu:</p>
+        
+        <div class="address">
+            <p><strong>[Unesite adresu]</strong></p>
+        </div>
+        
+        <p>Nakon što primimo potpisan ugovor, Vaš nalog će biti odobren i aktiviran od strane administratora. O aktivaciji naloga bićete obavešteni putem mejla.</p>
+        
+        <p>Ukoliko imate dodatna pitanja ili su Vam potrebne dodatne informacije, slobodno nas kontaktirajte.</p>
+        
+        <p>Srdačno Vas pozdravljamo,<br>Tim portala "Moje stado"</p>
+        <p><a href="{{ url_for('main.contact', _external=True) }}">Kontakt informacije</a></p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Moje stado. Sva prava zadržana.</p>
+    </div>
+</body>
+</html>

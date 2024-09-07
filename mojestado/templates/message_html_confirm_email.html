@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potvrda registracije - Moje stado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dobrodošli na portal "Moje stado"</h1>
+        <p>Poštovani korisniče,</p>
+        {% if user.user_type == "farm_unverified" %}
+        <p>Hvala vam na registraciji na našem portalu. Da biste završili proces registracije svog poljoprivrednog gazdinstva, molimo vas da kliknete na dugme ispod:</p>
+        {% elif user.user_type == "user_unverified" %}
+        <p>Hvala vam na registraciji na našem portalu. Da biste završili proces registracije i aktivirali svoj korisnički nalog, molimo vas da kliknete na dugme ispod:</p>
+        {% endif %}
+        <p>
+            <a href="{{ confirm_url }}" class="btn">Potvrdi registraciju</a>
+        </p>
+        <p>Ako niste vi pokrenuli ovu registraciju, molimo vas da ignorišete ovu poruku.</p>
+        <p>Srdačan pozdrav,<br>Tim portala "Moje stado"</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Moje stado. Sva prava zadržana.</p>
+    </div>
+</body>
+</html>

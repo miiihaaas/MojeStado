@@ -8,7 +8,7 @@ import requests
 from PIL import Image
 
 from mojestado import db, mail
-from mojestado.models import Animal, Debt, Invoice, InvoiceItems, Product, User
+from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User
 
 from flask import flash, json, redirect, render_template, session, url_for
 from flask_login import current_user
@@ -37,7 +37,8 @@ def generate_payment_slips_attach(invoice_item):
     data_list = []
     qr_code_images = []
     path = os.path.join(project_folder, 'static', 'payment_slips')
-    invoice_item_details = json.loads(invoice_item.invoice_item_details)
+    invoice_item_details = invoice_item.invoice_item_details
+    # invoice_item_details = json.loads(invoice_item.invoice_item_details)
     print(f'{invoice_item_details=}')
     broj_rata = int(invoice_item_details['installment_options'])
     print(f'** {broj_rata=}, {type(broj_rata)=}')
@@ -73,7 +74,7 @@ def generate_payment_slips_attach(invoice_item):
             "V": "01",
             "C": "1",
             "R": "265178031000308698",
-            "N": "Naša imperija doo", #! da li treba adresa? Kneza Grbovića 10 || 14242 Miionica
+            "N": "Naša imperija doo", #! da li treba adresa? Kneza Grbovića 10 || 14242 Mionica
             "I": f'RSD{str(round(iznos_rate, 2)).replace(".", ",")}',
             "P": uplatilac,
             "SF": sifra_placanja,
@@ -256,10 +257,10 @@ def generate_invoice_attach(invoice_id):
     
     file_name = f'{invoice.invoice_number}.pdf'
     
-    products = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 1]
-    animals = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 2]
-    services = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if invoice_item.invoice_item_type == 3]
-    fattening = [json.loads(invoice_item.invoice_item_details) for invoice_item in invoice_items if (invoice_item.invoice_item_type == 4 and json.loads(invoice_item.invoice_item_details)['installment_options'] > 1)]
+    products = [invoice_item.invoice_item_details for invoice_item in invoice_items if invoice_item.invoice_item_type == 1]
+    animals = [invoice_item.invoice_item_details for invoice_item in invoice_items if invoice_item.invoice_item_type == 2]
+    services = [invoice_item.invoice_item_details for invoice_item in invoice_items if invoice_item.invoice_item_type == 3]
+    fattening = [invoice_item.invoice_item_details for invoice_item in invoice_items if (invoice_item.invoice_item_type == 4 and json.loads(invoice_item.invoice_item_details)['installment_options'] > 1)]
     print(f'{fattening=}')
     
     #! generisi fakturu uz pomoć fpdf
@@ -499,7 +500,8 @@ def create_invoice():
         new_invoice_item = InvoiceItems(
             farm_id=product['farm_id'],
             invoice_id=new_invoice.id,
-            invoice_item_details=json.dumps(product),
+            invoice_item_details=product,
+            # invoice_item_details=json.dumps(product),
             invoice_item_type=1
         )
         db.session.add(new_invoice_item)
@@ -509,7 +511,8 @@ def create_invoice():
         new_invoice_item = InvoiceItems(
             farm_id=animal['farm_id'],
             invoice_id=new_invoice.id,
-            invoice_item_details=json.dumps(animal),
+            invoice_item_details=animal,
+            # invoice_item_details=json.dumps(animal),
             invoice_item_type=2
         )
         db.session.add(new_invoice_item)
@@ -519,7 +522,8 @@ def create_invoice():
         new_invoice_item = InvoiceItems(
             farm_id=service['farm_id'],
             invoice_id=new_invoice.id,
-            invoice_item_details=json.dumps(service),
+            invoice_item_details=service,
+            # invoice_item_details=json.dumps(service),
             invoice_item_type=3
         )
         db.session.add(new_invoice_item)
@@ -529,7 +533,8 @@ def create_invoice():
         new_invoice_item = InvoiceItems(
             farm_id=fattening['farm_id'],
             invoice_id=new_invoice.id,
-            invoice_item_details=json.dumps(fattening),
+            invoice_item_details=fattening,
+            # invoice_item_details=json.dumps(fattening),
             invoice_item_type=4
         )
         db.session.add(new_invoice_item)
@@ -541,7 +546,8 @@ def deactivate_animals(invoice_id):
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
     for invoice_item in invoice_items:
         if invoice_item.invoice_item_type == 2:
-            animal_id = json.loads(invoice_item.invoice_item_details)['id']
+            animal_id = invoice_item.invoice_item_details['id']
+            # animal_id = json.loads(invoice_item.invoice_item_details)['id']
             animal_to_edit = Animal.query.get(animal_id)
             animal_to_edit.active = False
             db.session.commit()
@@ -551,9 +557,11 @@ def deactivate_products(invoice_id):
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
     for invoice_item in invoice_items:
         if invoice_item.invoice_item_type == 1:
-            product_id = json.loads(invoice_item.invoice_item_details)['id']
+            product_id = invoice_item.invoice_item_details['id']
+            # product_id = json.loads(invoice_item.invoice_item_details)['id']
             product_to_edit = Product.query.get(product_id)
-            product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
+            product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
+            # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
             db.session.commit()
 
 
@@ -577,6 +585,12 @@ def send_email(user, invoice_id):
                 print('wip: ova usluga je na rate')
                 new_payment_slip = generate_payment_slips_attach(invoice_item)
                 payment_slips.append(new_payment_slip) #! ako lista NIJE prazna onda je na rate
+        elif invoice_item.invoice_item_type == 1: #! ako je gotov proizvod treba da pošalje mejl farmeru:
+            '''
+            Prilikom svake kupovine stiže mejl sa informacijama o prodatoj količini i o trenutnom stanju količine proizvoda na portalu, 
+            sa molbom da se količine ažuriraju po potrebi. U mejlu se nalazi i link za ažuriranje stanja gotovih proizvoda.
+            '''
+            send_email_to_update_product_quantity(invoice_item) #! definisati funkciju
     print(f'{payment_slips=}')
     
     invoice_attach = generate_invoice_attach(invoice_id)
@@ -598,7 +612,7 @@ def send_email(user, invoice_id):
         
     message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
     # message.body = body
-    message.html = render_template('confirm_invoice.html', na_rate=na_rate)
+    message.html = render_template('message_html_confirm_invoice.html', na_rate=na_rate)
     print(f'{attachments=}')
     for attachment in attachments:
         try:
@@ -620,6 +634,36 @@ def send_email(user, invoice_id):
     except Exception as e:
         print(f'Error sending email: {e}')
 
+
+def send_email_to_update_product_quantity(invoice_item):
+    '''
+    Prilikom svake kupovine stiže mejl sa informacijama o prodatoj količini i o trenutnom stanju količine proizvoda na portalu, 
+    sa molbom da se količine ažuriraju po potrebi. U mejlu se nalazi i link za ažuriranje stanja gotovih proizvoda.
+    '''
+    print(f'send_email > proizvod > slanje mejla PG ako je proizvod da ažurira količine proizvoda na portalu')
+    farm = Farm.query.filter_by(id=invoice_item.farm_id).first()
+    farmer = User.query.filter_by(id=farm.user_id).first()
+    farmer_email = farmer.email
+    subject = 'Obaveštenje o prodaji i stanju proizvoda - Ažuriranje potrebno'
+    
+    product_id = invoice_item.invoice_item_details['id'] #! potrebno za generisanje linka koji će da bude u mejl poslatom PG da edituje količinu proizvoda
+    product = Product.query.get_or_404(product_id)
+    product_name = product.product_name
+    quantity_sold = invoice_item.invoice_item_details['quantity']
+    quantity = product.quantity
+    
+    html = render_template('message_html_update_product_quantity.html',
+                            quantity_sold=quantity_sold,
+                            product_id=product_id,
+                            product_name=product_name,
+                            quantity=quantity)
+    message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=[farmer_email])
+    message.html = html
+    try:
+        mail.send(message)
+        print('wip: poslat mejl PG o prodaji proizvod')
+    except Exception as e:
+        print(f'Greška slana mejla PG; {e}')
 
 def create_debt(user, invoice_item):
     new_debt = Debt(

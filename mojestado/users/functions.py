@@ -1,5 +1,6 @@
-from flask import url_for
-from flask_mail import Message
+import os
+from flask import render_template, url_for
+from flask_mail import Message, Attachment
 from mojestado import mail
 
 
@@ -21,6 +22,41 @@ def send_conformation_email(user):
                     attachments=[])
     msg.body = f'Da bi ste dovršili registraciju korisnickog naloga, kliknite na sledeći link: {url_for("users.confirm_email", token=user.get_reset_token(), _external=True)}'
     mail.send(msg)
+
+
+def send_contract_to_farmer(user):
+    '''
+    Nakon unosa podataka generiše se ugovor koji se šalje PG na mejl koji je unelo.
+    PG mora potpisati ugovor i vratiti administartoru putem pošte. 
+    Nakon dobijanja ugovora od strane PG, administrator odobrava nalog PG.
+    U admin panelu portala administrator manuelno aktivira nalog PG. 
+    '''
+    print(f'wip: register farmer > confirm mail > send contract')
+    subject = 'Ugovor za registraciju poljoprivrednog gazdinstva na portal "Moje stado"'
+    html = render_template('message_html_contract_to_farmer.html')
+    
+    message = Message(subject=subject, 
+                        sender=os.environ.get('MAIL_DEFAULT_SENDER'), 
+                        recipients=[user], 
+                        bcc=os.environ.get('MAIL_ADMIN'))
+    message.html = html
+    #! dodati kod za generisajne attachmenta
+    contract_file = generate_contract(user)
+    # slanje mejla
+    try:
+        mail.send(message)
+        print(f'wip: poslat mejl | register farmer > confirm mail > send contract')
+    except Exception as e:
+        print(f'Greška prilikom slanja mejla sa ugovorom poljoprivrednom gazdinstvu: {e}')
+
+
+
+def generate_contract(user):
+    '''
+    Generisanje ugovora koji će se attachovati u send_contract_to_farmer i poslati PG
+    '''
+    print('Generisanje ugovora...')
+    pass
 
 
 def farm_profile_completed_check(farm):
