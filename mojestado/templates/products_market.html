@@ -7,8 +7,8 @@
             <div class="col-md-6">
                 <h1 class="wht-text">Gotovi proizvodi</h1>
                 <div class="home-hero-txt mb-5">
-                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
-                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                    Gotovi proizvodi, odnosno onlajn pijaca, strana je na platformi „Moje stado“ koja plasira sve gotove i 
+                    polu-proizvode poljoprivrednih gazdinstava krajnjim potrošačima
                 </div>
             </div>
             <div class="col-md-3"></div>
@@ -21,11 +21,11 @@
         <div class="row">
 
         {% if product_categories %}
+        <div class="mb-12">
             {% for product_category in product_categories %}
-            <div class="card mb-12">
-                <a href="{{ url_for('marketplace.products_market', product_category_id=product_category.id) }}">{{ product_category.product_category_name }}</a>
-            </div>
+                <a href="{{ url_for('marketplace.products_market', product_category_id=product_category.id) }}" class="btn btn-secondary smallfont prod-btn">{{ product_category.product_category_name }}</a>
             {% endfor %}
+        </div>
         {% else %}
             <div class="col-md-2 sidebar">
                 <form action="{{url_for('marketplace.products_market', product_category_id=product_category_id)}}" method="POST">
@@ -98,11 +98,11 @@
             <div class="col-md-10">
                 <p>Kategorija:</p>
                 <h2>{{ product_category.product_category_name }}</h2>
-                <ul>
+                <ul class="pl-0">
                     <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
                         {% for product in products %}
                         <div class="col">
-                            <div class="card h-100">
+                            <div class="card h-100 noborder">
                                 <div class="image-wrapper">
                                     <img src="{{ url_for('static', filename='product_image/' + product.product_image) }}" class="card-img-top" alt="Slika proizvoda">
                                 </div>
@@ -110,9 +110,9 @@
                                     <h5 class="card-title">{{ product.product_name }}</h5>
                                     <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
                                     {% if product.unit_of_measurement == 'kom' %}
-                                    <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unit_of_measurement}}</strong></p>
+                                    <p class="list-price"><strong><span>{{ product.product_price_per_unit }}</span> rsd/{{product.unit_of_measurement}}</strong></p>
                                     {% endif %}
-                                    <p class="card-text"><strong>{{ product.product_price_per_kg }} rsd/kg</strong></p>
+                                    <p class="list-price"><strong><span>{{ product.product_price_per_kg }}</span> rsd/kg</strong></p>
                                     <p>količina: {{ product.quantity }} {{ product.unit_of_measurement }}</p>
 
                                     {% if current_user.is_authenticated %}
@@ -133,10 +133,9 @@
             </div>
         </div>
         {% endif %}
-        {% endblock %}
     </div>
 </section>
-
+{% endblock content %}
 {% block scripts %}
 <script>
     $(document).ready(function() {

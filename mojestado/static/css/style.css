@@ -1,6 +1,8 @@
-body { font-family: 'Montserrat', sans-serif; font-weight: 500; }
+body { font-family: 'Montserrat', sans-serif; font-weight: 500; color: #333; }
 h1, h2, h3, h4, h5, .main-menu a { /*font-family: "Roboto Slab", serif;*/ }
 /*.column { margin: 0; }*/
+a { text-decoration: none; color: #e0bd5d; }
+a:hover { color: #5e4432; }
 .row { padding: 0; }
 .top-bar { background-color: #5e4432; color: #fff; text-transform: uppercase; font-size: 16px; }
 .bg-mosta { background-color: #5e4432 }
@@ -16,15 +18,16 @@ h1, h2, h3, h4, h5, .main-menu a { /*font-family: "Roboto Slab", serif;*/ }
 .mr-4 { margin-right: 3em; }
 .mr-5 { margin-right: 4em; }
 .pr-20 { padding-right: 20px; }
+.pl-0 { padding-left: 0; }
 .pl-20 { padding-left: 20px; }
 .plr-10 { padding-left: 10px; padding-right: 10px; }
-.btn { border-radius: .3rem; /*font-family: "Roboto Slab", serif;*/ font-size: 24px; font-weight: 600; }
-.btn-primary { color: #5e4432;  background-color: #fff; border-color: #fff; }
+.btn { border-radius: .3rem; /*font-family: "Roboto Slab", serif;*/ font-size: 20px; font-weight: 600; }
+.btn-primary { color: #fff;  background-color: #5e4432; border-color: #5e4432; }
 .btn-check:focus+.btn-primary, .btn-primary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
 .btn-check:active+.btn-primary, .btn-check:checked+.btn-primary, .btn-primary.active, .btn-primary:active, .show>.btn-primary.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
-.btn-primary:hover { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-primary:hover { color: #5e4432; background-color: #e0bd5d; border-color: #e0bd5d; }
 .btn-primary:disabled, .btn-primary.disabled { color: #fff; background-color: #5e4432; border-color: #5e4432; opacity: 0.65; }
-.btn-secondary { color: #5e4432;  background-color: #e0bd5d; border-color: #e0bd5d; padding: 0 50px 3px 50px; }
+.btn-secondary { color: #5e4432;  background-color: #e0bd5d; border-color: #e0bd5d; /*padding: 0 50px 3px 50px;*/ }
 .btn-check:focus+.btn-secondary, .btn-secondary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
 .btn-check:active+.btn-secondary, .btn-check:checked+.btn-secondary, .btn-secondary.active, .btn-secondary:active, .show>.btn-secondary.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
 .btn-secondary:hover { color: #fff; background-color: #5e4432; border-color: #5e4432; }
@@ -37,6 +40,8 @@ h1, h2, h3, h4, h5, .main-menu a { /*font-family: "Roboto Slab", serif;*/ }
 .m-right-auto { margin-right: auto; }
 #waitDiv { opacity: 0; }
 .blacktext { color: #4e3829 !important; text-shadow: 0 0 15px #fff; }
+.smallfont { font-size: 18px; }
+.noborder { border: 0 !important; }
 
 nav.navbar-dark { background-color: rgba(94, 68, 50, 0.5); }
 header.hero .navbar .container { align-items: flex-start; }
@@ -84,9 +89,10 @@ section.farme .image-wrapper {display: flex; justify-content: center; align-item
 .zoom { transition: transform 0.5s ease; }
 .zoom:hover { transform: scale(1.2); }
 
+
 section.faq { background-image: url('../images/texture-1.jpg'); padding: 50px 0; }
 .accordion, .accordion-button { background-color: transparent; }
-.accordion-button { font-size: 22px; font-weight: 600; color: #5e4432; }
+.accordion-button { font-size: 18px; font-weight: 600; color: #5e4432; }
 .accordion-item { background-color: transparent; border: none; border-bottom: 1px solid #5e4432; }
 .accordion-button:not(.collapsed) { color: #5e4432; background-color: transparent; box-shadow: none; }
 .accordion-button:focus { z-index: 3; border-color: transparent; outline: 0; box-shadow: none; }
@@ -106,13 +112,13 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .page-hero-txt { color:#fff; font-weight: 600; }
 .aboutpage { background: url(../images/hero-1.jpg) no-repeat center center; background-size: cover; /*padding-bottom: 50px;*/ }
 .livestock { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; }
-.contactpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
-.faqpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
-.farmpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
+.contactpage { background: url(../images/hero-kontakt.jpg) no-repeat center center; background-size: cover; }
+.faqpage { background: url(../images/hero-faq.jpg) no-repeat center center; background-size: cover; }
+.farmpage { background: url(../farm_image/hero-farma.jpg) no-repeat center center; background-size: cover; }
 .registerfarmpage { background: url(../images/hero-register-2.jpg) no-repeat center center; background-size: cover; }
 .registerpage { background: url(../images/hero-register-1.jpg) no-repeat center center; background-size: cover; }
 .loginpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
-.productspage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
+.productspage { background: url(../images/hero-proizvodi-1.jpg) no-repeat center center; background-size: cover; }
 .firstsection { padding-top: 50px; }
 
 /*.form-switch .form-check-input:checked { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23efc65e'/%3e%3c/svg%3e");}*/
@@ -124,6 +130,10 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .sidebar .card { border: none; border-bottom: 1px solid #5e4432; border-radius: 0; }
 .sidebar .card:last-child { border-bottom: 0 !important; }
 .sidebar .card-header { /*font-family: "Roboto Slab", serif;*/ font-weight: 700; font-size: 24px; color: #5e4432; background-color: transparent; border-bottom: 0; }
+
+.prod-btn { margin-bottom: 4px; padding-top: 4px; }
+.list-price { margin-bottom: 0; }
+.list-price span { font-size: 1.3em; color: #eb5151; }
 
 footer.footer { padding: 30px 0; color: #ddd4cb; }
 footer.footer .navbar-nav li { width: 100%; }
