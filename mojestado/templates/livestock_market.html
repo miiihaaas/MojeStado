@@ -7,15 +7,15 @@
             <div class="col-md-6">
                 <h1 class="wht-text">Živa vaga</h1>
                 <div class="home-hero-txt mb-5">
-                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
-                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                    Živa vaga je strana koja se odnosi na sva grla stoke i svu ostalu živinu, kako u tovu, tako i odmah u prodaji. 
+                    Tu možete pronaći ponudu grla svih poljoprivrednih gazdinstava.
                 </div>
             </div>
             <div class="col-md-3"></div>
         </div>
     </div>
 </section>
-<section class="zivavaga-page mt-5">
+<section class="zivavaga-page mt-5" id="waitDiv">
     <div class="container">
         {% if animal_category_id == 0 %}
             <div class="row">
@@ -374,10 +374,10 @@
             </div>
         </div>
         {% endif %}
-        {% endblock %}
-        {% block scripts %}
     </div>
 </section>
+{% endblock content %}
+{% block scripts %}
 <script>
     $(document).ready(function() {
         $("#municipality").select2({
@@ -711,4 +711,4 @@
         });
     });
 </script>
-{% endblock %}
+{% endblock scripts %}

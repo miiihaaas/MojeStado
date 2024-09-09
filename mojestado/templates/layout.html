@@ -89,7 +89,7 @@
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav main-menu"style="margin-left: auto;">
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{ url_for('main.home') }}">Početna</a>
+                                <a class="nav-link" href="{{ url_for('main.home') }}">Početna</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('main.about') }}" tabindex="-1" aria-disabled="true">O portalu</a>
@@ -299,6 +299,26 @@
                 setTimeout(function() {
                     document.getElementById("waitDiv").style.opacity = "1";
                 }, 1000);
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Uzmite trenutni URL
+                var currentPath = window.location.pathname;
+
+                // Uzmite sve <a> elemente unutar menija
+                var menuItems = document.querySelectorAll('.navbar-nav .nav-link');
+
+                // Iterirajte kroz sve stavke u meniju
+                menuItems.forEach(function (menuItem) {
+                    var href = menuItem.getAttribute('href');
+
+                    // Proverite da li trenutni URL odgovara ili počinje sa href vrednošću,
+                    // ili je osnovni link (npr. product/0) i trenutni link ima isti početak (npr. product/1)
+                    if (currentPath === href || currentPath.startsWith(href.replace('/0', '/'))) {
+                        menuItem.classList.add('active');
+                    }
+                });
             });
         </script>
     </body>
