@@ -503,3 +503,8 @@
 
 
 {% endblock content %}
+{% block scripts %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+
+<script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/rwd-table.js') }}"></script>
+{% endblock %}
