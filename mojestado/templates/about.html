@@ -38,9 +38,9 @@
 </section>
 
 <div class="container">
-    <div data-responsive-table-toolbar="tech-companies-1"></div>
-    <div class="table-responsive" data-pattern="priority-columns">
-        <table cellspacing="0" id="tech-companies-1" class="table table-small-font table-bordered table-striped">
+    <div data-responsive-table-toolbar="tech-companies"></div>
+    <div class="table-responsive" id="tech-companies-wrapper" data-pattern="priority-columns" data-sortable="true">
+        <table cellspacing="0" id="tech-companies" class="table table-small-font table-tighten table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Company</th>
@@ -501,4 +501,10 @@
     </div>
 </div>
 
+
 {% endblock content %}
+{% block scripts %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+
+<script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/rwd-table.js') }}"></script>
+{% endblock %}
