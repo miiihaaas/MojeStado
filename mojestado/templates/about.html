@@ -501,10 +501,130 @@
     </div>
 </div>
 
+<hr>
+
+<button id="toggleColumnsBtn">Izaberi kolone</button>
+<div id="columnMenu">
+    <label><input type="checkbox" data-column="0" checked> Kolona 1</label>
+    <label><input type="checkbox" data-column="1" checked> Kolona 2</label>
+    <label><input type="checkbox" data-column="2" checked> Kolona 3</label>
+    <label><input type="checkbox" data-column="3" checked> Kolona 4</label>
+    <label><input type="checkbox" data-column="4" checked> Kolona 5</label>
+    <label><input type="checkbox" data-column="5" checked> Kolona 6</label>
+    <label><input type="checkbox" data-column="6" checked> Kolona 7</label>
+    <label><input type="checkbox" data-column="7" checked> Kolona 8</label>
+    <label><input type="checkbox" data-column="8" checked> Kolona 9</label>
+    <label><input type="checkbox" data-column="9" checked> Kolona 10</label>
+</div>
+
+<table id="example" style="width:100%" class="display table table-small-font table-tighten table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Kolona 1</th>
+            <th>Kolona 2</th>
+            <th>Kolona 3</th>
+            <th>Kolona 4</th>
+            <th>Kolona 5</th>
+            <th>Kolona 6</th>
+            <th>Kolona 7</th>
+            <th>Kolona 8</th>
+            <th>Kolona 9</th>
+            <th>Kolona 10</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Podatak 1</td>
+            <td>Podatak 2</td>
+            <td>Podatak 3</td>
+            <td>Podatak 4</td>
+            <td>Podatak 5</td>
+            <td>Podatak 6</td>
+            <td>Podatak 7</td>
+            <td>Podatak 8</td>
+            <td>Podatak 9</td>
+            <td>Podatak 10</td>
+        </tr>
+        <tr>
+            <td>Podatak 11</td>
+            <td>Podatak 12</td>
+            <td>Podatak 13</td>
+            <td>Podatak 14</td>
+            <td>Podatak 15</td>
+            <td>Podatak 16</td>
+            <td>Podatak 17</td>
+            <td>Podatak 18</td>
+            <td>Podatak 19</td>
+            <td>Podatak 20</td>
+        </tr>
+        <tr>
+            <td>Podatak 21</td>
+            <td>Podatak 22</td>
+            <td>Podatak 23</td>
+            <td>Podatak 24</td>
+            <td>Podatak 25</td>
+            <td>Podatak 26</td>
+            <td>Podatak 27</td>
+            <td>Podatak 28</td>
+            <td>Podatak 29</td>
+            <td>Podatak 30</td>
+        </tr>
+        <tr>
+            <td>Podatak 31</td>
+            <td>Podatak 32</td>
+            <td>Podatak 33</td>
+            <td>Podatak 34</td>
+            <td>Podatak 35</td>
+            <td>Podatak 36</td>
+            <td>Podatak 37</td>
+            <td>Podatak 38</td>
+            <td>Podatak 39</td>
+            <td>Podatak 40</td>
+        </tr>
+        <tr>
+            <td>Podatak 41</td>
+            <td>Podatak 42</td>
+            <td>Podatak 43</td>
+            <td>Podatak 44</td>
+            <td>Podatak 45</td>
+            <td>Podatak 46</td>
+            <td>Podatak 47</td>
+            <td>Podatak 48</td>
+            <td>Podatak 49</td>
+            <td>Podatak 50</td>
+        </tr>
+    </tbody>
+</table>
+
 
 {% endblock content %}
 {% block scripts %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/rwd-table.js') }}"></script> -->
 
-<script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/rwd-table.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        // Inicijalizacija DataTables
+        var table = $('#example').DataTable({
+            // Podešavanja za početnu vidljivost svih kolona
+            "columnDefs": [
+                {
+                    "targets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], // Sve kolone
+                    "visible": true // Svi su vidljivi po defaultu
+                }
+            ]
+        });
+
+        // Prikaži/sakrij meni kada se klikne na dugme
+        $('#toggleColumnsBtn').on('click', function() {
+            $('#columnMenu').toggle();
+        });
+
+        // Upravlja vidljivošću kolona na osnovu čekiranih opcija
+        $('#columnMenu input[type="checkbox"]').on('change', function() {
+            var column = table.column($(this).attr('data-column'));
+            column.visible(!column.visible());
+        });
+    });
+</script>
 {% endblock %}
