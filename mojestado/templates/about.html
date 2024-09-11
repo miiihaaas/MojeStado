@@ -38,9 +38,9 @@
 </section>
 
 <div class="container">
-    <div data-responsive-table-toolbar="tech-companies-1"></div>
-    <div class="table-responsive" data-pattern="priority-columns">
-        <table cellspacing="0" id="tech-companies-1" class="table table-small-font table-bordered table-striped">
+    <div data-responsive-table-toolbar="tech-companies"></div>
+    <div class="table-responsive" id="tech-companies-wrapper" data-pattern="priority-columns" data-sortable="true">
+        <table cellspacing="0" id="tech-companies" class="table table-small-font table-tighten table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Company</th>
@@ -500,5 +500,6 @@
         </table>
     </div>
 </div>
+
 
 {% endblock content %}

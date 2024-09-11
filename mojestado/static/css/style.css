@@ -6,7 +6,7 @@ a:hover { color: #5e4432; }
 .row { padding: 0; }
 .top-bar { background-color: #5e4432; color: #fff; text-transform: uppercase; font-size: 16px; }
 .bg-mosta { background-color: #5e4432 }
-.wht-text { color: #fff; }
+.wht-text { color: #fff; text-shadow: 0 0 10px #000;}
 .ml-1 { margin-left: 0.5em; }
 .ml-2 { margin-left: 1em; }
 .ml-3 { margin-left: 2em; }
@@ -49,7 +49,7 @@ header.hero .navbar-nav .nav-link { text-transform: uppercase; margin-left: 20px
 header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover, header.hero .navbar-nav .nav-link.active { border-bottom: 3px solid #e0bd5d;}
 .home-hero { background: url(../images/home-hero.jpg) no-repeat center center; background-size: cover; /*padding-bottom: 50px;*/ }
 .home-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
-.home-hero-txt { color:#fff; font-weight: 600; }
+.home-hero-txt { color:#fff; font-weight: 600; text-shadow: 0 0 3px #000; }
 .more-button { display: block; width: fit-content; padding: 5px 50px; margin-top: 100px; margin-bottom: 50px; }
 
 section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
@@ -117,7 +117,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .farmpage { background: url(../farm_image/hero-farma.jpg) no-repeat center center; background-size: cover; }
 .registerfarmpage { background: url(../images/hero-register-2.jpg) no-repeat center center; background-size: cover; }
 .registerpage { background: url(../images/hero-register-1.jpg) no-repeat center center; background-size: cover; }
-.loginpage { background: url(../images/hero-default.jpg) no-repeat center center; background-size: cover; }
+.loginpage { background: url(../images/hero-login.jpg) no-repeat center center; background-size: cover; }
 .productspage { background: url(../images/hero-proizvodi-1.jpg) no-repeat center center; background-size: cover; }
 .firstsection { padding-top: 50px; }
 
@@ -161,8 +161,10 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .pr-50 { padding-right: 50px; }
 }
 @media (min-width: 1400px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl { max-width: 1324px; }
     .home-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
 }
+
 @media (max-width: 992px) {
     .top-bar .navbar-nav { flex-direction: row; }
 }
