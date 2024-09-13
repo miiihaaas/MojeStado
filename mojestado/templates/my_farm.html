@@ -7,8 +7,8 @@
             <div class="col-md-6">
                 <h1 class="wht-text">Moj nalog</h1>
                 <div class="home-hero-txt mb-5">
-                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
-                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                    <!--Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat-->
                 </div>
             </div>
             <div class="col-md-3"></div>
@@ -18,7 +18,7 @@
 <section class="register-page firstsection mb-5">
     <div class="container">
         <div class="row">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <nav class="navbar navbar-expand-lg navbar-light my-navbar">
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -48,10 +48,10 @@
 </section>
 <section class="register-page firstsection mb-5">
     <div class="container">
-        <div class="row">
+        <div class="row mb-50">
             <h2>Moja farma</h2>
             <div class="col-md-3">
-                <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div id="myCarousel-" class="carousel slide" data-bs-ride="carousel-">
                     <div class="carousel-inner">
                         {% for farm_image in farm.farm_image_collection %}
                         <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
@@ -73,7 +73,7 @@
                 <h3>{{farm.farm_name}} <a href="{{ url_for('farms.farm_detail', farm_id=farm.id) }}"><i class="fa-solid fa-link"></i></a></h3>
                 <h4>{{farm.farm_city}}</h4>
                 <p>{{farm.farm_description}}</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#descriptionModal">
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#descriptionModal">
                     Izmena opisa poljoprivednog gastinstva
                 </button>
                 <!-- The modal -->
@@ -81,7 +81,7 @@
                     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="descriptionModalLabel">Opis poljoprivednog gastinstva</h5>
+                                <h5 class="modal-title" id="descriptionModalLabel">Opis poljoprivednog gazdinstva</h5>
                                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                                 </button>
@@ -90,11 +90,15 @@
                                 <form action="{{ url_for('farms.edit_farm_description') }}" method="POST">
                                     <input type="hidden" name="farm_id" value="{{ farm.id }}">
                                     <div class="row">
-                                        <label for="farm_name">Naziv poljoprivednog gastinstva</label>
-                                        <input type="text" name="farm_name" value="{{ farm.farm_name }}" class="form-control">
-                                        <label for="farm_description">Opis poljoprivednog gastinstva</label>
-                                        <textarea class="form-control" name="farm_description" id="farm_description">{{ farm.farm_description }}</textarea>
-                                        <button type="submit" class="btn btn-primary">Izmeni tekst</button>
+                                        <div class="form-group mb-3">
+                                            <label for="farm_name">Naziv poljoprivednog gastinstva</label>
+                                            <input type="text" name="farm_name" value="{{ farm.farm_name }}" class="form-control">
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="farm_description">Opis poljoprivednog gazdinstva</label>
+                                            <textarea class="form-control" name="farm_description" id="farm_description">{{ farm.farm_description }}</textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-secondary narrow-center">Izmeni tekst</button>
                                     </div>
                                 </form>
                             </div>
@@ -107,13 +111,13 @@
             <div class="col-md-9">
                 <form action="{{ url_for('users.save_services') }}" method="POST">
                     <input type="hidden" name="farm_id" value="{{ farm.id }}">
-                    <fieldset class="border p-4">
-                        <legend class="w-auto px-2">Definisanje cena usluga po kilogramu</legend>
+                    <h3 class="w-auto">Definisanje cena usluga po kilogramu</h3>
+                    <div class="col-md-12 d-flex form-box">
                         {% for service, category in farm.services.items() %}
-                        <div class="mb-4">
-                            <h5 class="mb-3">{{ service }}</h5>
+                        <div class="col-md-6 plr-20 soft-border-right">
+                            <h5 class="box-heading">{{ service }}</h5>
                             {% for category_id, price in category.items() %}
-                            <div class="form-group row">
+                            <div class="form-group row mb-2">
                                 <label class="col-sm-4 col-form-label" for="{{service}}_{{category_id}}">
                                     {{ animal_categories[category_id] }}
                                 </label>
@@ -132,14 +136,14 @@
                             {% endfor %}
                         </div>
                         {% endfor %}
-                    </fieldset>
+                    </div>
                     <div class="text-right mt-4">
                         <button type="submit" class="btn btn-primary">Sačuvaj</button>
                     </div>
                 </form>
                 
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 pt-40">
                 <div class="form-group">
                     <p>U ovoj sekciji možete upravljati svojim slikama. Možete dodati maksimalno 10 slika...</p>
                 </div>
@@ -151,14 +155,14 @@
                                 <label for="picture" class="form-label">Izaberi sliku</label>
                                 <input type="file" class="form-control" id="picture" name="picture" required>
                             </div>
-                            <button type="submit" class="btn btn-primary">Dodaj sliku</button>
+                            <button type="submit" class="btn btn-secondary">Dodaj sliku</button>
                         </div>
                     </form>
                 </div>
                 <div class="form-group mb-4">
                     <p>U ovoj sekciji možete pregledati i obrisati slike farme</p>
                     <!-- Button to open the modal -->
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal">
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#imageModal">
                         Pregled i brisanje slika
                     </button>
 
@@ -179,7 +183,7 @@
                                         {% for farm_image in farm.farm_image_collection %}
                                             <div class="col-md-3">
                                             <img src="/static/farm_image/{{ farm_image }}" class="img-fluid rounded" alt="Slika Farme {{ farm.farm_name }}">
-                                            <button type="submit" class="btn btn-danger" name="farm_image" value="{{ farm_image }}">Obriši</button>
+                                            <button type="submit" class="btn btn-danger obrisi-sliku" name="farm_image" value="{{ farm_image }}">X</button>
                                             </div>
                                         {% endfor %}
                                         </div>
@@ -192,7 +196,7 @@
                 <div class="form-group mb-4">
                     <p>U ovoj sekciji možete pregledati i postaviti naslovnu sliku</p>
                     <!-- Button to open the modal -->
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#defaultImageModal">
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#defaultImageModal">
                         Podešavanje naslovne slike
                     </button>
 
@@ -201,7 +205,10 @@
                         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="defaultImageModalLabel">Slike farme</h5>
+                                    <div>
+                                        <h5 class="modal-title" id="defaultImageModalLabel">Slike farme</h5>
+                                        <p>Izaberi izdvojenu sliku farme</p>
+                                    </div>
                                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                     </button>
@@ -213,7 +220,7 @@
                                         {% for farm_image in farm.farm_image_collection %}
                                             <div class="col-md-3">
                                                 <img src="/static/farm_image/{{ farm_image }}" class="img-fluid rounded" alt="Slika Farme {{ farm.farm_name }}">
-                                                <button type="submit" class="btn btn-primary" name="farm_image" value="{{ farm_image }}">Postavi kao naslovnu sliku</button>
+                                                <button type="submit" class="btn btn-success obrisi-sliku" name="farm_image" value="{{ farm_image }}">&#x2713;</button>
                                             </div>
                                         {% endfor %}
                                         </div>

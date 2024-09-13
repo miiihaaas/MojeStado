@@ -139,8 +139,9 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                    {{ message|safe }}
+                    <div class="alert alert-{{ category }} fixalert" id="centeredDiv">
+                        <button id="closeButton">X</button>
+                        {{ message|safe }}
                     </div>
                 {% endfor %}
                 {% endif %}
@@ -295,10 +296,12 @@
             });
         </script> -->
         <script>
-            // Fade in the hero section after 3 seconds
             window.addEventListener("load", function() {
                 setTimeout(function() {
-                    document.getElementById("waitDiv").style.opacity = "1";
+                    var waitDiv = document.getElementById("waitDiv");
+                    if (waitDiv) { // Proveri da li waitDiv postoji
+                        waitDiv.style.opacity = "1";
+                    }
                 }, 1000);
             });
         </script>
@@ -321,6 +324,18 @@
                     }
                 });
             });
+        </script>
+        <script>
+            var closeButton = document.getElementById("closeButton");
+
+            if (closeButton) {
+            closeButton.addEventListener("click", function() {
+                var div = document.getElementById("centeredDiv");
+                if (div) {
+                div.remove(); // Potpuno uklanja div iz DOM-a
+                }
+            });
+            }
         </script>
     </body>
 </html>
