@@ -7,8 +7,8 @@
             <div class="col-md-6">
                 <h1 class="wht-text">Moj nalog</h1>
                 <div class="home-hero-txt mb-5">
-                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
-                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
+                    <!--Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat-->
                 </div>
             </div>
             <div class="col-md-3"></div>
@@ -21,7 +21,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <nav class="navbar navbar-expand-lg navbar-light">
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
@@ -108,7 +108,7 @@
     <div class="container">
         <h2>Moji podaci - Admin</h2>
         <div class="row">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <nav class="navbar navbar-expand-lg navbar-light">
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -142,7 +142,7 @@
 <section class="register-page firstsection mb-5">
     <div class="container">
         <div class="row">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <nav class="navbar navbar-expand-lg navbar-light my-navbar">
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -176,21 +176,24 @@
     <div class="container">
         <div class="row">
             <h2>Moji podaci - Farmer</h2>
-            <form action="" method="POST">
-                <div class="col">
-                    <div class="form-group">
+
+            <form action="" method="POST" class="col-md-12 d-flex flex-wrap">
+                <div class="col-md-12 d-flex pb-20">
+                    <div class="form-group  col-md-4 plr-10">
                         <label for="name">Ime i prezime</label>
                         <input class="form-control" type="text" name="name" id="name" value="{{ user.name }} {{ user.surname }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group  col-md-4 plr-10">
                         <label for="name">Adresa</label>
                         <input class="form-control" type="text" name="address" id="address" value="{{ user.address }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group  col-md-4 plr-10">
                         <label for="name">Mesto</label>
                         <input class="form-control" type="text" name="zip_code" id="zip_code" value="{{ user.zip_code }} {{ user.city }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
                     </div>
-                    <div class="form-group">
+                </div>
+                <div class="col-md-12 d-flex pb-20">
+                    <div class="form-group plr-10">
                         <a href="{{ url_for('static', filename='contracts/farms/' + '{:05d}'.format(user.id) + '.pdf') }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" class="btn btn-primary">Pregled ugovora</a>
                         {% if current_user.user_type == 'admin' %}
                         <a href="" class="btn btn-primary">Generiši novi ugovor</a>
@@ -198,25 +201,26 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="col">
-                    <div class="form-group">
+                <div class="col-md-12 d-flex pb-20">
+                    <div class="form-group col-md-3 plr-10">
                         <label for="name">JMBG</label>
                         <input class="form-control" type="text" name="JMBG" id="JMBG" value="{{ user.JMBG }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group col-md-3 plr-10">
                         <label for="name">PBG</label>
                         <input class="form-control" type="text" name="PBG" id="PBG" value="{{ user.PBG }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group col-md-3 plr-10">
                         <label for="name">Telefon</label>
                         <input class="form-control" type="text" name="phone" id="phone" value="{{ user.phone }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group col-md-3 plr-10">
                         <label for="name">email</label>
                         <input class="form-control" type="text" name="email" id="email" value="{{ user.email }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
                     </div>
                 </div>
             </form>
+
         </div>    
     </div>
 </section>

@@ -1,5 +1,23 @@
 {% extends "layout.html" %}
 {% block content %}
+<style>
+
+@media (max-width: 760px)  {
+	.mobtable td:nth-of-type(1):before { content: "ID životinje"; }
+	.mobtable td:nth-of-type(2):before { content: "Potkategorija"; }
+	.mobtable td:nth-of-type(3):before { content: "Rasa"; }
+	.mobtable td:nth-of-type(4):before { content: "Pol"; }
+	.mobtable td:nth-of-type(5):before { content: "Trenutna masa"; }
+	.mobtable td:nth-of-type(6):before { content: "Cena po kg (rsd)"; }
+	.mobtable td:nth-of-type(7):before { content: "Ukupna (rsd)"; }
+	.mobtable td:nth-of-type(8):before { content: "Osigurano"; }
+	.mobtable td:nth-of-type(9):before { content: "Organsko"; }
+	.mobtable td:nth-of-type(10):before { content: "Usluge"; }
+    .mobtable td:nth-of-type(11):before { content: "Karton grla"; }
+    .mobtable td:nth-of-type(12):before { content: "PG"; }
+    .mobtable td:nth-of-type(13):before { content: "Lokacija"; }
+}
+</style>
 <section class="page-hero livestock">
     <div class="container">
         <div class="row">
@@ -18,17 +36,17 @@
 <section class="zivavaga-page mt-5" id="waitDiv">
     <div class="container">
         {% if animal_category_id == 0 %}
-            <div class="row">
-                <div class="container">
-                    <section class="logo-carousel slider" data-arrows="true">
-                        {% for category in animal_categories %}
-                        <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}"><p>{{ category.animal_category_name }}</p></a></div>
-                        {% endfor %}
-                    </section>
-                </div>
+        <div class="row moboverflow">
+            <div class="container">
+                <section class="logo-carousel slider" data-arrows="true">
+                    {% for category in animal_categories %}
+                    <div class="slide"><a href="{{ url_for('marketplace.livestock_market', animal_category_id=category.id) }}"><img src="{{ url_for('static', filename='images/' + category.animal_category_name + '.png') }}" alt="{{ category.animal_category_name }}"><p>{{ category.animal_category_name }}</p></a></div>
+                    {% endfor %}
+                </section>
             </div>
+        </div>
         {% else %}
-        <div class="row">
+        <div class="row moboverflow">
             <div class="container">
                 <section class="logo-carousel slider" data-arrows="true">
                     {% for category in animal_categories %}
@@ -127,7 +145,7 @@
             <div class="col-md-8">
                 <p>Kategorija:</p>
                 <h2>{{ animal_category.animal_category_name }}</h2>
-                <table class="table table-striped">
+                <table class="table table-striped mobtable">
                     <thead>
                         <tr>
                             <th>ID životinje</th>
@@ -194,13 +212,13 @@
                                                 data-klanje-value="{{ klanje_value }}"
                                                 data-obrada-value="{{ obrada_value }}">Kupi</button>
                                     {% else %}
-                                        <a class="btn btn-secondary" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
+                                        <a class="btn services-btn" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
                                     {% endif %}
                                     {% if animal.intended_for == "tov" %}
                                         {% if services and services.get('klanje') and services['klanje'].get(animal_category_id|string) and services['klanje'][animal_category_id|string]|int > 0 %}
                                             <button class="btn tov-btn" data-bs-toggle="modal" data-bs-target="#tovModal" data-animal-id="{{ animal.id }}" data-current-weight="{{ animal.current_weight }}">Tov</button>
                                         {% else %}
-                                            <button class="btn btn-info tov-btn_" data-bs-toggle="modal" data-bs-target="#tovModal_" data-animal-id="{{ animal.id }}" data-current-weight="{{ animal.current_weight }}">Tov</button>
+                                            <button class="btn tov-btn" data-bs-toggle="modal" data-bs-target="#tovModal_" data-animal-id="{{ animal.id }}" data-current-weight="{{ animal.current_weight }}">Tov</button>
                                         {% endif %}
                                     {% endif %}
                                 {% else %}
