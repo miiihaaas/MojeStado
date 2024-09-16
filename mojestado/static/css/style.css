@@ -129,7 +129,15 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .page-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
 .page-hero-txt { color:#fff; font-weight: 600; }
 .aboutpage { background: url(../images/hero-1.jpg) no-repeat center center; background-size: cover; /*padding-bottom: 50px;*/ }
-.livestock { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; }
+.livestock-0 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; }
+.livestock-1 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
+.livestock-2 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
+.livestock-3 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
+.livestock-4 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
+.livestock-5 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
+.livestock-6 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
+.livestock-7 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
+.livestock-8 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
 .contactpage { background: url(../images/hero-kontakt.jpg) no-repeat center center; background-size: cover; }
 .faqpage { background: url(../images/hero-faq.jpg) no-repeat center center; background-size: cover; }
 .farmpage { background: url(../farm_image/hero-farma.jpg) no-repeat center center; background-size: cover; }
