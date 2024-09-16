@@ -176,6 +176,11 @@ i.fa-solid.fa-info { color: white; background-color: deepskyblue; border-radius:
 .obrisi-sliku { margin-top: -61px; }
 .box-heading { text-align: center; background: #eee; padding: 10px; border-radius: 6px; margin-bottom: 20px; }
 
+/*** Table   ***/
+.table>:not(:last-child)>:last-child>* { border-bottom-color: inherit; }
+.table>thead { background-color: #e0bd5d; }
+
+/***  Footer   ***/
 footer.footer { padding: 30px 0; color: #ddd4cb; }
 footer.footer .navbar-nav li { width: 100%; }
 footer.footer .navbar-nav li a { display: block; color: #ddd4cb; text-decoration: none; border-bottom: 1px solid #e0bd5d; padding: 3px 0; transition: all ease 0.3s; }
@@ -186,6 +191,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .border-right { border-right: 1px solid #5e4432; }
     .pl-50 { padding-left: 50px; }
     .pr-50 { padding-right: 50px; }
+    .table>:not(.caption)>*>*:not(:last-child) { border-bottom-width: 1px; border-right-width: 1px; border-color: #ddd !important; }
 }
 @media (min-width: 1400px) {
     .container, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl { max-width: 1324px; }
@@ -195,20 +201,18 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 @media (max-width: 992px) {
     .top-bar .navbar-nav { flex-direction: row; }
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .slick-arrow { width: 1rem; height: 1rem; }
     .moboverflow { overflow: hidden; }
     .slick-arrow.slick-prev { left: 10px; }
     .slick-arrow.slick-next { right: 10px; }
-}
-@media (max-width: 480px) {
-    .top-bar { font-size: 12px; }
-}
-@media (max-width: 760px)  {
-	.mobtable, .mobtable thead, .mobtable tbody, .mobtable th, .mobtable td, .mobtable tr { display: block; }
+    .mobtable, .mobtable thead, .mobtable tbody, .mobtable th, .mobtable td, .mobtable tr { display: block; }
 	.mobtable thead tr { position: absolute; top: -9999px; left: -9999px; }
 	.mobtable td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50% !important; }
 	.mobtable td:before { position: absolute; top: 6px; left: 6px; width: 45%; padding-right: 10px; white-space: normal; word-wrap: break-word; }
+}
+@media (max-width: 480px) {
+    .top-bar { font-size: 12px; }
 }
 
 /* dodao Mihas */
