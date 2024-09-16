@@ -96,12 +96,14 @@ def edit_farm_description():
     if not farm:
         return 'Farm not found', 404
     farm.farm_description = request.form.get('farm_description')
+    farm.farm_name = request.form.get('farm_name')
     db.session.commit()
     return redirect(url_for('users.my_farm', farm_id=farm.id))
 
 
 @farms.route("/farm_list", methods=['GET', 'POST'])
 def farm_list():
+    route_name = request.endpoint
     municipality_filter_list = Municipality.query.all()
     if request.method == 'POST':
         print(f'{request.form=}')
@@ -121,6 +123,7 @@ def farm_list():
             products = Product.query.filter(Product.organic_product == True).all()
             farm_list = [farm for farm in farm_list if farm.id in [animal.farm_id for animal in animals] or farm.id in [product.farm_id for product in products]]
         return render_template('farm_list.html', title='Farms',
+                                route_name=route_name,
                                 farm_list=farm_list,
                                 municipality_filter_list=municipality_filter_list,
                                 selected_municipality=json.dumps(selected_municipality),
@@ -132,6 +135,7 @@ def farm_list():
         farm_list_active = [farm for farm in farm_list if User.query.get(farm.user_id).user_type == 'farm_active']
         farm_list = farm_list_active
         return render_template('farm_list.html', title='Farms',
+                                route_name=route_name,
                                 farm_list=farm_list,
                                 municipality_filter_list=municipality_filter_list,
                                 selected_municipality=json.dumps(selected_municipality))
@@ -139,6 +143,7 @@ def farm_list():
 
 @farms.route("/farm_detail/<int:farm_id>", methods=['GET', 'POST'])
 def farm_detail(farm_id):
+    route_name = request.endpoint
     farm = Farm.query.get_or_404(farm_id)
     animals = Animal.query.filter_by(farm_id=farm_id).all()
     #! samo životinje koje nisu u tovu
@@ -149,7 +154,8 @@ def farm_detail(farm_id):
         if organic_filter == 'on':
             animals = [animal for animal in animals if animal.organic_animal == 1]
             products = [product for product in products if product.organic_product == 1]
-    return render_template('farm_detail.html', 
+    return render_template('farm_detail.html',
+                            route_name=route_name, 
                             title=farm.farm_name,
                             organic_filter=json.dumps(organic_filter),
                             animals=animals,

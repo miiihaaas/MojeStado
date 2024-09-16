@@ -12,11 +12,15 @@ marketplace = Blueprint('marketplace', __name__)
 
 @marketplace.route('/livestock_market/<int:animal_category_id>', methods=['GET', 'POST'])
 def livestock_market(animal_category_id):
-    
+    route_name = request.endpoint
     municipality_filter_list = Municipality.query.all()
     animal_categories = AnimalCategory.query.all()
     if animal_category_id == 0:
-        return render_template('livestock_market.html', animal_categories=animal_categories, animal_category_id=animal_category_id)
+        return render_template('livestock_market.html', 
+                                title='Živa vaga',
+                                route_name=route_name, 
+                                animal_categories=animal_categories, 
+                                animal_category_id=animal_category_id)
 
     # animal_categories = None
     animal_category = AnimalCategory.query.get(animal_category_id)
@@ -61,18 +65,21 @@ def livestock_market(animal_category_id):
             farm_list_active = [farm for farm in farm_list if User.query.get(farm.user_id).user_type == 'farm_active']
             farm_list = farm_list_active
         return render_template('livestock_market.html',
-                            municipality_filter_list=municipality_filter_list,
-                            selected_municipality=json.dumps(selected_municipality),
-                            organic_filter=json.dumps(organic_filter),
-                            insure_filter=json.dumps(insure_filter),
-                            animal_category_id=animal_category_id,
-                            animal_categories=animal_categories,
-                            animal_category=animal_category,
-                            animal_subcategories=animal_subcategories,
-                            mass_filters=mass_filters,
-                            animals=animals,
-                            active_subcategories=active_subcategories,
-                            weight_filter=weight_filter)
+                                # title='Živa vaga',
+                                title=animal_category.animal_category_name,
+                                route_name=route_name,
+                                municipality_filter_list=municipality_filter_list,
+                                selected_municipality=json.dumps(selected_municipality),
+                                organic_filter=json.dumps(organic_filter),
+                                insure_filter=json.dumps(insure_filter),
+                                animal_category_id=animal_category_id,
+                                animal_categories=animal_categories,
+                                animal_category=animal_category,
+                                animal_subcategories=animal_subcategories,
+                                mass_filters=mass_filters,
+                                animals=animals,
+                                active_subcategories=active_subcategories,
+                                weight_filter=weight_filter)
     elif request.method == 'GET':
         selected_municipality = [] #[3, 5, 7] # request.form.getlist('municipality')
         print(f'GET: {selected_municipality=}')
@@ -81,6 +88,7 @@ def livestock_market(animal_category_id):
         farm_list = farm_list_active
         
     return render_template('livestock_market.html',
+                            route_name=route_name,
                             municipality_filter_list=municipality_filter_list,
                             selected_municipality=json.dumps(selected_municipality),
                             animal_category_id=animal_category_id,
@@ -90,7 +98,8 @@ def livestock_market(animal_category_id):
                             mass_filters=mass_filters,
                             animals=animals,
                             active_subcategories=[],
-                            weight_filter=weight_filter)
+                            weight_filter=weight_filter,
+                            title=animal_category.animal_category_name)
 
 
 @marketplace.route('/livestock_detail')
@@ -100,10 +109,14 @@ def livestock_detail():
 
 @marketplace.route('/products_market/<int:product_category_id>', methods=['GET', 'POST'])
 def products_market(product_category_id):
+    route_name = request.endpoint
     municipality_filter_list = Municipality.query.all()
     if product_category_id == 0:
         product_categories = ProductCategory.query.all()
-        return render_template('products_market.html', product_categories=product_categories)
+        return render_template('products_market.html', 
+                                route_name=route_name,
+                                title='Gotovi proizvodi',
+                                product_categories=product_categories)
     products = Product.query.filter_by(product_category_id=product_category_id).all()
     products = [product for product in products if float(product.quantity) > 0]
     product_categories = None
@@ -140,33 +153,37 @@ def products_market(product_category_id):
             farm_list = farm_list_active
         #todo sortiraj po ceni: products = 
         return render_template('products_market.html',
-                            municipality_filter_list=municipality_filter_list,
-                            selected_municipality=json.dumps(selected_municipality),
-                            organic_filter=json.dumps(organic_filter),
-                            product_category_id=product_category_id,
-                            product_categories=product_categories,
-                            product_category=product_category,
-                            product_subcategories=product_subcategories,
-                            product_sections=product_sections,
-                            products=products,
-                            active_subcategories=active_subcategories,
-                            active_sections=active_sections,
-                            section_filter=section_filter)
+                                route_name=route_name,
+                                title=product_category.product_category_name,
+                                municipality_filter_list=municipality_filter_list,
+                                selected_municipality=json.dumps(selected_municipality),
+                                organic_filter=json.dumps(organic_filter),
+                                product_category_id=product_category_id,
+                                product_categories=product_categories,
+                                product_category=product_category,
+                                product_subcategories=product_subcategories,
+                                product_sections=product_sections,
+                                products=products,
+                                active_subcategories=active_subcategories,
+                                active_sections=active_sections,
+                                section_filter=section_filter)
     elif request.method == 'GET':
         selected_municipality = []
         
     return render_template('products_market.html',
-                            municipality_filter_list=municipality_filter_list,
-                            selected_municipality=json.dumps(selected_municipality),
-                            product_category_id=product_category_id,
-                            product_categories=product_categories,
-                            product_category=product_category,
-                            product_subcategories=product_subcategories,
-                            product_sections=product_sections,
-                            products=products,
-                            active_subcategories=[],
-                            active_sections=[],
-                            section_filter=section_filter)
+                                route_name=route_name,
+                                title=product_category.product_category_name,
+                                municipality_filter_list=municipality_filter_list,
+                                selected_municipality=json.dumps(selected_municipality),
+                                product_category_id=product_category_id,
+                                product_categories=product_categories,
+                                product_category=product_category,
+                                product_subcategories=product_subcategories,
+                                product_sections=product_sections,
+                                products=products,
+                                active_subcategories=[],
+                                active_sections=[],
+                                section_filter=section_filter)
 
 
 @marketplace.route('/product_detail/<int:product_id>')

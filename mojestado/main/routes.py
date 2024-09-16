@@ -16,21 +16,27 @@ main = Blueprint('main', __name__)
 @main.route('/')
 @main.route('/home')
 def home():
+    route_name = request.endpoint
     faq = FAQ.query.all()
     faq = [question for question in faq if question.id < 4]
     animal_categories = AnimalCategory.query.all()
     return render_template('home.html', title='Početna strana',
+                            route_name=route_name,
                             faq=faq,
                             animal_categories=animal_categories)
 
 
 @main.route('/about')
 def about():
-    return render_template('about.html', title='O portalu')
+    route_name = request.endpoint
+    return render_template('about.html', 
+                            route_name=route_name,
+                            title='O portalu')
 
 
 @main.route('/faq', methods=['GET', 'POST'])
 def faq():
+    route_name = request.endpoint
     faq = FAQ.query.all()
     if request.method == 'POST':
         print(f'{request.form=}')
@@ -41,13 +47,18 @@ def faq():
         send_faq_email(email, question)
         return render_template('faq.html', title='Najžešće postavljena pitanja',
                                 faq=faq)
-    return render_template('faq.html', title='Najčešće postavljena pitanja',
+    return render_template('faq.html', 
+                            route_name=route_name, 
+                            title='Najčešće postavljena pitanja',
                             faq=faq)
 
 
 @main.route('/contact')
 def contact():
-    return render_template('contact.html', title='Kontakt strana')
+    route_name = request.endpoint
+    return render_template('contact.html', 
+                            route_name=route_name,
+                            title='Kontakt strana')
 
 
 @main.route('/set/<value>')
@@ -242,6 +253,7 @@ def add_delevery_to_cart():
 
 @main.route('/view_cart', methods=['GET', 'POST'])
 def view_cart():
+    route_name = request.endpoint
     animals = session.get('animals', [])
     products = session.get('products', [])
     fattening = session.get('fattening', [])
@@ -249,7 +261,11 @@ def view_cart():
     
     if not animals and not products:
         flash('Korpa je prazna!', 'info')
-        return render_template('view_cart.html', animals=[], products=[])
+        return render_template('view_cart.html', 
+                                title='Korpa', 
+                                route_name=route_name, 
+                                animals=[],
+                                products=[])
     submit_button = 'nije_na_rate'  # Pretpostavljena vrednost
     if session.get('fattening'):
         for f in session['fattening']:
@@ -293,7 +309,8 @@ def view_cart():
     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     
-    return render_template('view_cart.html', 
+    return render_template('view_cart.html',
+                            route_name = route_name,
                             animals=animals, 
                             products=products, 
                             submit_button=submit_button, 
