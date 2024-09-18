@@ -320,5 +320,19 @@
             });
             }
         </script>
+        <script>
+            window.onscroll = function() {shrinkNavbar()};
+            function shrinkNavbar() {
+                var header = document.querySelector(".hero");
+                var navbar = document.querySelector(".navbar");
+                var sticky = header.offsetHeight;
+        
+                if (window.pageYOffset > sticky) {
+                    document.body.classList.add("shrink");
+                } else {
+                    document.body.classList.remove("shrink");
+                }
+            }
+        </script>
     </body>
 </html>

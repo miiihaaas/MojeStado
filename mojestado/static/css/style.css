@@ -72,6 +72,13 @@ header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover
 .home-hero-txt { color:#fff; font-weight: 600; text-shadow: 0 0 3px #000; font-size: 20px; }
 .more-button { display: block; width: fit-content; padding: 5px 50px; margin-top: 100px; margin-bottom: 50px; }
 .navbar-nav.main-menu .nav-item a { font-size: 16px; color: #fff; }
+.navbar { transition: all 0.5s ease; ; }
+.shrink .navbar { position: fixed; top: -100px; width: 100%; z-index: 9999; animation: slideDown 0.5s forwards; }
+.shrink .top-bar { display: none; }
+.shrink .navbar .navbar-brand img { width: 100px; height: auto; }
+.shrink nav.navbar-dark { background-color: rgba(94, 68, 50, 0.9); }
+.shrink header.hero .navbar .container { align-items: center; }
+@keyframes slideDown { from { top: -100px; } to { top: 0; }}
 
 section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
 .section-title { font-size: 48px; font-weight: 700; color: #5e4432; }
@@ -217,10 +224,20 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 @media (max-width: 992px) {
     .top-bar .navbar-nav { flex-direction: row; }
     .slick-track { height: 150px; }
-    .navbar-collapse.collapse.show { background-color: #5e4432; }
+    nav.navbar .collapsing { margin: 0 -12px; background-color: #5e4432; }
+    .navbar-collapse.collapse { background-color: #5e4432; margin: 0 -12px; }
     header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover, header.hero .navbar-nav .nav-link.active { border-bottom: none; color: #e0bd5d; }
 }
 @media (max-width: 767px) {
+    body { font-size: 16px; }
+    body:not(.main\.home) nav.navbar-dark { background-color: #5e4432; }
+    section.page-hero { background-position-y: 160px; background-size: contain; padding-bottom: 0; }
+    section.page-hero .container .row > .col-md-6 { margin-top: 26%; padding-top: 30px; /*background-color: #f8f2e9;*/ }
+    section.page-hero .container .row > .col-md-6 .wht-text { color: #5e4432; text-shadow: none; }
+    section.page-hero .container .row > .col-md-6 .home-hero-txt { color: #5e4432; text-shadow: none; }
+    .home-hero-txt { font-size: 16px; }
+    .row.moboverflow { background-color: #f8f2e9; }
+    .home-hero-txt { margin-bottom: 30px !important; }
     .slick-arrow { width: 1rem; height: 1rem; }
     .moboverflow { overflow: hidden; }
     .slick-arrow.slick-prev { left: 0; }
