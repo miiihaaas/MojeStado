@@ -35,28 +35,28 @@
         <header class="hero">
             <div class="navbar navbar-expand-lg navbar-dark top-bar">
                 <div class="container">
-                    <div class="m-right-auto"><i class="fa-solid fa-phone"></i> +381 12 345 678</div>
+                    <div class="m-right-auto"><i class="fa-solid fa-phone"></i> <a href="tel:+381603600779">+381 60 36 00 779</a></div>
                     <ul class="navbar-nav m-left-auto">
                         {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="navbar-brand" href="{{ url_for('users.logout') }}">Odjavi se</a>
+                            <i class="fa-solid fa-user"></i><a class="navbar-brand" href="{{ url_for('users.logout') }}">Odjavi se</a>
                         </li>
                         <li class="nav-item">
-                            <a class="navbar-brand" href="{{ url_for('users.my_profile', user_id=current_user.id) }}" title="Moj nalog"><i class="fa-regular fa-user"></i></a>
+                            <i class="fa-solid fa-user"></i> <a class="navbar-brand" href="{{ url_for('users.my_profile', user_id=current_user.id) }}" title="Moj nalog"><i class="fa-regular fa-user"></i></a>
                         </li>
                         {% else %}
                         <li class="nav-item">
-                            <a class="navbar-brand" href="{{ url_for('users.login') }}">Uloguj se</a>
+                            <i class="fa-solid fa-user"></i> <a class="navbar-brand" href="{{ url_for('users.login') }}">Uloguj se</a>
                         </li>
                         <li class="nav-item">
-                            <a class="navbar-brand" href="#registracija">Registracija</a>
+                            <i class="fa-solid fa-pen"></i> <a class="navbar-brand" href="#registracija">Registracija</a>
                         </li>
                         {% endif %}
                         <li class="nav-item">
                             {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
                             <a class="navbar-brand" href="{{ url_for('main.view_cart')}}" title="Korpa"><i class="fa-solid fa-basket-shopping fa-bounce"></i></a>
                             {% else %}
-                            <a class="navbar-brand" href="{{ url_for('main.view_cart')}}" title="Korpa"><i class="fa-solid fa-basket-shopping"></i></a>
+                            <a class="navbar-brand" href="{{ url_for('main.view_cart')}}" title="Korpa"><i class="fa-solid fa-basket-shopping faded"></i></a>
                             {% endif %}
                         </li>
                     </ul>
