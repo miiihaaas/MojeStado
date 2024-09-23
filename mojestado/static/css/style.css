@@ -1,7 +1,7 @@
 body { font-family: 'Montserrat', sans-serif; font-weight: 500; color: #333; font-size: 18px; }
 h1, h2, h3, h4, h5, .main-menu a { /*font-family: "Roboto Slab", serif;*/ }
 /*.column { margin: 0; }*/
-a { text-decoration: none; color: #e0bd5d; }
+a { text-decoration: none; color: #ff7654; }
 a:hover { color: #5e4432; }
 .row { padding: 0; }
 .top-bar { background-color: #5e4432; color: #fff; /*text-transform: uppercase;*/ font-size: 16px; }

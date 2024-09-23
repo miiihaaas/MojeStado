@@ -1,5 +1,22 @@
 {% extends "layout.html" %}
 {% block content %}
+<style>
+    @media (max-width: 760px)  {
+        .mobtable td:nth-of-type(1):before { content: "ID životinje"; }
+        .mobtable td:nth-of-type(2):before { content: "Kategorija"; }
+        .mobtable td:nth-of-type(3):before { content: "Potkategorija"; }
+        .mobtable td:nth-of-type(4):before { content: "Rasa"; }
+        .mobtable td:nth-of-type(5):before { content: "Pol"; }
+        .mobtable td:nth-of-type(6):before { content: "Trenutna masa"; }
+        .mobtable td:nth-of-type(7):before { content: "Cena po kg (rsd)"; }
+        .mobtable td:nth-of-type(8):before { content: "Ukupna (rsd)"; }
+        .mobtable td:nth-of-type(9):before { content: "Osigurano"; }
+        .mobtable td:nth-of-type(10):before { content: "Organsko"; }
+        .mobtable td:nth-of-type(11):before { content: "Usluge"; }
+        .mobtable td:nth-of-type(12):before { content: "Karton grla"; }
+        .mobtable td:nth-of-type(13):before { content: "Kupovina"; }
+    }
+</style>
 <section class="page-hero farmpage">
     <div class="container">
         <div class="row">
@@ -72,7 +89,7 @@
                 <div>
                     {% if animals %}
                     <h2>Živa vaga</h2>
-                    <table class="table table-striped">
+                    <table class="table table-striped mobtable">
                         <thead>
                             <tr>
                                 <th>ID životinje</th>
@@ -108,9 +125,11 @@
                                         {% for category_id, price in category.items() %}
                                             {% if price | float > 0 and category_id | int == animal.animal_category.id %}
                                                 {% if service == 'klanje' %}
-                                                    slika klanja
+                                                    <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" width="32" height="32">
                                                 {% elif service == 'obrada' %}
-                                                    slika obrade
+                                                    <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" width="32" height="32">
+                                                {% else %}
+                                                    -
                                                 {% endif %}
                                             {% endif %}
                                         {% endfor %}
@@ -119,6 +138,8 @@
                                 <td>
                                     {% if animal.cardboard %}
                                     <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                    {% else %}
+                                        -
                                     {% endif %}
                                 </td>
                                 <td>

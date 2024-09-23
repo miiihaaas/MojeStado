@@ -1,22 +1,21 @@
 {% extends "layout.html" %}
 {% block content %}
 <style>
-
-@media (max-width: 760px)  {
-	.mobtable td:nth-of-type(1):before { content: "ID životinje"; }
-	.mobtable td:nth-of-type(2):before { content: "Potkategorija"; }
-	.mobtable td:nth-of-type(3):before { content: "Rasa"; }
-	.mobtable td:nth-of-type(4):before { content: "Pol"; }
-	.mobtable td:nth-of-type(5):before { content: "Trenutna masa"; }
-	.mobtable td:nth-of-type(6):before { content: "Cena po kg (rsd)"; }
-	.mobtable td:nth-of-type(7):before { content: "Ukupna (rsd)"; }
-	.mobtable td:nth-of-type(8):before { content: "Osigurano"; }
-	.mobtable td:nth-of-type(9):before { content: "Organsko"; }
-	.mobtable td:nth-of-type(10):before { content: "Usluge"; }
-    .mobtable td:nth-of-type(11):before { content: "Karton grla"; }
-    .mobtable td:nth-of-type(12):before { content: "PG"; }
-    .mobtable td:nth-of-type(13):before { content: "Lokacija"; }
-}
+    @media (max-width: 760px)  {
+        .mobtable td:nth-of-type(1):before { content: "ID životinje"; }
+        .mobtable td:nth-of-type(2):before { content: "Potkategorija"; }
+        .mobtable td:nth-of-type(3):before { content: "Rasa"; }
+        .mobtable td:nth-of-type(4):before { content: "Pol"; }
+        .mobtable td:nth-of-type(5):before { content: "Trenutna masa"; }
+        .mobtable td:nth-of-type(6):before { content: "Cena po kg (rsd)"; }
+        .mobtable td:nth-of-type(7):before { content: "Ukupna (rsd)"; }
+        .mobtable td:nth-of-type(8):before { content: "Osigurano"; }
+        .mobtable td:nth-of-type(9):before { content: "Organsko"; }
+        .mobtable td:nth-of-type(10):before { content: "Usluge"; }
+        .mobtable td:nth-of-type(11):before { content: "Karton grla"; }
+        .mobtable td:nth-of-type(12):before { content: "PG"; }
+        .mobtable td:nth-of-type(13):before { content: "Lokacija"; }
+    }
 </style>
 <section class="page-hero livestock-{{ animal_category_id }}">
     <div class="container">
@@ -178,8 +177,20 @@
                             <td>{{ animal.current_weight }}</td>
                             <td>{{ animal.price_per_kg }}</td>
                             <td>{{ animal.total_price }}</td>
-                            <td>{{ animal.insured }}</td>
-                            <td>{{ animal.organic_animal }}</td>
+                            <td>
+                                {% if animal.insured %}
+                                    Osigurano
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if animal.organic_animal %}
+                                    Organsko
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                             <td>
                                 {% for service, category in animal.farm_animal.services.items() %}
                                     {% for category_id, price in category.items() %}
