@@ -82,8 +82,13 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('marketplace.livestock_market', animal_category_id=0) }}">Živa vaga</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('marketplace.products_market', product_category_id=0) }}">Gotovi proizvodi</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="{{ url_for('marketplace.products_market', product_category_id=0) }}" id="gotoviProizvodiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Gotovi proizvodi</a>
+                                <ul class="dropdown-menu" aria-labelledby="gotoviProizvodiDropdown">
+                                    {% for product_category in product_categories %}
+                                        <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=product_category.id) }}">{{ product_category.product_category_name }}</a></li>
+                                    {% endfor %}
+                                </ul>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('farms.farm_list') }}">Farme</a>
@@ -279,6 +284,19 @@
                 });
             });
         </script> -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var dropdowns = document.querySelectorAll('.dropdown-toggle');
+
+                dropdowns.forEach(function(dropdown) {
+                    dropdown.addEventListener('click', function(event) {
+                        if (window.innerWidth >= 992) { // Aktiviraj samo na desktop veličinama
+                            event.preventDefault(); // Spreči default ponašanje na desktopu
+                        }
+                    });
+                });
+            });
+        </script>
         <script>
             window.addEventListener("load", function() {
                 setTimeout(function() {
