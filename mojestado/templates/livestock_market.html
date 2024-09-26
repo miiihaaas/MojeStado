@@ -218,12 +218,12 @@
                                     {% set obrada_value = services['obrada'].get(animal_category_id|string)|int if services and services.get('obrada') else 0 %}
 
                                     {% if services and services.get('klanje') and services['klanje'].get(animal_category_id|string) and services['klanje'][animal_category_id|string]|int > 0 %}
-                                        <button class="btn services-btn" data-bs-toggle="modal" data-bs-target="#servicesModal"
+                                        <button class="btn btn-primary services-btn" data-bs-toggle="modal" data-bs-target="#servicesModal"
                                                 data-animal-id="{{ animal.id }}"
                                                 data-klanje-value="{{ klanje_value }}"
                                                 data-obrada-value="{{ obrada_value }}">Kupi</button>
                                     {% else %}
-                                        <a class="btn services-btn" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
+                                        <a class="btn btn-primary services-btn" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
                                     {% endif %}
                                     {% if animal.intended_for == "tov" %}
                                         {% if services and services.get('klanje') and services['klanje'].get(animal_category_id|string) and services['klanje'][animal_category_id|string]|int > 0 %}
