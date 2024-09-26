@@ -1,7 +1,7 @@
 body { font-family: 'Montserrat', sans-serif; font-weight: 500; color: #333; font-size: 18px; }
 h1, h2, h3, h4, h5, .main-menu a { /*font-family: "Roboto Slab", serif;*/ }
 /*.column { margin: 0; }*/
-a { text-decoration: none; color: #e0bd5d; }
+a { text-decoration: none; color: #ff7654; }
 a:hover { color: #5e4432; }
 .row { padding: 0; }
 .top-bar { background-color: #5e4432; color: #fff; /*text-transform: uppercase;*/ font-size: 16px; }
@@ -25,13 +25,14 @@ a:hover { color: #5e4432; }
 .plr-10 { padding-left: 10px; padding-right: 10px; }
 .plr-20 { padding-left: 20px; padding-right: 20px; }
 .ptb-10 { padding-top: 10px; padding-bottom: 10px; }
+.pb-10 { padding-bottom: 10px; }
 .pb-20 { padding-bottom: 20px; }
 .pt-40 { padding-top: 40px; }
 .btn { border-radius: .3rem; /*font-family: "Roboto Slab", serif;*/ font-size: 18px; font-weight: 600; }
 .btn-primary { color: #fff;  background-color: #5e4432; border-color: #5e4432; }
 .btn-check:focus+.btn-primary, .btn-primary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
 .btn-check:active+.btn-primary, .btn-check:checked+.btn-primary, .btn-primary.active, .btn-primary:active, .show>.btn-primary.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
-.btn-primary:hover { color: #5e4432; background-color: #e0bd5d; border-color: #e0bd5d; }
+.btn-primary:hover { color: #5e4432 !important; background-color: #e0bd5d; border-color: #e0bd5d; }
 .btn-primary:disabled, .btn-primary.disabled { color: #fff; background-color: #5e4432; border-color: #5e4432; opacity: 0.65; }
 .btn-secondary { color: #5e4432;  background-color: #e0bd5d; border-color: #e0bd5d; /*padding: 0 50px 3px 50px;*/ }
 .btn-check:focus+.btn-secondary, .btn-secondary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
@@ -73,7 +74,10 @@ header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover
 .more-button { display: block; width: fit-content; padding: 5px 50px; margin-top: 100px; margin-bottom: 50px; }
 .navbar-nav.main-menu .nav-item a { font-size: 16px; color: #fff; }
 .navbar { transition: all 0.5s ease; ; }
+.nav-item.dropdown:hover .dropdown-menu { display: block; margin-top: 0; }
 .shrink .navbar { position: fixed; top: -100px; width: 100%; z-index: 9999; animation: slideDown 0.5s forwards; }
+ul.navbar-nav.main-menu .dropdown-item { color: #5e4432; }
+ul.navbar-nav.main-menu .dropdown-item:hover { background-color: #e0bd5d; }
 .shrink .top-bar { display: none; }
 .shrink .navbar .navbar-brand img { width: 100px; height: auto; }
 .shrink nav.navbar-dark { background-color: rgba(94, 68, 50, 0.9); }
@@ -177,11 +181,11 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .addtocart input.form-control { margin-top: 10px; padding: 9px 10px 8px 10px; }
 
 i.fa-solid.fa-info { color: white; background-color: deepskyblue; border-radius: 50px; padding: 5px 10px; }
-.services-btn, .tov-btn { font-size: 14px; width: 100%; padding: 3px 5px; margin: 2px 0; }
+.services-btn, .tov-btn, .unisize-btn { font-size: 14px; width: 100%; padding: 3px 5px; margin: 2px 0; }
 .services-btn { background-color: #5e4432; color: #fff; }
 .services-btn:hover { color: #fff; }
 .tov-btn { background-color: #e0bd5d; color: #5e4432; }
-/*.tov-btn:hover{ background-color: #c2a350; }*/
+.tov-btn:hover{ background-color: #5e4432; color: #fff; }
 .services-btn:hover, .tov-btn:hover { box-shadow: 0 0 10px rgba(0,0,0,0.4); }
 
 .btn-toolbar .open ul.dropdown-menu { display: block; }

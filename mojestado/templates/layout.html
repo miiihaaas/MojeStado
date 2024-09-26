@@ -17,7 +17,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css">
-        <script src="https://kit.fontawesome.com/eaa4d75133.js" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
         <!-- ovo je za select2 koji ima pretragu u sebi -->
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -82,8 +82,13 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('marketplace.livestock_market', animal_category_id=0) }}">Živa vaga</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('marketplace.products_market', product_category_id=0) }}">Gotovi proizvodi</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="{{ url_for('marketplace.products_market', product_category_id=0) }}" id="gotoviProizvodiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Gotovi proizvodi</a>
+                                <ul class="dropdown-menu" aria-labelledby="gotoviProizvodiDropdown">
+                                    {% for product_category in product_categories %}
+                                        <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=product_category.id) }}">{{ product_category.product_category_name }}</a></li>
+                                    {% endfor %}
+                                </ul>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('farms.farm_list') }}">Farme</a>
@@ -168,14 +173,14 @@
                         <ul class="navbar-nav">
                             <li><a href="{{ url_for('main.home') }}">Početna</a></li>
                             <li><a href="{{ url_for('main.about') }}">O portalu</a></li>
-                            <li><a href="#">Pijaca</a></li>
-                            <li><a href="#">Farme</a></li>
+                            <li><a href="{{ url_for('marketplace.products_market', product_category_id=0) }}">Pijaca</a></li>
+                            <li><a href="{{ url_for('farms.farm_list') }}">Farme</a></li>
                         </ul>
                     </div>
                     <div class="col-md-3">
                         <ul class="navbar-nav">
-                            <li><a href="#">FAQ</a></li>
-                            <li><a href="#">Kontakt</a></li>
+                            <li><a href="{{ url_for('main.faq') }}">FAQ</a></li>
+                            <li><a href="{{ url_for('main.contact') }}">Kontakt</a></li>
                             <li><a href="#">Pravila o privatnosti</a></li>
                             <li><a href="#"> Uslovi korišćenja</a></li>
                         </ul>
@@ -279,6 +284,19 @@
                 });
             });
         </script> -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var dropdowns = document.querySelectorAll('.dropdown-toggle');
+
+                dropdowns.forEach(function(dropdown) {
+                    dropdown.addEventListener('click', function(event) {
+                        if (window.innerWidth >= 992) { // Aktiviraj samo na desktop veličinama
+                            event.preventDefault(); // Spreči default ponašanje na desktopu
+                        }
+                    });
+                });
+            });
+        </script>
         <script>
             window.addEventListener("load", function() {
                 setTimeout(function() {
