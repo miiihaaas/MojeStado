@@ -135,6 +135,12 @@ section.faq { /*background-image: url('../images/texture-1.jpg');*/ padding: 50p
 .accordion-button:not(.collapsed)::after { content: '-'; background-image: none; transform: none; line-height: 30px; font-size: 32px; }
 .banner-horizontal img { max-width: 100%; }
 
+section.banners { padding: 0 0 50px 0; }
+.banner-horizontal-half, .banner-horizontal { display: flex; }
+.banner-horizontal-half a, .banner-horizontal a  { overflow: hidden; }
+.banner-horizontal-half a img, .banner-horizontal a img { transition: transform 0.3s ease; }
+.banner-horizontal-half a:hover img, .banner-horizontal a:hover img { transform: scale(1.1); }
+
 section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../images/drawing-bg.jpg) no-repeat center bottom; background-size: contain; }
 .form-box { background-color: #f5f5f5; border-radius: 10px; padding: 20px 10px; }
 .form-box h4 { padding: 0 0 20px 10px; }
@@ -162,6 +168,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .registerpage { background: url(../images/hero-register-1.jpg) no-repeat center center; background-size: cover; }
 .loginpage { background: url(../images/hero-login.jpg) no-repeat center center; background-size: cover; }
 .productspage { background: url(../images/hero-proizvodi-4.jpg) no-repeat center center; background-size: cover; }
+.cartpage { background: url(../images/hero-korpa.jpg) no-repeat center center; background-size: cover; }
 .firstsection { padding-top: 50px; }
 
 /*.form-switch .form-check-input:checked { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23efc65e'/%3e%3c/svg%3e");}*/
