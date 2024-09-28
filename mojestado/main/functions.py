@@ -30,6 +30,8 @@ def get_cart_total():
     if 'products' in session and isinstance(session.get('products'), list):
         for product in session['products']:
             cart_total += float(product['total_price'])
+    if 'products' in session and isinstance(session.get('products'), list) and cart_total < 5000: #! dodati logiku da nema životinja u korpi
+        delivery_total += 500
     if 'animals' in session and isinstance(session.get('animals'), list):
         for animal in session['animals']:
             cart_total += float(animal['total_price'])
@@ -47,8 +49,6 @@ def get_cart_total():
         for service in session['services']:
             cart_total += float(service['slaughterPrice']) + float(service['processingPrice'])
     
-    if 'products' in session and isinstance(session.get('products'), list) and cart_total < 3000: #! dodati logiku da nema životinja u korpi
-        delivery_total += 500
     if 'animals' in session and isinstance(session.get('animals'), list):
         for animal in session['animals']:
             if animal['wanted_weight']:

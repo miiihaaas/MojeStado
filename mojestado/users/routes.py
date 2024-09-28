@@ -57,7 +57,7 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                         city=form.city.data,
                         zip_code=municipality.municipality_zip_code,
                         phone=form.phone.data,
-                        PBG=form.pbg.data,
+                        BPG=form.bpg.data,
                         JMBG=form.jmbg.data,
                         MB=form.mb.data,
                         user_type='farm_unverified', #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
@@ -86,7 +86,7 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                 user.city=form.city.data
                 user.zip_code=municipality.municipality_zip_code
                 user.phone=form.phone.data
-                user.PBG=form.pbg.data
+                user.BPG=form.bpg.data
                 user.JMBG=form.jmbg.data
                 user.MB=form.mb.data
                 user.user_type='farm_unverified' #! definisati tipove korisnika (farm, user, admin), razraditi za farm neaktivan dok ne potpiše ugovor, pa posle toga ga admin premesti u aktivan
@@ -181,6 +181,53 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('main.home'))
+
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Zahtev za resetovanje lozinke', sender='noreply@uplatnice.online', recipients=[user.email])
+    msg.body = f'''Da biste resetovali lozinku, kliknite na sledeći link:
+{url_for('users.reset_token', token=token, _external=True)}
+
+Ako Vi niste napavili ovaj zahtev, molim Vas ignorišite ovaj mejl i neće biti napravljene nikakve izmene na Vašem nalogu.
+    '''
+    mail.send(msg)
+
+
+@users.route("/reset_password", methods=['GET', 'POST'])
+def reset_request():
+    route_name = request.endpoint
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    form = RequestResetForm()
+    if form.validate_on_submit():
+        user  = User.query.filter_by(email=form.email.data).first()
+        send_reset_email(user)
+        flash('Mejl je poslat na Vašu adresu sa instrukcijama za resetovanje lozinke. ', 'info')
+        return redirect(url_for('users.login'))
+    return render_template('reset_request.html', title='Resetovanje lozinke', form=form, legend='Resetovanje lozinke', route_name=route_name)
+
+
+@users.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_token(token):
+    route_name = request.endpoint
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    user = User.verify_reset_token(token)
+    if user is None:
+        flash('Ovo je nevažeći ili istekli token.', 'warning')
+        return redirect(url_for('users.reset_request'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user.user_password = hashed_password
+        db.session.commit()
+        flash(f'Vaša lozinka je ažurirana!', 'success')
+        return redirect(url_for('users.login'))
+
+    return render_template('reset_token.html', title='Resetovanje lozinke', form=form, legend='Resetovanje lozinke', route_name=route_name)
+
+
 
 
 @users.route("/my_profile/<user_id>", methods=['GET', 'POST'])
