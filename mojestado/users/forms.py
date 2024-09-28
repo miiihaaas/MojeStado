@@ -42,7 +42,7 @@ class RegistrationFarmForm(FlaskForm):
     municipality = SelectField('Opština', choices=[])
     phone = StringField('Telefon', validators=[DataRequired(), Length(min=9, max=10)])
     jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
-    pbg = StringField('PBG', validators=[DataRequired(), Length(min=9, max=9)])
+    bpg = StringField('BPG', validators=[DataRequired(), Length(min=9, max=9)])
     mb = StringField('MB', validators=[DataRequired(), Length(min=9, max=9)])
     submit = SubmitField('Registrujte se')
 

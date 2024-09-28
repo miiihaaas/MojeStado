@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     city = db.Column(db.String(20), unique=False, nullable=False)
     zip_code = db.Column(db.String(5), unique=False, nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
-    PBG = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
+    BPG = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
     JMBG = db.Column(db.String(13), unique=True, nullable=True)
     MB = db.Column(db.String(20), unique=True, nullable=True) #! samo za farm
     user_type = db.Column(db.String(20), nullable=False) #! postoje tipovi: admin, farm_active, farm_inactive, user, user_removed, guest(onaj koji je kupio a da nije napravio nalog: bitni su nam email, telefon, ime i prezime + ostalo)
