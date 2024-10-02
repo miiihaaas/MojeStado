@@ -85,9 +85,11 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="{{ url_for('marketplace.products_market', product_category_id=0) }}" id="gotoviProizvodiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Gotovi proizvodi</a>
                                 <ul class="dropdown-menu" aria-labelledby="gotoviProizvodiDropdown">
-                                    {% for product_category in product_categories %}
-                                        <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=product_category.id) }}">{{ product_category.product_category_name }}</a></li>
-                                    {% endfor %}
+                                    <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=1) }}">Poljoprivredni proizvodi</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=2) }}">Destilati</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=3) }}">Mlečni proizvodi</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=4) }}">Suhomesnati proizvodi</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('marketplace.products_market', product_category_id=5) }}">Jaja</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item">
