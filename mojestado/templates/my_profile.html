@@ -172,56 +172,73 @@
         </div>
     </div>
 </section>
-<section class="register-page mb-5">
+<section class="register-page my-5">
     <div class="container">
         <div class="row">
-            <h2>Moji podaci - Farmer</h2>
-
-            <form action="" method="POST" class="col-md-12 d-flex flex-wrap">
-                <div class="col-md-12 d-flex pb-20">
-                    <div class="form-group  col-md-4 plr-10">
-                        <label for="name">Ime i prezime</label>
-                        <input class="form-control" type="text" name="name" id="name" value="{{ user.name }} {{ user.surname }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+            <div class="col-12">
+                <h2 class="mb-4">Moji podaci - Farmer</h2>
+                <form action="" method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.surname.label(class="form-label") }}
+                            {{ form.surname(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
                     </div>
-                    <div class="form-group  col-md-4 plr-10">
-                        <label for="name">Adresa</label>
-                        <input class="form-control" type="text" name="address" id="address" value="{{ user.address }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.address.label(class="form-label") }}
+                            {{ form.address(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.city.label(class="form-label") }}
+                            {{ form.city(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.municipality.label(class="form-label") }}
+                            {{ form.municipality(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
                     </div>
-                    <div class="form-group  col-md-4 plr-10">
-                        <label for="name">Mesto</label>
-                        <input class="form-control" type="text" name="zip_code" id="zip_code" value="{{ user.zip_code }} {{ user.city }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            {{ form.jmbg.label(class="form-label") }}
+                            {{ form.jmbg(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.bpg.label(class="form-label") }}
+                            {{ form.bpg(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.mb.label(class="form-label") }}
+                            {{ form.mb(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-12 d-flex pb-20">
-                    <div class="form-group plr-10">
-                        <a href="{{ url_for('static', filename='contracts/farms/' + '{:05d}'.format(user.id) + '.pdf') }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" class="btn btn-primary">Pregled ugovora</a>
-                        {% if current_user.user_type == 'admin' %}
-                        <a href="" class="btn btn-primary">Generiši novi ugovor</a>
-                        <a href="" class="btn btn-primary">Sačuvaj</a>
-                        {% endif %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-12 d-flex pb-20">
-                    <div class="form-group col-md-3 plr-10">
-                        <label for="name">JMBG</label>
-                        <input class="form-control" type="text" name="JMBG" id="JMBG" value="{{ user.JMBG }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a href="{{ url_for('static', filename='contracts/farms/' + '{:05d}'.format(user.id) + '.pdf') }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary me-2">Pregled ugovora</a>
+                            {% if current_user.user_type == 'admin' %}
+                                <a href="#" class="btn btn-secondary me-2">Generiši novi ugovor</a>
+                                {{ form.submit(class="btn btn-primary") }}
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="form-group col-md-3 plr-10">
-                        <label for="name">BPG</label>
-                        <input class="form-control" type="text" name="BPG" id="BPG" value="{{ user.BPG }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
-                    </div>
-                    <div class="form-group col-md-3 plr-10">
-                        <label for="name">Telefon</label>
-                        <input class="form-control" type="text" name="phone" id="phone" value="{{ user.phone }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
-                    </div>
-                    <div class="form-group col-md-3 plr-10">
-                        <label for="name">email</label>
-                        <input class="form-control" type="text" name="email" id="email" value="{{ user.email }}" {% if current_user.user_type != 'admin' %} readonly {% endif %}>
-                    </div>
-                </div>
-            </form>
-
-        </div>    
+                </form>
+            </div>
+        </div>
     </div>
 </section>
 {% elif user.user_type == 'farm_inactive' %}
