@@ -51,7 +51,7 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
                                 <label class="form-check-label" for="organic_filter">Organski</label>
-                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
+                                <a href="https://sr.wikipedia.org/sr/Organska_poljoprivreda" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
                                     <i class="fas fa-question-circle"></i>
                                 </a>
                             </div>
@@ -110,9 +110,9 @@
                                     <h5 class="card-title">{{ product.product_name }}</h5>
                                     <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
                                     {% if product.unit_of_measurement == 'kom' %}
-                                    <p class="list-price"><strong><span>{{ product.product_price_per_unit }}</span> rsd/{{product.unit_of_measurement}}</strong></p>
+                                    <p class="list-price"><strong><span>{{ "{:.2f}".format(product.product_price_per_unit) }}</span> rsd/{{product.unit_of_measurement}}</strong></p>
                                     {% endif %}
-                                    <p class="list-price"><strong><span>{{ product.product_price_per_kg }}</span> rsd/kg</strong></p>
+                                    <p class="list-price"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span> rsd/kg</strong></p>
                                     <p>količina: {{ product.quantity }} {{ product.unit_of_measurement }}</p>
 
                                     {% if current_user.is_authenticated %}
