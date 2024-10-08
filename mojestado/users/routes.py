@@ -10,7 +10,7 @@ from itsdangerous import Serializer
 from sqlalchemy import func
 from mojestado import bcrypt, db, app, mail
 from mojestado.animals.functions import get_animal_categorization
-from mojestado.users.forms import AddAnimalForm, AddProductForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
+from mojestado.users.forms import AddAnimalForm, AddProductForm, EditFarmForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
 from mojestado.users.functions import farm_profile_completed_check, send_contract, send_conformation_email, send_contract_to_farmer
 from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Debt, Invoice, Payment, PaymentStatement, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
 
@@ -234,8 +234,29 @@ def reset_token(token):
 def my_profile(user_id): #! Moj nalog za korisnika
     user = User.query.get_or_404(user_id)
     if current_user.user_type == 'admin':
-        flash('Admin pregleda druga PG', 'info')
-        return render_template('my_profile.html', title='Moj nalog', user=user)
+        form = EditFarmForm(obj=user)
+        form.municipality.choices = [(municipality.id, f'{municipality.municipality_name} ({municipality.municipality_zip_code})') for municipality in db.session.query(Municipality).all()]
+
+        if form.validate_on_submit():
+            user.name = request.form.get('name')
+            user.surname = request.form.get('surname')
+            user.address = request.form.get('address')
+            # user.zip_code = request.form.get('zip_code')
+            user.city = request.form.get('city')
+            user.JMBG = request.form.get('jmbg')
+            user.BPG = request.form.get('pbg')
+            user.MB = request.form.get('mb')
+            user.phone = request.form.get('phone')
+            user.email = request.form.get('email')
+            db.session.commit()
+            flash('Uspesno ste izmenili podatke.', 'success')
+            return redirect(url_for('users.my_profile', user_id=user.id))
+        elif form.errors:
+            flash(f'{form.errors}', 'danger')
+        form.jmbg.data = user.JMBG
+        form.bpg.data = user.BPG
+        form.mb.data = user.MB
+        return render_template('my_profile.html', title='Moj nalog', user=user, form=form)
     elif current_user.id != user.id:
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
         return redirect(url_for('main.home'))
@@ -243,7 +264,7 @@ def my_profile(user_id): #! Moj nalog za korisnika
     if current_user.user_type == 'user':
         print(f'current_user: {current_user}')
         if request.method == 'POST':
-            user.address = request.form.get('addressInput')
+            user.address = request.form.get('address')
             db.session.commit()
             flash('Uspesno ste izmenili adresu.', 'success')
             return redirect(url_for('users.my_profile', user_id=user.id))
@@ -572,9 +593,10 @@ def my_shop(user_id):
 @users.route("/settings", methods=['GET', 'POST'])
 def settings():
     if not current_user.is_authenticated:
+        flash('Nemate pravo da pristupite ovoj stranici.', 'danger')
         return redirect(url_for('main.home'))
     if current_user.user_type != 'admin':
-        flash('Nemate pravo pristupa', 'danger')
+        flash('Nemate pravo pristupa ovoj stranici.', 'danger')
         return redirect(url_for('main.home'))
 
     if request.method == 'POST':
@@ -584,9 +606,11 @@ def settings():
             category = AnimalCategorization.query.filter_by(id=key).first()
             category.fattening_price = value
         db.session.commit()
+        flash('Uspesno ste sačuvali izmenjene cene.', 'success')
+        return redirect(url_for('users.settings'))
+
     
     categorization = AnimalCategorization.query.filter_by(intended_for="tov").all()
-    flash('Uspesno ste sačuvali izmenjene cene.', 'success')
     return render_template('settings.html', title='Settings',
                             categorization=categorization)
 

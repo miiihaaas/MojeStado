@@ -42,10 +42,25 @@ class RegistrationFarmForm(FlaskForm):
     municipality = SelectField('Opština', choices=[])
     phone = StringField('Telefon', validators=[DataRequired(), Length(min=9, max=10)])
     jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
-    bpg = StringField('BPG', validators=[DataRequired(), Length(min=9, max=9)])
-    mb = StringField('MB', validators=[DataRequired(), Length(min=9, max=9)])
+    bpg = StringField('BPG', validators=[DataRequired(), Length(min=12, max=12)])
+    mb = StringField('MB', validators=[DataRequired(), Length(min=10, max=10)])
     submit = SubmitField('Registrujte se')
 
+
+from wtforms.fields import Field
+
+class EditFarmForm(FlaskForm):
+    email = StringField('Mejl', validators=[DataRequired(), Email()])
+    name = StringField('Ime', validators=[DataRequired(), Length(min=2, max=20)])
+    surname = StringField('Prezime', validators=[DataRequired(), Length(min=2, max=20)])
+    address = StringField('Adresa', validators=[DataRequired(), Length(min=2, max=20)])
+    city = StringField('Mesto', validators=[DataRequired(), Length(min=2, max=20)])
+    municipality = SelectField('Opština', choices=[])
+    phone = StringField('Telefon', validators=[DataRequired(), Length(min=9, max=10)])
+    jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
+    bpg = StringField('BPG', validators=[DataRequired(), Length(min=12, max=12)])
+    mb = StringField('MB', validators=[DataRequired(), Length(min=10, max=10)])
+    submit = SubmitField('Sačuvaj izmene')
 
 class LoginForm(FlaskForm):
     email = StringField('Mejl', validators=[DataRequired(), Email()])

@@ -52,7 +52,7 @@
             <tbody>
                 {% for invoice_item in invoice_items %}
                 <tr>
-                    <td>{{ invoice_item.invoice_items_invoice.datetime }}</td>
+                    <td>{{ invoice_item.invoice_items_invoice.datetime.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>{{ invoice_item.invoice_items_invoice.user_invoice.name }} {{ invoice_item.invoice_items_invoice.user_invoice.surname }}</td>
                     <td>{{ invoice_item.invoice_item_details["farm"] }}</td>
                     {% if invoice_item.invoice_item_type == 1 %}
@@ -83,7 +83,13 @@
                     {% if invoice_item.invoice_item_type == 4 %}
                     <td>--</td>
                     {% else %}
-                    <td>{{ invoice_item.invoice_item_details["product_price_per_unit"] }}{{ invoice_item.invoice_item_details["price_per_kg"] }}</td>
+                    <td>
+                    {% if invoice_item.invoice_item_details["product_price_per_unit"] %}
+                        {{ "{:.2f}".format(invoice_item.invoice_item_details["product_price_per_unit"]|float) }}
+                    {% else %}
+                        {{ "{:.2f}".format(invoice_item.invoice_item_details["price_per_kg"]|float) }}
+                    {% endif %}
+                    </td>
                     {% endif %}
 
                     {% if invoice_item.invoice_item_type == 1 %}
