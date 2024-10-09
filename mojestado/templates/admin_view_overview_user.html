@@ -37,7 +37,7 @@
     <div class="container">
         <h2>Pregled stanja: {{ user.name }} {{ user.surname }}</h2>
         {% for tov_id, transactions in tovovi.items() %}
-        <h3>Tov ID: {{ tov_id }}</h3> <button class="btn btn-danger">Prekini tov ({{ tov_id }})</button>
+        <h3>Tov ID: {{ tov_id }}</h3> <a href="{{ url_for('users.cancel_fattening', invoice_item_id=tov_id) }}" class="btn btn-danger">Prekini tov ({{ tov_id }})</a>
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -51,10 +51,10 @@
             <tbody>
                 {% for transaction in transactions %}
                 <tr>
-                    <td>{{ transaction.date }}</td>
-                    <td>{{ transaction.debt }}</td>
-                    <td>{{ transaction.payment }}</td>
-                    <td>{{ transaction.saldo }}</td>
+                    <td>{{ transaction.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ "{:.2f}".format(transaction.debt) }}</td>
+                    <td>{{ "{:.2f}".format(transaction.payment) }}</td>
+                    <td>{{ "{:.2f}".format(transaction.saldo) }}</td>
                     <td>
                         {% if transaction.type == 'debt' %}
                         <a href="{{ url_for('transactions.generate_payment_slips', payment_statement_id=tov_id )}}" target="_blank" class="btn btn-secondary">Generiši uplatnicu</a>

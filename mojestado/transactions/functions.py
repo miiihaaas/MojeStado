@@ -260,7 +260,8 @@ def generate_invoice_attach(invoice_id):
     products = [invoice_item.invoice_item_details for invoice_item in invoice_items if invoice_item.invoice_item_type == 1]
     animals = [invoice_item.invoice_item_details for invoice_item in invoice_items if invoice_item.invoice_item_type == 2]
     services = [invoice_item.invoice_item_details for invoice_item in invoice_items if invoice_item.invoice_item_type == 3]
-    fattening = [invoice_item.invoice_item_details for invoice_item in invoice_items if (invoice_item.invoice_item_type == 4 and json.loads(invoice_item.invoice_item_details)['installment_options'] > 1)]
+    # fattening = [invoice_item.invoice_item_details for invoice_item in invoice_items if (invoice_item.invoice_item_type == 4 and json.loads(invoice_item.invoice_item_details)['installment_options'] > 1)]
+    fattening = [invoice_item.invoice_item_details for invoice_item in invoice_items if (invoice_item.invoice_item_type == 4 and invoice_item.invoice_item_details['installment_options'] > 1)]
     print(f'{fattening=}')
     
     #! generisi fakturu uz pomoć fpdf
@@ -579,7 +580,8 @@ def send_email(user, invoice_id):
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
     for invoice_item in invoice_items:
         if invoice_item.invoice_item_type == 4: #! razmatra samo usluge tova (4)
-            fattening = json.loads(invoice_item.invoice_item_details)
+            # fattening = json.loads(invoice_item.invoice_item_details)
+            fattening = invoice_item.invoice_item_details
             if int(fattening['installment_options']) > 1: #! Ako je na rate, generišu se uplatnice i zaduži
                 create_debt(user, invoice_item)
                 print('wip: ova usluga je na rate')
@@ -669,7 +671,8 @@ def create_debt(user, invoice_item):
     new_debt = Debt(
         invoice_item_id=invoice_item.id,
         user_id=user.id,
-        amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
+        # amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
+        amount=invoice_item.invoice_item_details['fattening_price'],
         status='pending'
     )
     db.session.add(new_debt)

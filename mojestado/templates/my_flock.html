@@ -56,14 +56,14 @@
                             <th>Podkategorija</th>
                             <th>Rasa</th>
                             <th>Pol</th>
-                            <th>Trenutna masa grla</th>
+                            <th>Trenutna masa</th>
                             <th>Cena po kilogramu</th>
                             <th>Ukupna cena</th>
                             <th>Osigurano</th>
                             <th>Organski uzgoj</th>
                             <th>Usluge PG</th>
-                            <th>Karton grla</th>
-                            <th>Ukloni grlo</th>
+                            <th>Karton</th>
+                            <th>Ukloni životinju</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,9 +78,9 @@
                             <td>{{ animal.animal_categorization.subcategory }}</td>
                             <td>{{ animal.animal_race.animal_race_name }}</td>
                             <td>{{ animal.animal_gender }}</td>
-                            <td>{{ animal.current_weight }}</td>
-                            <td>{{ animal.price_per_kg_farmer }}</td>
-                            <td>{{ animal.total_price | float / 1.38 }}</td>
+                            <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
+                            <td>{{ "{:.2f}".format(animal.price_per_kg_farmer) }}</td>
+                            <td>{{ "{:.2f}".format(animal.total_price | float / 1.38) }}</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
                             <td>

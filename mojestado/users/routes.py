@@ -264,6 +264,7 @@ def my_profile(user_id): #! Moj nalog za korisnika
     if current_user.user_type == 'user':
         print(f'current_user: {current_user}')
         if request.method == 'POST':
+            print(f'{request.form=}')
             user.address = request.form.get('address')
             db.session.commit()
             flash('Uspesno ste izmenili adresu.', 'success')
@@ -274,9 +275,11 @@ def my_profile(user_id): #! Moj nalog za korisnika
     elif current_user.user_type == 'farm_active':
         farm = Farm.query.filter_by(user_id=user.id).first()
         farm_profile_completed = farm_profile_completed_check(farm)
+        form = EditFarmForm(obj=user)
         return render_template('my_profile.html', title='Moj nalog', 
                                 user=user,
                                 farm=farm,
+                                form=form,
                                 farm_profile_completed=farm_profile_completed)
     elif current_user.user_type == 'farm_inactive':
         flash('Još uvek nije aktivirana vaše poljoprivredno gazdinstvo.', 'info')
@@ -808,6 +811,17 @@ def admin_view_overview_user(user_id):
                             tovovi=tovovi,
                             total_saldo=total_saldo,
                             title='Pregled stanja korisnika')
+
+
+@users.route("/cancel_fattening/<int:invoice_item_id>", methods=['POST', 'GET'])
+def cancel_fattening(invoice_item_id):
+    invoice_item = InvoiceItems.query.get_or_404(invoice_item_id)
+    animal_id = invoice_item.invoice_item_details['animal_id']
+    animal = Animal.query.get_or_404(animal_id)
+    animal.fattening = False
+    db.session.commit()
+    return redirect(url_for('users.admin_view_overview_user', user_id=invoice_item.user_id))
+
 
 
 @users.route("/admin_view_slips", methods=['GET', 'POST'])
