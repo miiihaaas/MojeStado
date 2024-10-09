@@ -82,11 +82,11 @@ class Animal(db.Model):
     animal_gender = db.Column(db.String(20), nullable=False)  # pol
     measured_weight = db.Column(db.String(20), nullable=False)  # izmerena težina
     measured_date = db.Column(db.String(20), nullable=False)  # datum merenja
-    current_weight = db.Column(db.String(20), nullable=False)  # trenutna težina = preračunava se u odnosu na izmerenu težinu i datum merenja
-    wanted_weight = db.Column(db.String(20), nullable=True)  # zeljena težina
-    price_per_kg_farmer = db.Column(db.String(20), nullable=False)  # cena po kg
-    price_per_kg = db.Column(db.String(20), nullable=False)  # cena po kg
-    total_price = db.Column(db.String(20), nullable=False)  # ukupna cena
+    current_weight = db.Column(db.Float, nullable=False)  # trenutna težina = preračunava se u odnosu na izmerenu težinu i datum merenja
+    wanted_weight = db.Column(db.Float, nullable=True)  # zeljena težina
+    price_per_kg_farmer = db.Column(db.Float, nullable=False)  # cena po kg
+    price_per_kg = db.Column(db.Float, nullable=False)  # cena po kg
+    total_price = db.Column(db.Float, nullable=False)  # ukupna cena
     insured = db.Column(db.Boolean, nullable=False)  # osigurano
     organic_animal = db.Column(db.Boolean, nullable=False)  # organska proizvodnja
     cardboard = db.Column(db.String(50), nullable=True)  # karton grla/životinje
@@ -170,7 +170,7 @@ class Product(db.Model):
     product_price_per_unit = db.Column(db.String(20), nullable=False)
     product_price_per_kg = db.Column(db.String(20), nullable=True)
     organic_product = db.Column(db.Boolean, nullable=False)
-    quantity = db.Column(db.String(20), nullable=False)
+    quantity = db.Column(db.Float, nullable=False)
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=False)
     
     product_category = db.relationship('ProductCategory', back_populates='products')
