@@ -61,19 +61,25 @@
                             </div>
                         </div>
                         <div class="col-md-12 d-flex">
-                            <div class="form-group col-md-3 plr-10">
+                            <div class="form-group col-md-6 plr-10">
                                 {{ form.phone.label }}
                                 {{ form.phone(class="form-control form-control-lg", id="phone") }}
                             </div>
-                            <div class="form-group col-md-3 plr-10">
+                            <div class="form-group col-md-6 plr-10">
+                                {{ form.account_number.label }}
+                                {{ form.account_number(class="form-control form-control-lg", id="account_number", placeholder="xxx-xxxxxxxxxxxxx-xx") }}
+                            </div>
+                        </div>
+                        <div class="col-md-12 d-flex">
+                            <div class="form-group col-md-4 plr-10">
                                 {{ form.jmbg.label }}
                                 {{ form.jmbg(class="form-control form-control-lg", id="jmbg") }}
                             </div>
-                            <div class="form-group col-md-3 plr-10">
+                            <div class="form-group col-md-4 plr-10">
                                 {{ form.bpg.label }}
                                 {{ form.bpg(class="form-control form-control-lg", id="bpg") }}
                             </div>
-                            <div class="form-group col-md-3 plr-10">
+                            <div class="form-group col-md-4 plr-10">
                                 {{ form.mb.label }}
                                 {{ form.mb(class="form-control form-control-lg", id="mb") }}
                             </div>
@@ -101,6 +107,5 @@
         // Postavljanje praznog stringa kao selektovane opcije
         $("#municipality").val(null).trigger("change");
     });
-
 </script>
 {% endblock scripts %}

@@ -71,6 +71,7 @@ def register_farm(): #! Registracija poljoprivrednog gazdinstva
                         farm_zip_code=municipality.municipality_zip_code,
                         farm_municipality_id=municipality.id,
                         farm_phone=form.phone.data,
+                        farm_account_number=form.account_number.data,
                         farm_description="Definisati opis farme",
                         registration_date=datetime.date.today(),
                         user_id=user.id,
@@ -235,21 +236,24 @@ def reset_token(token):
 @users.route("/my_profile/<user_id>", methods=['GET', 'POST'])
 def my_profile(user_id): #! Moj nalog za korisnika
     user = User.query.get_or_404(user_id)
+    farm = Farm.query.filter_by(user_id=user.id).first()
     if current_user.user_type == 'admin':
         form = EditFarmForm(obj=user)
         form.municipality.choices = [(municipality.id, f'{municipality.municipality_name} ({municipality.municipality_zip_code})') for municipality in db.session.query(Municipality).all()]
 
         if form.validate_on_submit():
+            print(f'{request.form.get("account_number")=}')
             user.name = request.form.get('name')
             user.surname = request.form.get('surname')
             user.address = request.form.get('address')
             # user.zip_code = request.form.get('zip_code')
             user.city = request.form.get('city')
             user.JMBG = request.form.get('jmbg')
-            user.BPG = request.form.get('pbg')
+            user.BPG = request.form.get('bpg')
             user.MB = request.form.get('mb')
             user.phone = request.form.get('phone')
             user.email = request.form.get('email')
+            farm.farm_account_number = request.form.get('account_number')
             db.session.commit()
             flash('Uspesno ste izmenili podatke.', 'success')
             return redirect(url_for('users.my_profile', user_id=user.id))
@@ -258,6 +262,7 @@ def my_profile(user_id): #! Moj nalog za korisnika
         form.jmbg.data = user.JMBG
         form.bpg.data = user.BPG
         form.mb.data = user.MB
+        form.account_number.data = farm.farm_account_number
         return render_template('my_profile.html', title='Moj nalog', user=user, form=form)
     elif current_user.id != user.id:
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
@@ -277,7 +282,18 @@ def my_profile(user_id): #! Moj nalog za korisnika
     elif current_user.user_type == 'farm_active':
         farm = Farm.query.filter_by(user_id=user.id).first()
         farm_profile_completed = farm_profile_completed_check(farm)
-        form = EditFarmForm(obj=user)
+        form = EditFarmForm()
+        form.email.data = user.email
+        form.name.data = user.name
+        form.surname.data = user.surname
+        form.address.data = user.address
+        form.city.data = user.city
+        form.phone.data = user.phone
+        form.municipality.data = farm.farm_municipality_id
+        form.jmbg.data = user.JMBG
+        form.bpg.data = user.BPG
+        form.mb.data = user.MB
+        form.account_number.data=farm.farm_account_number
         return render_template('my_profile.html', title='Moj nalog', 
                                 user=user,
                                 farm=farm,
