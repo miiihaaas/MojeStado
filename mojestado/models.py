@@ -64,6 +64,7 @@ class Farm(db.Model):
     farm_zip_code = db.Column(db.String(5), nullable=False)
     farm_municipality_id = db.Column(db.Integer, db.ForeignKey('municipality.id'), nullable=False) #!
     farm_phone = db.Column(db.String(20), nullable=False)
+    farm_account_number = db.Column(db.String(20), nullable=False)
     farm_description = db.Column(db.String(2000), nullable=False)
     services = db.Column(db.JSON, nullable=True) #! usluga klanja, usluga obrade - tu treba da se definišu cene usluga za kategorije
     registration_date = db.Column(db.Date, nullable=True) #! kada admin potvrdi da je registrovan, tada se dodeli trenutni datum
