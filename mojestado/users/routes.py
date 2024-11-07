@@ -167,10 +167,18 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        print(f'user: {user}')
-        print(f'password form hash: {bcrypt.generate_password_hash(form.password.data).decode("utf-8")}')
-        print(f'password check: {bcrypt.check_password_hash(user.password, form.password.data)}')
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            # Provera da li je korisnik verifikovan
+            if user.user_type in ['user_unverified', 'farm_unverified']:
+                # Slanje novog verifikacionog mejla
+                send_confirmation_email(user)
+                if user.user_type == 'user_unverified':
+                    flash('Vaš nalog nije verifikovan. Poslali smo Vam novi link za verifikaciju na email adresu. Molimo Vas da potvrdite svoj identitet u narednih 30 minuta.', 'warning')
+                else:  # farm_unverified
+                    flash('Vaše poljoprivredno gazdinstvo nije verifikovano. Poslali smo Vam novi link za verifikaciju na email adresu. Molimo Vas da potvrdite registraciju u narednih 30 minuta.', 'warning')
+                return redirect(url_for('users.login'))
+            
+            # Ako je verifikovan, dozvoli login
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             flash(f'Dobro došli, {user.name}!', 'success')
@@ -262,7 +270,7 @@ def my_profile(user_id): #! Moj nalog za korisnika
         form.jmbg.data = user.JMBG
         form.bpg.data = user.BPG
         form.mb.data = user.MB
-        form.account_number.data = farm.farm_account_number
+        form.account_number.data = farm.farm_account_number if farm else ''
         return render_template('my_profile.html', title='Moj nalog', user=user, form=form)
     elif current_user.id != user.id:
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
@@ -302,6 +310,11 @@ def my_profile(user_id): #! Moj nalog za korisnika
     elif current_user.user_type == 'farm_inactive':
         flash('Još uvek nije aktivirana vaše poljoprivredno gazdinstvo.', 'info')
         return render_template('my_profile.html', title='Moj nalog', user=user)
+    elif current_user.user_type == 'user_unverified':
+        flash('Vas email nije potvrđen. Molimo potvrdite email.', 'info')
+        return render_template('my_profile.html', title='Moj nalog', user=user)
+    elif current_user.user_type == 'farm_unverified':
+        flash('Još uvek nije aktivirana vaša poljoprivredno gazdinstvo.', 'info')
 
 
 #! ispod je za farmera !#
