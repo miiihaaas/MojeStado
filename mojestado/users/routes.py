@@ -148,7 +148,7 @@ def confirm_email(token):
         return redirect(url_for('users.login'))
     user = User.query.filter_by(email=email).first_or_404()
     if user.user_type == 'user':
-        flash('Vas email je vec potvrđen', 'info')
+        flash('Vas email je već potvrđen', 'info')
     else:
         if user.user_type == 'user_unverified':
             user.user_type = 'user'
