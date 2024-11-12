@@ -206,6 +206,10 @@ class InvoiceItems(db.Model):
     invoice_item_type = db.Column(db.Integer, nullable=False) #! 1 = product, 2 = animal, 3 = service, 4 = fattening
     # payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
     # payments = db.relationship('Payment', backref='payment_invoice_items', lazy=True)
+    # Dodajemo relationship sa Farm modelom
+    farm = db.relationship('Farm', backref='invoice_items', lazy=True)
+    # Existing relationships
+    invoice = db.relationship('Invoice', backref='invoice_items_invoice', lazy=True)
     pass
 
 
