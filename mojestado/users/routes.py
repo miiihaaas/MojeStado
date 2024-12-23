@@ -877,7 +877,7 @@ def admin_edit_profile(user_id):
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
     user = User.query.get_or_404(user_id)
-    if user.user_type != 'user':
+    if user.user_type not in ['user', 'user_unverified']:
         flash('Nije moguće promeniti profil gosta.', 'danger')
         return redirect(url_for('main.home'))
     form = EditProfileForm()

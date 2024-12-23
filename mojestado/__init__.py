@@ -51,9 +51,9 @@ mail = Mail(app)
 
 
 # Dodajte ove linije za inicijalizaciju APScheduler-a
-# scheduler = APScheduler()
-# scheduler.init_app(app)
-# scheduler.start()
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 from mojestado.animals.routes import animals
 from mojestado.farms.routes import farms
@@ -74,4 +74,4 @@ app.register_blueprint(transactions)
 app.register_blueprint(users)
 
 # Pozovite funkciju za zakazivanje zadatka
-# schedule_daily_weight_gain(scheduler)
+schedule_daily_weight_gain(scheduler)
