@@ -1,6 +1,7 @@
 from mojestado import app, db, login_manager
 from flask_login import UserMixin
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous.url_safe import URLSafeTimedSerializer
 
 
 @login_manager.user_loader
@@ -30,14 +31,14 @@ class User(db.Model, UserMixin):
     
 
     def get_reset_token(self, expires_sec=1800):
-        s = Serializer(app.config['SECRET_KEY'], expires_sec)
-        return s.dumps({'user_id': self.id}).decode('utf-8')
+        s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id})  # ne treba više decode('utf-8')
 
     @staticmethod
     def verify_reset_token(token):
-        s = Serializer(app.config['SECRET_KEY'])
+        s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
         try:
-            user_id = s.loads(token)['user_id']
+            user_id = s.loads(token, max_age=1800)['user_id']  # dodajemo max_age parametar
         except:
             return None
         return User.query.get(user_id)
