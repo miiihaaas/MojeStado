@@ -549,7 +549,7 @@ def my_market(farm_id):
     products = Product.query.filter_by(farm_id=farm_id).all()
     
     invoice_items = InvoiceItems.query.filter_by(farm_id=farm_id).filter_by(invoice_item_type=1).all()
-    invoice_items = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_items_invoice.status in ['confirmed', 'paid']] #! pored 'confirmed' dodati i ostale ako budu bili definisni
+    invoice_items = [invoice_item for invoice_item in invoice_items if invoice_item.invoice.status in ['confirmed', 'paid']] #! pored 'confirmed' dodati i ostale ako budu bili definisni
     
     total_sales = 0.0
     for item in invoice_items:
@@ -754,7 +754,7 @@ def admin_view_purchases():
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
     invoice_items = InvoiceItems.query.all()
-    invoice_items = [invoice_item for invoice_item in invoice_items if invoice_item.invoice_items_invoice.status in ['confirmed', 'paid']] #! pored 'confirmed' dodati i ostale ako budu bili definisni
+    invoice_items = [invoice_item for invoice_item in invoice_items if invoice_item.invoice.status in ['confirmed', 'paid']] #! pored 'confirmed' dodati i ostale ako budu bili definisni
     # Parsiranje invoice_item_details za svaki invoice_item
     for invoice_item in invoice_items:
         if isinstance(invoice_item.invoice_item_details, str):  # Proveri da li je string pre nego što pokušaš da parsiraš
@@ -826,7 +826,7 @@ def admin_view_overview_user(user_id):
                 tovovi[tov_id] = []
             
             tovovi[tov_id].append({
-                'date': debt.invoice_item.invoice_items_invoice.datetime,
+                'date': debt.invoice_item.invoice.datetime,
                 'description': "Zaduženje: " + debt.invoice_item.invoice_item_details['category'],
                 # 'description': "Zaduženje: " + json.loads(debt.invoice_item.invoice_item_details)['category'],
                 'debt': debt.amount,

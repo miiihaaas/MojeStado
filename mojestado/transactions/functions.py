@@ -46,15 +46,15 @@ def generate_payment_slips_attach(invoice_item):
         iznos_duga = float(invoice_item_details['fattening_price'])
         iznos_rate = iznos_duga/broj_rata
         print(f'{iznos_duga=}, {broj_rata=}, {iznos_rate=}')
-        uplatilac = invoice_item.invoice_items_invoice.user_invoice.name + ' ' + invoice_item.invoice_items_invoice.user_invoice.surname
+        uplatilac = invoice_item.invoice.user_invoice.name + ' ' + invoice_item.invoice.user_invoice.surname
         sifra_placanja = f'189'
         model='00'
-        poziv_na_broj = f'{invoice_item.invoice_items_invoice.user_id:05d}-{invoice_item.id:06d}'
+        poziv_na_broj = f'{invoice_item.invoice.user_id:05d}-{invoice_item.id:06d}'
         svrha_uplate = f'Uplata za uslugu tova - rata {i}'
         
         new_data = {
-            'user_id': invoice_item.invoice_items_invoice.user_invoice.id,
-            'uplatilac': invoice_item.invoice_items_invoice.user_invoice.name + ' ' + invoice_item.invoice_items_invoice.user_invoice.surname,
+            'user_id': invoice_item.invoice.user_invoice.id,
+            'uplatilac': invoice_item.invoice.user_invoice.name + ' ' + invoice_item.invoice.user_invoice.surname,
             'svrha_uplate': f'Uplata za uslugu tova - rata {i}',
             'primalac': 'Naša imperija doo',
             'sifra_placanja': '189',
