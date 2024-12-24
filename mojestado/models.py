@@ -195,7 +195,7 @@ class Invoice(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #! kupac
     status = db.Column(db.String(20), nullable=False) #! unconfirmed, confirmed
     
-    invoice_items = db.relationship('InvoiceItems', backref='invoice_items_invoice', lazy=True) #!
+    invoice_items = db.relationship('InvoiceItems', back_populates='invoice', lazy=True) #!
     animals = db.relationship('Animal', backref='animal_invoice', lazy=True)
 
 
@@ -210,7 +210,7 @@ class InvoiceItems(db.Model):
     # Dodajemo relationship sa Farm modelom
     farm = db.relationship('Farm', backref='invoice_items', lazy=True)
     # Existing relationships
-    invoice = db.relationship('Invoice', backref='invoice_items_invoice', lazy=True)
+    invoice = db.relationship('Invoice', back_populates='invoice_items', lazy=True)
     pass
 
 

@@ -178,10 +178,10 @@
                         <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
                         <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
                         <td>{{ invoice_item.invoice_item_details["product_price_per_unit"] }}</td>
-                        <td>{{ invoice_item.invoice_items_invoice.datetime }}</td>
+                        <td>{{ invoice_item.invoice.datetime }}</td>
                         <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
                         <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
-                        <td>{{ invoice_item.invoice_items_invoice.user_invoice.name }} {{ invoice_item.invoice_items_invoice.user_invoice.surname }}</td>
+                        <td>{{ invoice_item.invoice.user_invoice.name }} {{ invoice_item.invoice.user_invoice.surname }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
