@@ -59,22 +59,46 @@ def calculate_number_and_price_of_fattening_days(animal):
 
 def daily_weight_gain():
     with app.app_context():
-        animals = Animal.query.filter((Animal.active == True) | (Animal.fattening == True),
-                                        Animal.intended_for == "tov").all()
-        print(f'** debug: {animals=}')
-        for animal in animals:
-            if animal.fattening == True and float(animal.current_weight) < float(animal.wanted_weight):
-                print(f'Životinja je postigla željenu masu, Obavestiti admina, kupca...')
-            elif animal.animal_categorization.min_weight >= 0:
-                print(f'{animal.id=}; {animal.current_weight=}')
-                average_weight_gain = (animal.animal_categorization.min_weight_gain + animal.animal_categorization.max_weight_gain) / 2
-                animal.current_weight = str(float(animal.current_weight) + average_weight_gain)
-                if float(animal.current_weight) > animal.animal_categorization.max_weight:
-                    animal.animal_categorization_id += 1
-                    if AnimalCategorization.query.get(animal.animal_categorization_id + 1).intended_for == 'priplod':
-                        animal.intended_for = 'priplod'
-        db.session.commit()
-        print(f"Weight update executed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        try:
+            animals = Animal.query.filter(
+                (Animal.active == True) | (Animal.fattening == True),
+                Animal.intended_for == "tov"
+            ).all()
+            
+            for animal in animals:
+                try:
+                    current_weight = float(animal.current_weight)
+                    
+                    # Provera da li je životinja dostigla željenu težinu
+                    if animal.fattening and current_weight >= float(animal.wanted_weight):
+                        print(f'ID:{animal.id} - Životinja je postigla željenu masu od {animal.wanted_weight}kg!')
+                        # Ovde bi trebalo dodati logiku za obaveštavanje (email, notification, itd.)
+                        continue
+                    
+                    # Provera kategorije i računanje prirasta
+                    if animal.animal_categorization and animal.animal_categorization.min_weight >= 0:
+                        avg_gain = (animal.animal_categorization.min_weight_gain + animal.animal_categorization.max_weight_gain) / 2
+                        new_weight = current_weight + avg_gain
+                        animal.current_weight = str(new_weight)
+                        
+                        # Provera za prelazak u sledeću kategoriju
+                        if new_weight > animal.animal_categorization.max_weight:
+                            next_category = AnimalCategorization.query.get(animal.animal_categorization_id + 1)
+                            if next_category:
+                                animal.animal_categorization_id = next_category.id
+                                if next_category.intended_for == 'priplod':
+                                    animal.intended_for = 'priplod'
+                
+                except (ValueError, AttributeError) as e:
+                    print(f"Greška pri obradi životinje ID:{animal.id} - {str(e)}")
+                    continue
+            
+            db.session.commit()
+            print(f"Weight update executed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Došlo je do greške: {str(e)}")
 
 
 def schedule_daily_weight_gain(scheduler):
