@@ -17,18 +17,24 @@ from mojestado.models import Animal, AnimalCategorization, AnimalCategory, Anima
 users = Blueprint('users', __name__)
 
 
-def generate_confirmation_token(user):
-    s = Serializer(app.config['SECRET_KEY'])
-    return s.dumps(user.email)
-
+def generate_confirmation_token(email):
+    s = Serializer(current_app.config['SECRET_KEY'], salt='email-confirm')
+    return s.dumps(email, salt='email-confirm')
 
 def confirm_token(token, expiration=1800):
-    s = Serializer(app.config['SECRET_KEY'])
+    s = Serializer(current_app.config['SECRET_KEY'], salt='email-confirm')
     try:
-        email = s.loads(token, max_age=expiration)
-    except:
-        return False
-    return email
+        email = s.loads(token, salt='email-confirm', max_age=expiration)
+        return email
+    except SignatureExpired:
+        current_app.logger.error('Token je istekao')
+        return None
+    except BadSignature:
+        current_app.logger.error('Neispravan token')
+        return None
+    except Exception as e:
+        current_app.logger.error(f'Neočekivana greška pri dekodiranju tokena: {str(e)}')
+        return None
 
 
 def send_confirmation_email(user):
@@ -142,13 +148,13 @@ def register_user(): #! Registracija korisnika
 @users.route('/confirm/<token>')
 def confirm_email(token):
     current_app.logger.info(f'Pokušaj potvrde email-a sa tokenom: {token}')
-    try:
-        email = confirm_token(token)
-        current_app.logger.info(f'Token uspešno dekodiran za email: {email}')
-    except Exception as e:
-        current_app.logger.error(f'Greška pri dekodiranju tokena: {str(e)}')
+    
+    email = confirm_token(token)
+    if email is None:
         flash('Link za potvrdu je neispravan ili je istekao.', 'danger')
         return redirect(url_for('users.login'))
+    
+    current_app.logger.info(f'Token uspešno dekodiran za email: {email}')
     
     try:
         user = User.query.filter_by(email=email).first_or_404()
@@ -156,7 +162,7 @@ def confirm_email(token):
         
         if user.user_type == 'user':
             current_app.logger.info('Korisnik je već potvrđen')
-            flash('Vas email je već potvrđen', 'info')
+            flash('Vaš email je već potvrđen', 'info')
         else:
             if user.user_type == 'user_unverified':
                 user.user_type = 'user'
@@ -167,18 +173,23 @@ def confirm_email(token):
                     current_app.logger.info(f'Poslat ugovor farmeru: {user.email}')
                 except Exception as e:
                     current_app.logger.error(f'Greška pri slanju ugovora: {str(e)}')
+                    flash('Došlo je do greške pri slanju ugovora. Molimo kontaktirajte podršku.', 'warning')
                 user.user_type = 'farm_inactive'
                 current_app.logger.info(f'Promena tipa korisnika iz farm_unverified u farm_inactive')
             
-            db.session.commit()
-            current_app.logger.info(f'Uspešno sačuvane promene u bazi')
-            flash('Vas nalog je uspešno potvrđen', 'success')
-            
+            try:
+                db.session.commit()
+                current_app.logger.info(f'Uspešno sačuvane promene u bazi')
+                flash('Vaš nalog je uspešno potvrđen', 'success')
+            except Exception as e:
+                current_app.logger.error(f'Greška pri čuvanju promena u bazi: {str(e)}')
+                db.session.rollback()
+                flash('Došlo je do greške pri potvrdi naloga. Molimo pokušajte ponovo.', 'danger')
+    
     except Exception as e:
         current_app.logger.error(f'Neočekivana greška pri potvrdi email-a: {str(e)}')
-        db.session.rollback()
         flash('Došlo je do greške pri potvrdi naloga. Molimo pokušajte ponovo.', 'danger')
-        
+    
     return redirect(url_for('main.home'))
 
 @users.route("/login", methods=['GET', 'POST'])
