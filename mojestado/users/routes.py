@@ -6,7 +6,7 @@ from flask import Blueprint, current_app, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
-from itsdangerous import Serializer
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func
 from mojestado import bcrypt, db, app, mail
 from mojestado.animals.functions import get_animal_categorization
@@ -17,24 +17,17 @@ from mojestado.models import Animal, AnimalCategorization, AnimalCategory, Anima
 users = Blueprint('users', __name__)
 
 
-def generate_confirmation_token(email):
-    s = Serializer(current_app.config['SECRET_KEY'], salt='email-confirm')
-    return s.dumps(email, salt='email-confirm')
+def generate_confirmation_token(user):
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return s.dumps(user.email, salt='email-confirm')
 
 def confirm_token(token, expiration=1800):
-    s = Serializer(current_app.config['SECRET_KEY'], salt='email-confirm')
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
     try:
         email = s.loads(token, salt='email-confirm', max_age=expiration)
         return email
-    except SignatureExpired:
-        current_app.logger.error('Token je istekao')
-        return None
-    except BadSignature:
-        current_app.logger.error('Neispravan token')
-        return None
-    except Exception as e:
-        current_app.logger.error(f'Neočekivana greška pri dekodiranju tokena: {str(e)}')
-        return None
+    except:
+        return False
 
 
 def send_confirmation_email(user):
