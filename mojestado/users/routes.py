@@ -141,22 +141,44 @@ def register_user(): #! Registracija korisnika
 
 @users.route('/confirm/<token>')
 def confirm_email(token):
+    current_app.logger.info(f'Pokušaj potvrde email-a sa tokenom: {token}')
     try:
         email = confirm_token(token)
-    except:
+        current_app.logger.info(f'Token uspešno dekodiran za email: {email}')
+    except Exception as e:
+        current_app.logger.error(f'Greška pri dekodiranju tokena: {str(e)}')
         flash('Link za potvrdu je neispravan ili je istekao.', 'danger')
         return redirect(url_for('users.login'))
-    user = User.query.filter_by(email=email).first_or_404()
-    if user.user_type == 'user':
-        flash('Vas email je već potvrđen', 'info')
-    else:
-        if user.user_type == 'user_unverified':
-            user.user_type = 'user'
-        elif user.user_type == 'farm_unverified':
-            send_contract_to_farmer(user)
-            user.user_type = 'farm_inactive'
-        db.session.commit()
-        flash('Vas nalog je u spešno potvrđen', 'success')
+    
+    try:
+        user = User.query.filter_by(email=email).first_or_404()
+        current_app.logger.info(f'Pronađen korisnik: {user.email} (tip: {user.user_type})')
+        
+        if user.user_type == 'user':
+            current_app.logger.info('Korisnik je već potvrđen')
+            flash('Vas email je već potvrđen', 'info')
+        else:
+            if user.user_type == 'user_unverified':
+                user.user_type = 'user'
+                current_app.logger.info(f'Promena tipa korisnika iz user_unverified u user')
+            elif user.user_type == 'farm_unverified':
+                try:
+                    send_contract_to_farmer(user)
+                    current_app.logger.info(f'Poslat ugovor farmeru: {user.email}')
+                except Exception as e:
+                    current_app.logger.error(f'Greška pri slanju ugovora: {str(e)}')
+                user.user_type = 'farm_inactive'
+                current_app.logger.info(f'Promena tipa korisnika iz farm_unverified u farm_inactive')
+            
+            db.session.commit()
+            current_app.logger.info(f'Uspešno sačuvane promene u bazi')
+            flash('Vas nalog je uspešno potvrđen', 'success')
+            
+    except Exception as e:
+        current_app.logger.error(f'Neočekivana greška pri potvrdi email-a: {str(e)}')
+        db.session.rollback()
+        flash('Došlo je do greške pri potvrdi naloga. Molimo pokušajte ponovo.', 'danger')
+        
     return redirect(url_for('main.home'))
 
 @users.route("/login", methods=['GET', 'POST'])
