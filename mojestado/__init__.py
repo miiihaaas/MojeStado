@@ -7,7 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
-from flask_apscheduler import APScheduler
+# from flask_apscheduler import APScheduler
+from celery.schedules import crontab
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -62,10 +63,25 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 mail = Mail(app)
 
 
+# Celery Configuration
+redis_url = f"redis://:{os.getenv('REDIS_PASSWORD')}@{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/{os.getenv('REDIS_DB', '0')}"
+app.config['CELERY_BROKER_URL'] = redis_url
+app.config['CELERY_RESULT_BACKEND'] = redis_url
+app.config['CELERYBEAT_SCHEDULE'] = {
+    'daily-weight-update': {
+        'task': 'mojestado.animals.tasks.daily_weight_gain_task',
+        'schedule': crontab(hour=1, minute=0)  # Izvršava se svaki dan u 1:00
+        # 'schedule': 30.0  # Izvršava se svakih 30 sekundi (samo za testiranje)
+    },
+}
+
+# Import tasks to ensure they are registered
+from mojestado.animals import tasks  # Dodajemo ovu liniju
+
 # Dodajte ove linije za inicijalizaciju APScheduler-a
-scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.start()
+# scheduler = APScheduler()
+# scheduler.init_app(app)
+# scheduler.start()
 
 from mojestado.animals.routes import animals
 from mojestado.farms.routes import farms
@@ -86,4 +102,4 @@ app.register_blueprint(transactions)
 app.register_blueprint(users)
 
 # Pozovite funkciju za zakazivanje zadatka
-schedule_daily_weight_gain(scheduler)
+# schedule_daily_weight_gain(scheduler)
