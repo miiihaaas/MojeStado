@@ -25,9 +25,14 @@ def confirm_token(token, expiration=1800):
     s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
     try:
         email = s.loads(token, salt='email-confirm', max_age=expiration)
-        return email
-    except:
-        return False
+        return {'success': True, 'email': email}
+    except SignatureExpired:
+        return {'success': False, 'error': 'expired'}
+    except BadSignature:
+        return {'success': False, 'error': 'invalid'}
+    except Exception as e:
+        current_app.logger.error(f'Neočekivana greška pri validaciji tokena: {str(e)}')
+        return {'success': False, 'error': 'unknown'}
 
 
 def send_confirmation_email(user):
@@ -142,10 +147,20 @@ def register_user(): #! Registracija korisnika
 def confirm_email(token):
     current_app.logger.info(f'Pokušaj potvrde email-a sa tokenom: {token}')
     
-    email = confirm_token(token)
-    if email is None:
-        flash('Link za potvrdu je neispravan ili je istekao.', 'danger')
+    result = confirm_token(token)
+    if not result['success']:
+        if result['error'] == 'expired':
+            flash('Link za potvrdu je istekao. Molimo zatražite novi link.', 'warning')
+            current_app.logger.info('Token je istekao')
+        elif result['error'] == 'invalid':
+            flash('Link za potvrdu je neispravan.', 'danger')
+            current_app.logger.warning('Pokušaj korišćenja neispravnog tokena')
+        else:
+            flash('Došlo je do greške pri potvrdi email-a. Molimo pokušajte ponovo.', 'danger')
+            current_app.logger.error('Neočekivana greška pri validaciji tokena')
         return redirect(url_for('users.login'))
+    
+    email = result['email']
     
     current_app.logger.info(f'Token uspešno dekodiran za email: {email}')
     
@@ -297,6 +312,7 @@ def my_profile(user_id): #! Moj nalog za korisnika
         form.bpg.data = user.BPG
         form.mb.data = user.MB
         form.account_number.data = farm.farm_account_number if farm else ''
+        form.municipality.data = str(farm.farm_municipality_id) if farm else ''
         return render_template('my_profile.html', title='Moj nalog', user=user, form=form)
     elif current_user.id != user.id:
         flash('Nemate pravo pristupa ovoj stranici.', 'danger')
@@ -317,13 +333,15 @@ def my_profile(user_id): #! Moj nalog za korisnika
         farm = Farm.query.filter_by(user_id=user.id).first()
         farm_profile_completed = farm_profile_completed_check(farm)
         form = EditFarmForm()
+        form.municipality.choices = [(municipality.id, f'{municipality.municipality_name} ({municipality.municipality_zip_code})') for municipality in Municipality.query.filter_by(id=farm.farm_municipality_id).all()]
+
         form.email.data = user.email
         form.name.data = user.name
         form.surname.data = user.surname
         form.address.data = user.address
         form.city.data = user.city
         form.phone.data = user.phone
-        form.municipality.data = farm.farm_municipality_id
+        form.municipality.data = str(farm.farm_municipality_id)
         form.jmbg.data = user.JMBG
         form.bpg.data = user.BPG
         form.mb.data = user.MB
