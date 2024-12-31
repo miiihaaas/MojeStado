@@ -6,7 +6,7 @@ from flask import Blueprint, current_app, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from sqlalchemy import func
 from mojestado import bcrypt, db, app, mail
 from mojestado.animals.functions import get_animal_categorization
