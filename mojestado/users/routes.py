@@ -26,9 +26,11 @@ def confirm_token(token, expiration=1800):
     try:
         email = s.loads(token, salt='email-confirm', max_age=expiration)
         return {'success': True, 'email': email}
-    except SignatureExpired:
+    except SignatureExpired as e:
+        current_app.logger.warning(f'Token je istekao: {str(e)}')
         return {'success': False, 'error': 'expired'}
-    except BadSignature:
+    except BadSignature as e:
+        current_app.logger.warning(f'Neispravan token: {str(e)}')
         return {'success': False, 'error': 'invalid'}
     except Exception as e:
         current_app.logger.error(f'Neočekivana greška pri validaciji tokena: {str(e)}')
