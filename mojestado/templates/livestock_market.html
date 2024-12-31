@@ -174,7 +174,7 @@
                             <td>{{ animal.animal_categorization.subcategory }}</td>
                             <td>{{ animal.animal_race.animal_race_name }}</td>
                             <td>{{ animal.animal_gender }}</td>
-                            <td>{{ animal.current_weight }}</td>
+                            <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
                             <td>{{ "{:.2f}".format(animal.price_per_kg) }}</td>
                             <td>{{ "{:.2f}".format(animal.total_price) }}</td>
                             <td>
