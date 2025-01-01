@@ -190,7 +190,7 @@ def confirm_email(token):
             try:
                 db.session.commit()
                 current_app.logger.info(f'Uspešno sačuvane promene u bazi')
-                flash('Vaš nalog je uspešno potvrđen', 'success')
+                flash('Vaš mejl je uspešno potvrđen', 'success')
             except Exception as e:
                 current_app.logger.error(f'Greška pri čuvanju promena u bazi: {str(e)}')
                 db.session.rollback()
