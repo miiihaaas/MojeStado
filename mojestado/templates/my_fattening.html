@@ -69,14 +69,14 @@
                             <td>{{ animal.animal_categorization.subcategory  }}</td>
                             <td>{{ animal.animal_race.animal_race_name }}</td>
                             <td>
-                                {{ animal.current_weight }}kg
+                                {{ "{:.2f}".format(animal.current_weight) }}kg
                                 <span class="info-box"><i class="fa-solid fa-info"></i>
                                     <span class="tooltip">
                                         Portal se odriče odgovornosti za netačnu procenu. Procena se vrši na osnovu tabele prirasta.
                                     </span>
                                 </span>
                             </td>
-                            <td>{{ animal.wanted_weight }}kg</td>
+                            <td>{{ "{:.2f}".format(animal.wanted_weight) }}kg</td>
                             <td>{{ animal.fattening_finish_date }}</td>
                             <td>{{ animal.insured }}</td>
                             <td>{{ animal.organic_animal }}</td>
