@@ -37,6 +37,7 @@ def daily_weight_gain_task():
                         avg_gain = (animal.animal_categorization.min_weight_gain + animal.animal_categorization.max_weight_gain) / 2
                         new_weight = current_weight + avg_gain
                         animal.current_weight = str(new_weight)
+                        animal.total_price = new_weight * animal.price_per_kg
                         
                         # Provera za prelazak u sledeću kategoriju
                         if new_weight > animal.animal_categorization.max_weight:
