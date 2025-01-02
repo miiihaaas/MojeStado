@@ -28,16 +28,17 @@ def daily_weight_gain_task():
                     current_weight = float(animal.current_weight)
                     
                     # Provera da li je životinja dostigla željenu težinu
-                    if animal.fattening and current_weight >= float(animal.wanted_weight):
+                    if animal.fattening and animal.wanted_weight and current_weight >= float(animal.wanted_weight):
                         logger.info(f'ID:{animal.id} - Životinja je postigla željenu masu od {animal.wanted_weight}kg!')
                         continue
                     
                     # Provera kategorije i računanje prirasta
                     if animal.animal_categorization and animal.animal_categorization.min_weight >= 0:
                         avg_gain = (animal.animal_categorization.min_weight_gain + animal.animal_categorization.max_weight_gain) / 2
-                        new_weight = current_weight + avg_gain
+                        new_weight = round(current_weight + avg_gain, 2)  # zaokružujemo na 2 decimale
                         animal.current_weight = str(new_weight)
-                        animal.total_price = new_weight * animal.price_per_kg
+                        # Računamo total_price i zaokružujemo na 2 decimale jer je reč o novcu
+                        animal.total_price = round(new_weight * float(animal.price_per_kg), 2)
                         
                         # Provera za prelazak u sledeću kategoriju
                         if new_weight > animal.animal_categorization.max_weight:
