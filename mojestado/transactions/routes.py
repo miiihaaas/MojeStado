@@ -205,8 +205,10 @@ $response
 
         # Čišćenje korpe pre bilo kakvih izmena u bazi
         try:
-            session.clear()  # Potpuno čišćenje sesije
-            app.logger.info('Sesija uspešno očišćena pre transakcije')
+            if clear_cart_session():  # Ovo čišće sve ključeve korpe
+                app.logger.info('Korpa uspešno očišćena pre transakcije')
+            else:
+                app.logger.warning('Nije uspelo čišćenje korpe pre transakcije')
         except Exception as e:
             app.logger.error(f'Greška pri čišćenju sesije: {str(e)}')
             # Nastavljamo sa izvršavanjem jer greška u čišćenju sesije nije kritična
