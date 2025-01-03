@@ -203,17 +203,16 @@ $response
             app.logger.error('Callback_url: Neuspešna hash validacija')
             return jsonify({"error": "Invalid hash"}), 400
 
+        # Čišćenje korpe pre bilo kakvih izmena u bazi
+        try:
+            session.clear()  # Potpuno čišćenje sesije
+            app.logger.info('Sesija uspešno očišćena pre transakcije')
+        except Exception as e:
+            app.logger.error(f'Greška pri čišćenju sesije: {str(e)}')
+            # Nastavljamo sa izvršavanjem jer greška u čišćenju sesije nije kritična
+
         # Započinjemo transakciju
         try:
-            # Čišćenje korpe pre bilo kakvih izmena u bazi
-            try:
-                if clear_cart_session():
-                    app.logger.info('Korpa uspešno očišćena pre transakcije')
-                else:
-                    app.logger.warning('Nije uspelo čišćenje korpe pre transakcije')
-            except Exception as e:
-                app.logger.error(f'Greška pri čišćenju korpe: {str(e)}')
-
             # Čuvanje callback podataka
             new_payspot_callback = PaySpotCallback(
                 invoice_id=invoice_id,
@@ -237,20 +236,23 @@ $response
                 invoice.status = 'paid'
                 db.session.flush()  # Flush pre deaktivacije
                 
-                # Dodatne akcije za uspešnu transakciju
-                deactivate_animals(invoice_id)
-                deactivate_products(invoice_id)
-                
-                # Commit pre slanja email-a
-                db.session.commit()
-                
-                # Slanje email-a nakon commit-a
                 try:
+                    # Dodatne akcije za uspešnu transakciju
+                    deactivate_animals(invoice_id)
+                    deactivate_products(invoice_id)
+                    
+                    # Commit pre slanja email-a
+                    db.session.commit()
+                    
+                    # Slanje email-a nakon commit-a
                     send_email(user, invoice_id)
+                    
+                    app.logger.info(f'Uspešna transakcija za fakturu {invoice_id}')
                 except Exception as e:
-                    app.logger.error(f'Greška pri slanju email-a: {str(e)}')
+                    app.logger.error(f'Greška pri obradi uspešne transakcije: {str(e)}')
+                    db.session.rollback()
+                    return jsonify({"error": "Transaction processing error"}), 500
                 
-                app.logger.info(f'Uspešna transakcija za fakturu {invoice_id}')
                 return jsonify({"status": "success"}), 200
                 
             elif result == '01':  # Otkazana transakcija
