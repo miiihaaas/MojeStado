@@ -1,9 +1,10 @@
 import os
-
+import json
 from flask import session
+from flask import current_app as app
 from flask_mail import Message
 
-from mojestado import mail, app
+from mojestado import mail
 
 
 
@@ -28,7 +29,7 @@ def clear_cart_session(session_id=None):
                 if not filename.endswith('_session.txt'):  # Preskačemo naše pomoćne fajlove
                     file_path = os.path.join(app.config['SESSION_FILE_DIR'], filename)
                     try:
-                        with open(file_path, 'r') as f:
+                        with open(file_path, 'r', encoding='utf-8') as f:
                             content = f.read()
                             if session_id in content:
                                 # Našli smo pravi session fajl
@@ -38,12 +39,13 @@ def clear_cart_session(session_id=None):
                                     if key in session_data:
                                         del session_data[key]
                                 # Čuvamo izmenjenu sesiju
-                                with open(file_path, 'w') as f:
+                                with open(file_path, 'w', encoding='utf-8') as f:
                                     json.dump(session_data, f)
                                 app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
                                 session_found = True
                                 break
-                    except (json.JSONDecodeError, UnicodeDecodeError):
+                    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                        app.logger.debug(f'Preskačem fajl {filename}: {str(e)}')
                         continue  # Preskačemo fajlove koji nisu validni JSON
                         
             if not session_found:
