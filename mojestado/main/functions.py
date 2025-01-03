@@ -19,24 +19,38 @@ def clear_cart_session(session_id=None):
         cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
         
         if session_id:
-            # Učitavamo specifičnu sesiju iz fajl sistema
-            # Flask kreira fajlove bez 'sess_' prefiksa
-            session_file = os.path.join(app.config['SESSION_FILE_DIR'], session_id)
-            if os.path.exists(session_file):
-                with open(session_file, 'r') as f:
-                    session_data = json.loads(f.read())
-                # Čistimo specifične ključeve
-                for key in cart_keys:
-                    if key in session_data:
-                        del session_data[key]
-                # Čuvamo izmenjenu sesiju
-                with open(session_file, 'w') as f:
-                    json.dump(session_data, f)
-                app.logger.info(f'Korpa je očišćena za sesiju {session_id}')
-                return True
-            else:
-                app.logger.warning(f'Sesija {session_id} nije pronađena')
+            # Tražimo session fajl u direktorijumu
+            session_files = os.listdir(app.config['SESSION_FILE_DIR'])
+            session_found = False
+            
+            # Čitamo svaki fajl i tražimo onaj koji sadrži naš session_id
+            for filename in session_files:
+                if not filename.endswith('_session.txt'):  # Preskačemo naše pomoćne fajlove
+                    file_path = os.path.join(app.config['SESSION_FILE_DIR'], filename)
+                    try:
+                        with open(file_path, 'r') as f:
+                            content = f.read()
+                            if session_id in content:
+                                # Našli smo pravi session fajl
+                                session_data = json.loads(content)
+                                # Čistimo specifične ključeve
+                                for key in cart_keys:
+                                    if key in session_data:
+                                        del session_data[key]
+                                # Čuvamo izmenjenu sesiju
+                                with open(file_path, 'w') as f:
+                                    json.dump(session_data, f)
+                                app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
+                                session_found = True
+                                break
+                    except (json.JSONDecodeError, UnicodeDecodeError):
+                        continue  # Preskačemo fajlove koji nisu validni JSON
+                        
+            if not session_found:
+                app.logger.warning(f'Sesija {session_id} nije pronađena u fajlovima')
                 return False
+                
+            return True
         else:
             # Čistimo trenutnu sesiju
             for key in cart_keys:
