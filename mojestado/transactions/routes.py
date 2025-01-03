@@ -178,7 +178,6 @@ $body = @{
 $response = Invoke-RestMethod -Uri $uri -Method Post -Body ($body | ConvertTo-Json) -ContentType "application/json"
 $response
     '''
-
     try:
         data = request.json
         if not data:
@@ -189,10 +188,7 @@ $response
         order_id = data.get('orderID')
         invoice_id = int(order_id.split('-')[1])
         shop_id = data.get('shopID')
-        auth_number = data.get('authNumber')
         amount = data.get('amount')
-        currency = data.get('currency')
-        transaction_id = data.get('transactionID')
         result = data.get('result')
         received_hash = data.get('hash')
         
@@ -207,70 +203,85 @@ $response
             app.logger.error('Callback_url: Neuspešna hash validacija')
             return jsonify({"error": "Invalid hash"}), 400
 
-        # Čuvanje callback podataka bez obzira na rezultat
-        new_payspot_callback = PaySpotCallback(
-            invoice_id=invoice_id,
-            amount=amount,
-            recived_at=datetime.datetime.now(),
-            callback_data=data
-        )
-        db.session.add(new_payspot_callback)
-        
-        # Pronalaženje fakture
-        invoice = Invoice.query.get(invoice_id)
-        if not invoice:
-            app.logger.error(f'Callback_url: Faktura {invoice_id} nije pronađena')
-            return jsonify({"error": "Invoice not found"}), 404
+        # Započinjemo transakciju
+        try:
+            # Čišćenje korpe pre bilo kakvih izmena u bazi
+            try:
+                if clear_cart_session():
+                    app.logger.info('Korpa uspešno očišćena pre transakcije')
+                else:
+                    app.logger.warning('Nije uspelo čišćenje korpe pre transakcije')
+            except Exception as e:
+                app.logger.error(f'Greška pri čišćenju korpe: {str(e)}')
 
-        user = User.query.get(invoice.user_id)
-        
-        # Obrada različitih rezultata transakcije
-        if result == '00':  # Uspešna transakcija
-            invoice.status = 'paid'
-            db.session.commit()
+            # Čuvanje callback podataka
+            new_payspot_callback = PaySpotCallback(
+                invoice_id=invoice_id,
+                amount=amount,
+                recived_at=datetime.datetime.now(),
+                callback_data=data
+            )
+            db.session.add(new_payspot_callback)
             
-            # Dodatne akcije za uspešnu transakciju
-            deactivate_animals(invoice_id)
-            deactivate_products(invoice_id)
+            # Pronalaženje fakture
+            invoice = Invoice.query.get(invoice_id)
+            if not invoice:
+                db.session.rollback()
+                app.logger.error(f'Callback_url: Faktura {invoice_id} nije pronađena')
+                return jsonify({"error": "Invoice not found"}), 404
+
+            user = User.query.get(invoice.user_id)
             
-            # Čišćenje korpe pre commit-a
-            if clear_cart_session():
-                app.logger.info('Korpa uspešno očišćena nakon transakcije')
-            else:
-                app.logger.warning('Nije uspelo čišćenje korpe nakon transakcije')
-            
-            send_email(user, invoice_id)
-            db.session.commit()
-            
-            app.logger.info(f'Uspešna transakcija za fakturu {invoice_id}')
-            return jsonify({"status": "success"}), 200
-            
-        elif result == '01':  # Otkazana transakcija
-            invoice.status = 'cancelled'
-            db.session.commit()
-            app.logger.info(f'Otkazana transakcija za fakturu {invoice_id}')
-            return jsonify({"status": "cancelled"}), 200
-            
-        else:  # Greška u transakciji
-            invoice.status = 'error'
-            error_message = data.get('responseMsg', 'Nepoznata greška')
-            
-            # Detaljno logovanje greške
-            error_details = {
-                'invoice_id': invoice_id,
-                'user_email': user.email if user else 'Unknown',
-                'error_code': result,
-                'error_message': error_message,
-                'transaction_id': transaction_id
-            }
-            app.logger.error(f'Greška u transakciji: {error_details}')
-            
-            db.session.commit()
-            return jsonify({"status": "error", "message": error_message}), 400
+            # Obrada različitih rezultata transakcije
+            if result == '00':  # Uspešna transakcija
+                invoice.status = 'paid'
+                db.session.flush()  # Flush pre deaktivacije
+                
+                # Dodatne akcije za uspešnu transakciju
+                deactivate_animals(invoice_id)
+                deactivate_products(invoice_id)
+                
+                # Commit pre slanja email-a
+                db.session.commit()
+                
+                # Slanje email-a nakon commit-a
+                try:
+                    send_email(user, invoice_id)
+                except Exception as e:
+                    app.logger.error(f'Greška pri slanju email-a: {str(e)}')
+                
+                app.logger.info(f'Uspešna transakcija za fakturu {invoice_id}')
+                return jsonify({"status": "success"}), 200
+                
+            elif result == '01':  # Otkazana transakcija
+                invoice.status = 'cancelled'
+                db.session.commit()
+                app.logger.info(f'Otkazana transakcija za fakturu {invoice_id}')
+                return jsonify({"status": "cancelled"}), 200
+                
+            else:  # Greška u transakciji
+                invoice.status = 'error'
+                error_message = data.get('responseMsg', 'Nepoznata greška')
+                
+                error_details = {
+                    'invoice_id': invoice_id,
+                    'user_email': user.email if user else 'Unknown',
+                    'error_code': result,
+                    'error_message': error_message,
+                    'transaction_id': data.get('transactionID')
+                }
+                app.logger.error(f'Greška u transakciji: {error_details}')
+                
+                db.session.commit()
+                return jsonify({"status": "error", "message": error_message}), 400
+
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f'Greška u transakciji: {str(e)}', exc_info=True)
+            return jsonify({"error": "Transaction error"}), 500
 
     except Exception as e:
         app.logger.error(f'Neočekivana greška u callback_url: {str(e)}', exc_info=True)
-        db.session.rollback()
         return jsonify({"error": "Internal server error"}), 500
 
 
