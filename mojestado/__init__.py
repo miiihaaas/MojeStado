@@ -49,12 +49,16 @@ app.config['SESSION_FILE_DIR'] = 'flask_session'
 app.config['SESSION_FILE_THRESHOLD'] = 500
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=10)
-app.config['SESSION_USE_SIGNER'] = True  # Dodajemo sigurnost
-app.config['SESSION_KEY_PREFIX'] = 'mojestado_'  # Prefiks za sesijske fajlove
+app.config['SESSION_USE_SIGNER'] = False  # Isključujemo signer jer pravi probleme sa bytes
+app.config['SESSION_KEY_PREFIX'] = 'mojestado:'  # Koristimo : umesto _ za prefix
+
+# Kreiranje direktorijuma za sesije ako ne postoji
+if not os.path.exists('flask_session'):
+    os.mkdir('flask_session')
 
 db = SQLAlchemy(app)
 
-# Inicijalizacija sesije nakon svih konfiguracija
+# Inicijalizacija sesije
 sess = Session()
 sess.init_app(app)
 
