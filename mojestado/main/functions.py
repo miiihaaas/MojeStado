@@ -22,6 +22,9 @@ def clear_cart_session():
             if key in session:
                 del session[key]
         
+        # Označavamo da je sesija modifikovana
+        session.modified = True
+        
         app.logger.info(f'Uspešno očišćena korpa. Prethodni sadržaj: {cart_contents}')
         return True
         

@@ -43,20 +43,20 @@ app.config['FLASK_APP'] = 'run.py'
 # app.config['SESSION_PERMANENT'] = True
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=10)
 
-# Kreiranje direktorijuma za sesije ako ne postoji
-if not os.path.exists('flask_session'):
-    os.mkdir('flask_session')
-
+# Konfiguracija sesije
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = 'flask_session'
-app.config['SESSION_FILE_THRESHOLD'] = 500  # maksimalan broj fajlova u session direktorijumu
+app.config['SESSION_FILE_THRESHOLD'] = 500
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=10)
+app.config['SESSION_USE_SIGNER'] = True  # Dodajemo sigurnost
+app.config['SESSION_KEY_PREFIX'] = 'mojestado_'  # Prefiks za sesijske fajlove
 
 db = SQLAlchemy(app)
-# app.config['SESSION_SQLALCHEMY'] = db
 
-Session(app)
+# Inicijalizacija sesije nakon svih konfiguracija
+sess = Session()
+sess.init_app(app)
 
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
