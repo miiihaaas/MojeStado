@@ -1,9 +1,9 @@
 import os
 import json
+import pickle
 from flask import session
 from flask import current_app as app
 from flask_mail import Message
-from itsdangerous import Signer
 from mojestado import mail
 
 
@@ -18,8 +18,6 @@ def clear_cart_session(session_id=None):
         cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
         
         if session_id:
-            # Inicijalizujemo signer sa Flask secret key
-            signer = Signer(app.config['SECRET_KEY'])
             session_files = os.listdir(app.config['SESSION_FILE_DIR'])
             session_found = False
             
@@ -31,35 +29,28 @@ def clear_cart_session(session_id=None):
                     try:
                         # Učitavamo sesiju
                         with open(file_path, 'rb') as f:
-                            raw_data = f.read()
-                            # Prvo pokušavamo da učitamo kao JSON
-                            try:
-                                session_data = json.loads(raw_data)
-                            except:
-                                # Ako ne uspe, pokušavamo da unsign-ujemo pa onda da parsiramo kao JSON
-                                try:
-                                    unsigned_data = signer.unsign(raw_data)
-                                    session_data = json.loads(unsigned_data)
-                                except:
-                                    raise ValueError("Nije moguće dekodirati session podatke")
-
-                            if session_data.get('_id') == session_id:
-                                # Čistimo specifične ključeve
-                                modified = False
-                                for key in cart_keys:
-                                    if key in session_data:
-                                        del session_data[key]
-                                        modified = True
-                                
-                                if modified:
-                                    # Čuvamo izmenjenu sesiju
-                                    json_data = json.dumps(session_data)
-                                    signed_data = signer.sign(json_data.encode('utf-8'))
-                                    with open(file_path, 'wb') as f:
-                                        f.write(signed_data)
-                                    app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
-                                    session_found = True
-                                    break
+                            content = f.read()
+                            if len(content) > 5:  # Provera da li imamo dovoljno podataka
+                                # Preskačemo header (4 bajta) i čitamo pickle podatke
+                                pickle_data = content[4:]
+                                session_data = pickle.loads(pickle_data)
+                                if session_data.get('_id') == session_id:
+                                    # Čistimo specifične ključeve
+                                    modified = False
+                                    for key in cart_keys:
+                                        if key in session_data:
+                                            del session_data[key]
+                                            modified = True
+                                    
+                                    if modified:
+                                        # Čuvamo izmenjenu sesiju - zadržavamo originalni header
+                                        header = content[:4]
+                                        new_pickle_data = pickle.dumps(session_data, protocol=5)
+                                        with open(file_path, 'wb') as f:
+                                            f.write(header + new_pickle_data)
+                                        app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
+                                        session_found = True
+                                        break
                     except Exception as e:
                         app.logger.debug(f'Preskačem fajl {filename}: {str(e)}')
                         continue
