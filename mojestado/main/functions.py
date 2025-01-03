@@ -3,7 +3,7 @@ import json
 from flask import session
 from flask import current_app as app
 from flask_mail import Message
-from flask_session import Session
+from itsdangerous import URLSafeTimedSerializer
 from mojestado import mail
 
 
@@ -18,8 +18,8 @@ def clear_cart_session(session_id=None):
         cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
         
         if session_id:
-            # Tražimo session fajl u direktorijumu
-            session_interface = Session(app).interface
+            # Inicijalizujemo serializer sa Flask secret key
+            serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
             session_files = os.listdir(app.config['SESSION_FILE_DIR'])
             session_found = False
             
@@ -28,9 +28,9 @@ def clear_cart_session(session_id=None):
                 if not filename.endswith('_session.txt'):  # Preskačemo naše pomoćne fajlove
                     file_path = os.path.join(app.config['SESSION_FILE_DIR'], filename)
                     try:
-                        # Učitavamo sesiju koristeći Flask-Session
+                        # Učitavamo sesiju koristeći itsdangerous
                         with open(file_path, 'rb') as f:
-                            session_data = session_interface.serializer.loads(f.read())
+                            session_data = serializer.loads(f.read())
                             if str(session_data.get('_id')) == session_id:
                                 # Čistimo specifične ključeve
                                 modified = False
@@ -42,7 +42,7 @@ def clear_cart_session(session_id=None):
                                 if modified:
                                     # Čuvamo izmenjenu sesiju
                                     with open(file_path, 'wb') as f:
-                                        f.write(session_interface.serializer.dumps(session_data))
+                                        f.write(serializer.dumps(session_data))
                                     app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
                                     session_found = True
                                     break
