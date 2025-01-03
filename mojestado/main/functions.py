@@ -1,13 +1,10 @@
 import os
 import json
-import pickle
 from flask import session
 from flask import current_app as app
 from flask_mail import Message
-
+from flask_session import Session
 from mojestado import mail
-
-
 
 
 def clear_cart_session(session_id=None):
@@ -22,6 +19,7 @@ def clear_cart_session(session_id=None):
         
         if session_id:
             # Tražimo session fajl u direktorijumu
+            session_interface = Session(app).interface
             session_files = os.listdir(app.config['SESSION_FILE_DIR'])
             session_found = False
             
@@ -30,11 +28,10 @@ def clear_cart_session(session_id=None):
                 if not filename.endswith('_session.txt'):  # Preskačemo naše pomoćne fajlove
                     file_path = os.path.join(app.config['SESSION_FILE_DIR'], filename)
                     try:
-                        with open(file_path, 'rb') as f:  # Otvaramo u binary modu
-                            session_data = pickle.load(f)  # Koristimo pickle za čitanje
-                            
-                            # Proveravamo da li je ovo prava sesija
-                            if isinstance(session_data, dict) and session_data.get('_id') == session_id:
+                        # Učitavamo sesiju koristeći Flask-Session
+                        with open(file_path, 'rb') as f:
+                            session_data = session_interface.serializer.loads(f.read())
+                            if str(session_data.get('_id')) == session_id:
                                 # Čistimo specifične ključeve
                                 modified = False
                                 for key in cart_keys:
@@ -44,13 +41,12 @@ def clear_cart_session(session_id=None):
                                 
                                 if modified:
                                     # Čuvamo izmenjenu sesiju
-                                    with open(file_path, 'wb') as f:  # Čuvamo u binary modu
-                                        pickle.dump(session_data, f)
+                                    with open(file_path, 'wb') as f:
+                                        f.write(session_interface.serializer.dumps(session_data))
                                     app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
                                     session_found = True
                                     break
-                                
-                    except (pickle.UnpicklingError, EOFError) as e:
+                    except Exception as e:
                         app.logger.debug(f'Preskačem fajl {filename}: {str(e)}')
                         continue
                         
