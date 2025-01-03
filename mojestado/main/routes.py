@@ -254,63 +254,76 @@ def add_delevery_to_cart():
 @main.route('/view_cart', methods=['GET', 'POST'])
 def view_cart():
     route_name = request.endpoint
-    animals = session.get('animals', [])
-    products = session.get('products', [])
-    fattening = session.get('fattening', [])
-    services = session.get('services', [])
     
-    if not animals and not products:
+    # Dohvatamo sve podatke iz korpe
+    cart_contents = {
+        'animals': session.get('animals', []),
+        'products': session.get('products', []),
+        'fattening': session.get('fattening', []),
+        'services': session.get('services', []),
+        'delivery': session.get('delivery', {'delivery_total': 0, 'delivery_status': False})
+    }
+    
+    app.logger.debug(f'View cart sadržaj: {cart_contents}')
+    
+    # Provera da li je korpa stvarno prazna (isto kao u clear_cart_session)
+    has_items = any(
+        len(items) > 0 if isinstance(items, list) else bool(items)
+        for items in cart_contents.values()
+    )
+    
+    if not has_items:
         flash('Korpa je prazna!', 'info')
         return render_template('view_cart.html', 
-                                title='Korpa', 
-                                route_name=route_name, 
-                                animals=[],
-                                products=[])
-    submit_button = 'nije_na_rate'  # Pretpostavljena vrednost
-    if session.get('fattening'):
-        for f in session['fattening']:
+                            title='Korpa', 
+                            route_name=route_name, 
+                            animals=[],
+                            products=[],
+                            services=[],
+                            fattening=[])
+                            
+    # Izvlačimo pojedinačne liste iz cart_contents
+    animals = cart_contents['animals']
+    products = cart_contents['products']
+    fattening = cart_contents['fattening']
+    services = cart_contents['services']
+    delivery = cart_contents['delivery']
+    
+    submit_button = 'nije_na_rate'
+    if fattening:  # Koristimo već izvučenu listu
+        for f in fattening:
             if int(f.get('installment_options', 0)) > 1:
                 submit_button = 'na_rate'
                 break
-            
 
     merchant_order_amount, installment_total, delivery_total = get_cart_total()
-    print(f'----{merchant_order_amount=}, {installment_total=}, {delivery_total=}')
-    if request.method == 'POST':
-        print(f'POST DELIVERY: {request.form=}')
-        if request.form.get('delivery_total') == 'on':
-            session['delivery'] = {
-                "delivery_total": delivery_total,
-                "delivery_status": True
-            }
-        else:
-            session['delivery'] = {
-                "delivery_total": delivery_total,
-                "delivery_status": False
-            }
-        return redirect(url_for('main.view_cart'))
-    if 'delivery' not in session:
-        if delivery_total == 0:
-            session['delivery'] = {
-                "delivery_total": 0,
-                "delivery_status": True
-            }
-        else:
-            print(f'postoji vrednost dostave: {delivery_total=}')
-            session['delivery'] ={
-                "delivery_total": delivery_total,
-                "delivery_status": False
-            }
-    print(f'{session=}')
+    app.logger.debug(f'Cart totals: merchant_order_amount={merchant_order_amount}, installment_total={installment_total}, delivery_total={delivery_total}')
     
-    delivery_status = session['delivery']['delivery_status']
-    print(f'**-**-** {delivery_status=}')
+    if request.method == 'POST':
+        app.logger.debug(f'POST DELIVERY: {request.form}')
+        delivery_status = request.form.get('delivery_total') == 'on'
+        session['delivery'] = {
+            "delivery_total": delivery_total,
+            "delivery_status": delivery_status
+        }
+        cart_contents['delivery'] = session['delivery']  # Ažuriramo i lokalni cart_contents
+        return redirect(url_for('main.view_cart'))
+        
+    if 'delivery' not in session:
+        delivery_status = delivery_total == 0
+        session['delivery'] = {
+            "delivery_total": delivery_total,
+            "delivery_status": delivery_status
+        }
+        cart_contents['delivery'] = session['delivery']  # Ažuriramo i lokalni cart_contents
+    
+    delivery_status = cart_contents['delivery']['delivery_status']
+    app.logger.debug(f'Delivery status: {delivery_status}')
     
     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
     
     return render_template('view_cart.html',
-                            route_name = route_name,
+                            route_name=route_name,
                             animals=animals, 
                             products=products, 
                             submit_button=submit_button, 
