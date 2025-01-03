@@ -11,6 +11,7 @@ from mojestado import db, mail
 from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User
 
 from flask import flash, json, redirect, render_template, session, url_for
+from flask import current_app as app
 from flask_login import current_user
 from flask_mail import Message, Attachment
 
@@ -515,10 +516,11 @@ def create_invoice():
     
     #! Čuvamo session ID za ovu fakturu
     try:
-        save_session_id_for_invoice(new_invoice.id, session.id)
+        # Koristimo sid umesto id za Flask session
+        save_session_id_for_invoice(new_invoice.id, session.sid)
     except Exception as e:
         app.logger.error(f'Greška pri čuvanju session ID-ja za fakturu {new_invoice.id}: {str(e)}')
-    
+
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu
