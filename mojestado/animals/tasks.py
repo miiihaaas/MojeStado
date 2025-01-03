@@ -16,7 +16,7 @@ def daily_weight_gain_task():
         
         while True:
             animals = Animal.query.filter(
-                (Animal.active == True) | (Animal.fattening == True),
+                Animal.active == True,
                 Animal.intended_for == "tov"
             ).limit(per_page).offset(page * per_page).all()
             
