@@ -3,8 +3,8 @@ import json
 from flask import session
 from flask import current_app as app
 from flask_mail import Message
-from itsdangerous import URLSafeTimedSerializer
-from mojestado import mail
+from flask_session import Session
+from mojestado import mail, sess
 
 
 def clear_cart_session(session_id=None):
@@ -18,20 +18,19 @@ def clear_cart_session(session_id=None):
         cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
         
         if session_id:
-            # Inicijalizujemo serializer sa Flask secret key
-            serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
             session_files = os.listdir(app.config['SESSION_FILE_DIR'])
             session_found = False
             
             # Čitamo svaki fajl i tražimo onaj koji sadrži naš session_id
             for filename in session_files:
-                if not filename.endswith('_session.txt'):  # Preskačemo naše pomoćne fajlove
+                # Preskačemo naše pomoćne fajlove
+                if not filename.endswith('_session.txt') and len(filename) == 32:  # Flask session fajlovi su 32 karaktera hex string
                     file_path = os.path.join(app.config['SESSION_FILE_DIR'], filename)
                     try:
-                        # Učitavamo sesiju koristeći itsdangerous
+                        # Učitavamo sesiju koristeći Flask session interfejs
                         with open(file_path, 'rb') as f:
-                            session_data = serializer.loads(f.read())
-                            if str(session_data.get('_id')) == session_id:
+                            session_data = sess.serializer.loads(f.read())
+                            if session_data.get('_id') == session_id:
                                 # Čistimo specifične ključeve
                                 modified = False
                                 for key in cart_keys:
@@ -42,7 +41,7 @@ def clear_cart_session(session_id=None):
                                 if modified:
                                     # Čuvamo izmenjenu sesiju
                                     with open(file_path, 'wb') as f:
-                                        f.write(serializer.dumps(session_data))
+                                        f.write(sess.serializer.dumps(session_data))
                                     app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
                                     session_found = True
                                     break
