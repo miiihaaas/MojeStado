@@ -254,13 +254,13 @@
                             {{ animal.animal_gender }}
                         </td>
                         <td>
-                            {{ "{:.2f}".format(animal.current_weight) }}
+                            {{ "{:.2f}".format(float(animal.current_weight)) }}
                         </td>
                         <td>
-                            {{ "{:.2f}".format(animal.desired_weight) }}
+                            {{ "{:.2f}".format(float(animal.desired_weight)) }}
                         </td>
                         <td>
-                            {{ "{:.2f}".format(animal.fattening_price) }}
+                            {{ "{:.2f}".format(float(animal.fattening_price)) }}
                         </td>
                         <td>
                             {{ animal.feeding_days }}
