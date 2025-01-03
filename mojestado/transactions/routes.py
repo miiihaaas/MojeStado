@@ -272,19 +272,140 @@ def callback_local_test():
 
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
-    flash('Uspešna transakcija', 'success')
+    try:
+        # Dobavljanje invoice_id iz parametara
+        invoice_id = request.args.get('merchantOrderID')
+        if not invoice_id:
+            raise ValueError('Nedostaje merchantOrderID')
+
+        # Čuvanje PaySpot callback podataka
+        callback_data = request.args.to_dict()
+        new_payspot_callback = PaySpotCallback(
+            invoice_id=invoice_id,
+            amount=request.args.get('merchantOrderAmount'),
+            recived_at=datetime.datetime.now(),
+            callback_data=callback_data
+        )
+        app.logger.info(f'Kreiran novi PaySpot callback: {new_payspot_callback}')
+        db.session.add(new_payspot_callback)
+        db.session.commit()
+
+        invoice_id = int(invoice_id.split('-')[1])
+        invoice = Invoice.query.get(invoice_id)
+        if not invoice:
+            raise ValueError(f'Faktura sa ID {invoice_id} nije pronađena')
+
+        invoice.status = 'paid'
+        db.session.commit()
+        app.logger.info(f'Uspešno ažuriran status fakture {invoice_id} na "paid"')
+
+        user = User.query.get(invoice.user_id)
+        
+        # Deaktiviranje životinja i proizvoda
+        deactivate_animals(invoice_id)
+        deactivate_products(invoice_id)
+        app.logger.info(f'Deaktivirane životinje i proizvodi za fakturu {invoice_id}')
+        
+        # Slanje email-a
+        send_email(user, invoice_id)
+        app.logger.info(f'Poslat email korisniku {user.email} za fakturu {invoice_id}')
+        
+        # Čišćenje sesije korpe
+        clear_cart_session()
+        app.logger.info('Očišćena sesija korpe')
+        
+        flash('Uspešna transakcija', 'success')
+        return redirect(url_for('main.home'))
+
+    except ValueError as e:
+        app.logger.error(f'Greška u validaciji podataka: {str(e)}')
+        db.session.rollback()
+        flash('Došlo je do greške prilikom obrade transakcije: ' + str(e), 'danger')
+    except Exception as e:
+        app.logger.error(f'Neočekivana greška prilikom obrade transakcije: {str(e)}', exc_info=True)
+        db.session.rollback()
+        flash('Došlo je do neočekivane greške prilikom obrade transakcije', 'danger')
+    
     return redirect(url_for('main.view_cart'))
 
 
 @transactions.route('/cancel_url', methods=['GET', 'POST'])
 def cancel_url():
+    try:
+        # Dobavljanje invoice_id iz parametara
+        invoice_id = request.args.get('merchantOrderID')
+        if invoice_id:
+            # Čuvanje PaySpot callback podataka
+            callback_data = request.args.to_dict()
+            new_payspot_callback = PaySpotCallback(
+                invoice_id=invoice_id,
+                amount=request.args.get('merchantOrderAmount'),
+                recived_at=datetime.datetime.now(),
+                callback_data=callback_data
+            )
+            app.logger.info(f'Kreiran novi PaySpot callback za otkazanu transakciju: {new_payspot_callback}')
+            db.session.add(new_payspot_callback)
+
+            # Ažuriranje statusa fakture
+            invoice_id = int(invoice_id.split('-')[1])
+            invoice = Invoice.query.get(invoice_id)
+            if invoice:
+                invoice.status = 'cancelled'
+                db.session.commit()
+                app.logger.info(f'Status fakture {invoice_id} promenjen na "cancelled"')
+                
+    except Exception as e:
+        app.logger.error(f'Greška prilikom obrade otkazane transakcije: {str(e)}', exc_info=True)
+        db.session.rollback()
+    
     flash('Transakcija otkazana', 'danger')
     return redirect(url_for('main.view_cart'))
 
 
 @transactions.route('/error_url', methods=['GET', 'POST'])
 def error_url():
-    flash('Transakcija neuspešna', 'danger')
+    try:
+        # Dobavljanje invoice_id iz parametara
+        invoice_id = request.args.get('merchantOrderID')
+        if invoice_id:
+            # Čuvanje PaySpot callback podataka sa detaljima greške
+            callback_data = request.args.to_dict()
+            error_code = callback_data.get('result')
+            error_message = callback_data.get('responseMsg')
+            
+            app.logger.error(f'PaySpot greška - Code: {error_code}, Message: {error_message}, Data: {callback_data}')
+            
+            new_payspot_callback = PaySpotCallback(
+                invoice_id=invoice_id,
+                amount=request.args.get('merchantOrderAmount'),
+                recived_at=datetime.datetime.now(),
+                callback_data=callback_data
+            )
+            app.logger.info(f'Kreiran novi PaySpot callback za neuspešnu transakciju: {new_payspot_callback}')
+            db.session.add(new_payspot_callback)
+
+            # Ažuriranje statusa fakture
+            invoice_id = int(invoice_id.split('-')[1])
+            invoice = Invoice.query.get(invoice_id)
+            if invoice:
+                invoice.status = 'error'
+                db.session.commit()
+                app.logger.info(f'Status fakture {invoice_id} promenjen na "error"')
+                
+                # Dodavanje informacije o korisniku u log
+                user = User.query.get(invoice.user_id)
+                if user:
+                    app.logger.error(f'Neuspešna transakcija za korisnika {user.email}, faktura {invoice_id}')
+                    
+                # Možda poslati email administratoru o grešci
+                error_details = f"Kod greške: {error_code}\nPoruka: {error_message}\nFaktura ID: {invoice_id}\nKorisnik: {user.email if user else 'Unknown'}"
+                app.logger.error(f'Detalji PaySpot greške:\n{error_details}')
+                
+    except Exception as e:
+        app.logger.error(f'Greška prilikom obrade neuspešne transakcije: {str(e)}', exc_info=True)
+        db.session.rollback()
+    
+    flash('Transakcija neuspešna. Molimo vas pokušajte ponovo ili kontaktirajte podršku.', 'danger')
     return redirect(url_for('main.view_cart'))
 
 
