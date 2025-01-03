@@ -3,17 +3,34 @@ import os
 from flask import session
 from flask_mail import Message
 
-from mojestado import mail
+from mojestado import mail, app
 
 
 
 
 def clear_cart_session():
-    session.pop('animals', None)
-    session.pop('products', None)
-    session.pop('fattening', None)
-    session.pop('services', None)
-    session.pop('delivery', None)
+    """Čisti sve podatke o korpi iz sesije."""
+    try:
+        # Lista svih ključeva koje treba očistiti
+        cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
+        
+        # Čuvamo informaciju o tome šta je bilo u korpi pre čišćenja (za logging)
+        cart_contents = {key: session.get(key) for key in cart_keys if key in session}
+        
+        # Čišćenje sesije
+        for key in cart_keys:
+            if key in session:
+                session.pop(key, None)
+        
+        # Osiguravamo da su promene sačuvane
+        session.modified = True
+        
+        app.logger.info(f'Uspešno očišćena korpa. Prethodni sadržaj: {cart_contents}')
+        return True
+        
+    except Exception as e:
+        app.logger.error(f'Greška prilikom čišćenja korpe: {str(e)}', exc_info=True)
+        return False
 
 
 def get_cart_total():
