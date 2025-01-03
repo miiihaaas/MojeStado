@@ -178,14 +178,16 @@ $body = @{
 $response = Invoke-RestMethod -Uri $uri -Method Post -Body ($body | ConvertTo-Json) -ContentType "application/json"
 $response
     '''
-    secret_key_callback = os.getenv('PAYSPOT_SECRET_KEY_CALLBACK')
-    data = request.json  # Dobijanje JSON podataka iz POST zahteva
-    if data:
-        print(f'Received Callback Data: {data}')
-        
-        # Sada možeš obraditi podatke, sačuvati ih u bazi, validirati itd.
+
+    try:
+        data = request.json
+        if not data:
+            app.logger.error('Callback_url: Nisu primljeni podaci')
+            return jsonify({"error": "No data received"}), 400
+
+        # Izvlačenje osnovnih podataka
         order_id = data.get('orderID')
-        invoice_id = int(data.get('orderID').split('-')[1])
+        invoice_id = int(order_id.split('-')[1])
         shop_id = data.get('shopID')
         auth_number = data.get('authNumber')
         amount = data.get('amount')
@@ -193,50 +195,76 @@ $response
         transaction_id = data.get('transactionID')
         result = data.get('result')
         received_hash = data.get('hash')
-        masked_pan = data.get('maskedPan')
-        expiry_date = data.get('expiryDate')
-        card_brand = data.get('cardBrand')
         
-        # Implementacija logike za validaciju ili obradu podataka
-        # Kreiranje stringa za hash verifikaciju
+        app.logger.info(f'Primljeni PaySpot callback podaci: OrderID={order_id}, Amount={amount}, Result={result}')
+
+        # Validacija hash-a
+        secret_key_callback = os.getenv('PAYSPOT_SECRET_KEY_CALLBACK')
         plantext = f"{order_id}|{shop_id}|{amount}|{result}|{secret_key_callback}"
-        print(f'{plantext=}')
-        
-        # Izračunavanje hash-a
         calculated_hash_value = calculate_hash(plantext)
-        print(f'** {calculated_hash_value=}')
-        print(f'** {received_hash=}')
         
         if received_hash != calculated_hash_value:
-            print(f'callback_url: Hash verification failed!')
-            return 'Invalid hash!', 400
-        if result != '00':
-            print(f'callback_url: {result=} Transaction failed!')
-            return 'Transaction failed!', 400
-        print(f'callback_url: {result=} Transaction success!')
-        new_payspot_callback = PaySpotCallback(invoice_id=invoice_id,
-                                                amount=amount,
-                                                recived_at=datetime.datetime.now(),
-                                                callback_data=data)
-        print(f'** {new_payspot_callback=}')
+            app.logger.error('Callback_url: Neuspešna hash validacija')
+            return jsonify({"error": "Invalid hash"}), 400
+
+        # Čuvanje callback podataka bez obzira na rezultat
+        new_payspot_callback = PaySpotCallback(
+            invoice_id=invoice_id,
+            amount=amount,
+            recived_at=datetime.datetime.now(),
+            callback_data=data
+        )
         db.session.add(new_payspot_callback)
-        print(f'** {invoice_id=}')
+        
+        # Pronalaženje fakture
         invoice = Invoice.query.get(invoice_id)
-        invoice.status = 'paid'
-        
-        db.session.commit()
+        if not invoice:
+            app.logger.error(f'Callback_url: Faktura {invoice_id} nije pronađena')
+            return jsonify({"error": "Invoice not found"}), 404
 
-        user_id = invoice.user_id
-        user = User.query.get(user_id)
+        user = User.query.get(invoice.user_id)
         
-        
-        deactivate_animals(invoice_id)
-        deactivate_products(invoice_id)
-        send_email(user, invoice_id)
-        # clear_cart_session()
-        return jsonify({"status": "success"}), 200  # Vrati odgovor serveru
+        # Obrada različitih rezultata transakcije
+        if result == '00':  # Uspešna transakcija
+            invoice.status = 'paid'
+            db.session.commit()
+            
+            # Dodatne akcije za uspešnu transakciju
+            deactivate_animals(invoice_id)
+            deactivate_products(invoice_id)
+            send_email(user, invoice_id)
+            clear_cart_session()
+            
+            app.logger.info(f'Uspešna transakcija za fakturu {invoice_id}')
+            return jsonify({"status": "success"}), 200
+            
+        elif result == '01':  # Otkazana transakcija
+            invoice.status = 'cancelled'
+            db.session.commit()
+            app.logger.info(f'Otkazana transakcija za fakturu {invoice_id}')
+            return jsonify({"status": "cancelled"}), 200
+            
+        else:  # Greška u transakciji
+            invoice.status = 'error'
+            error_message = data.get('responseMsg', 'Nepoznata greška')
+            
+            # Detaljno logovanje greške
+            error_details = {
+                'invoice_id': invoice_id,
+                'user_email': user.email if user else 'Unknown',
+                'error_code': result,
+                'error_message': error_message,
+                'transaction_id': transaction_id
+            }
+            app.logger.error(f'Greška u transakciji: {error_details}')
+            
+            db.session.commit()
+            return jsonify({"status": "error", "message": error_message}), 400
 
-    return jsonify({"error": "No data received"}), 400
+    except Exception as e:
+        app.logger.error(f'Neočekivana greška u callback_url: {str(e)}', exc_info=True)
+        db.session.rollback()
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @transactions.route('/callback_local_test', methods=['GET', 'POST'])
@@ -272,143 +300,19 @@ def callback_local_test():
 
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
-    try:
-        # Dobavljanje invoice_id iz parametara
-        # invoice_id = request.args.get('merchantOrderID')
-        invoice_id = request.args.get('orderID')
-        if not invoice_id:
-            # raise ValueError('Nedostaje merchantOrderID')
-            raise ValueError('Nedostaje orderID')
-
-        # Čuvanje PaySpot callback podataka
-        callback_data = request.args.to_dict()
-        new_payspot_callback = PaySpotCallback(
-            invoice_id=invoice_id,
-            # amount=request.args.get('merchantOrderAmount'),
-            amount=request.args.get('amount'),
-            recived_at=datetime.datetime.now(),
-            callback_data=callback_data
-        )
-        app.logger.info(f'Kreiran novi PaySpot callback: {new_payspot_callback}')
-        db.session.add(new_payspot_callback)
-        db.session.commit()
-
-        invoice_id = int(invoice_id.split('-')[1])
-        invoice = Invoice.query.get(invoice_id)
-        if not invoice:
-            raise ValueError(f'Faktura sa ID {invoice_id} nije pronađena')
-
-        invoice.status = 'paid'
-        db.session.commit()
-        app.logger.info(f'Uspešno ažuriran status fakture {invoice_id} na "paid"')
-
-        user = User.query.get(invoice.user_id)
-        
-        # Deaktiviranje životinja i proizvoda
-        deactivate_animals(invoice_id)
-        deactivate_products(invoice_id)
-        app.logger.info(f'Deaktivirane životinje i proizvodi za fakturu {invoice_id}')
-        
-        # Slanje email-a
-        send_email(user, invoice_id)
-        app.logger.info(f'Poslat email korisniku {user.email} za fakturu {invoice_id}')
-        
-        # Čišćenje sesije korpe
-        clear_cart_session()
-        app.logger.info('Očišćena sesija korpe')
-        
-        flash('Uspešna transakcija', 'success')
-        return redirect(url_for('main.home'))
-
-    except ValueError as e:
-        app.logger.error(f'Greška u validaciji podataka: {str(e)}')
-        db.session.rollback()
-        flash('Došlo je do greške prilikom obrade transakcije: ' + str(e), 'danger')
-    except Exception as e:
-        app.logger.error(f'Neočekivana greška prilikom obrade transakcije: {str(e)}', exc_info=True)
-        db.session.rollback()
-        flash('Došlo je do neočekivane greške prilikom obrade transakcije', 'danger')
-    
-    return redirect(url_for('main.view_cart'))
+    flash('Uspešna transakcija', 'success')
+    return redirect(url_for('main.home'))
 
 
 @transactions.route('/cancel_url', methods=['GET', 'POST'])
 def cancel_url():
-    try:
-        # Dobavljanje invoice_id iz parametara
-        invoice_id = request.args.get('merchantOrderID')
-        if invoice_id:
-            # Čuvanje PaySpot callback podataka
-            callback_data = request.args.to_dict()
-            new_payspot_callback = PaySpotCallback(
-                invoice_id=invoice_id,
-                amount=request.args.get('merchantOrderAmount'),
-                recived_at=datetime.datetime.now(),
-                callback_data=callback_data
-            )
-            app.logger.info(f'Kreiran novi PaySpot callback za otkazanu transakciju: {new_payspot_callback}')
-            db.session.add(new_payspot_callback)
-
-            # Ažuriranje statusa fakture
-            invoice_id = int(invoice_id.split('-')[1])
-            invoice = Invoice.query.get(invoice_id)
-            if invoice:
-                invoice.status = 'cancelled'
-                db.session.commit()
-                app.logger.info(f'Status fakture {invoice_id} promenjen na "cancelled"')
-                
-    except Exception as e:
-        app.logger.error(f'Greška prilikom obrade otkazane transakcije: {str(e)}', exc_info=True)
-        db.session.rollback()
-    
     flash('Transakcija otkazana', 'danger')
     return redirect(url_for('main.view_cart'))
 
 
 @transactions.route('/error_url', methods=['GET', 'POST'])
 def error_url():
-    try:
-        # Dobavljanje invoice_id iz parametara
-        invoice_id = request.args.get('merchantOrderID')
-        if invoice_id:
-            # Čuvanje PaySpot callback podataka sa detaljima greške
-            callback_data = request.args.to_dict()
-            error_code = callback_data.get('result')
-            error_message = callback_data.get('responseMsg')
-            
-            app.logger.error(f'PaySpot greška - Code: {error_code}, Message: {error_message}, Data: {callback_data}')
-            
-            new_payspot_callback = PaySpotCallback(
-                invoice_id=invoice_id,
-                amount=request.args.get('merchantOrderAmount'),
-                recived_at=datetime.datetime.now(),
-                callback_data=callback_data
-            )
-            app.logger.info(f'Kreiran novi PaySpot callback za neuspešnu transakciju: {new_payspot_callback}')
-            db.session.add(new_payspot_callback)
-
-            # Ažuriranje statusa fakture
-            invoice_id = int(invoice_id.split('-')[1])
-            invoice = Invoice.query.get(invoice_id)
-            if invoice:
-                invoice.status = 'error'
-                db.session.commit()
-                app.logger.info(f'Status fakture {invoice_id} promenjen na "error"')
-                
-                # Dodavanje informacije o korisniku u log
-                user = User.query.get(invoice.user_id)
-                if user:
-                    app.logger.error(f'Neuspešna transakcija za korisnika {user.email}, faktura {invoice_id}')
-                    
-                # Možda poslati email administratoru o grešci
-                error_details = f"Kod greške: {error_code}\nPoruka: {error_message}\nFaktura ID: {invoice_id}\nKorisnik: {user.email if user else 'Unknown'}"
-                app.logger.error(f'Detalji PaySpot greške:\n{error_details}')
-                
-    except Exception as e:
-        app.logger.error(f'Greška prilikom obrade neuspešne transakcije: {str(e)}', exc_info=True)
-        db.session.rollback()
-    
-    flash('Transakcija neuspešna. Molimo vas pokušajte ponovo ili kontaktirajte podršku.', 'danger')
+    flash('Došlo je do greške prilikom obrade transakcije. Molimo vas pokušajte ponovo ili kontaktirajte podršku.', 'danger')
     return redirect(url_for('main.view_cart'))
 
 
