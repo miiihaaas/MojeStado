@@ -17,13 +17,10 @@ def clear_cart_session():
         # Čuvamo informaciju o tome šta je bilo u korpi pre čišćenja (za logging)
         cart_contents = {key: session.get(key) for key in cart_keys if key in session}
         
-        # Čišćenje sesije
+        # Čišćenje samo specifičnih ključeva iz sesije
         for key in cart_keys:
             if key in session:
-                session.pop(key, None)
-        
-        # Osiguravamo da su promene sačuvane
-        session.modified = True
+                del session[key]
         
         app.logger.info(f'Uspešno očišćena korpa. Prethodni sadržaj: {cart_contents}')
         return True

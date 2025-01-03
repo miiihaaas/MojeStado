@@ -232,8 +232,15 @@ $response
             # Dodatne akcije za uspešnu transakciju
             deactivate_animals(invoice_id)
             deactivate_products(invoice_id)
+            
+            # Čišćenje korpe pre commit-a
+            if clear_cart_session():
+                app.logger.info('Korpa uspešno očišćena nakon transakcije')
+            else:
+                app.logger.warning('Nije uspelo čišćenje korpe nakon transakcije')
+            
             send_email(user, invoice_id)
-            clear_cart_session()
+            db.session.commit()
             
             app.logger.info(f'Uspešna transakcija za fakturu {invoice_id}')
             return jsonify({"status": "success"}), 200
