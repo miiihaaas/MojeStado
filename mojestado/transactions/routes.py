@@ -274,15 +274,18 @@ def callback_local_test():
 def success_url():
     try:
         # Dobavljanje invoice_id iz parametara
-        invoice_id = request.args.get('merchantOrderID')
+        # invoice_id = request.args.get('merchantOrderID')
+        invoice_id = request.args.get('orderID')
         if not invoice_id:
-            raise ValueError('Nedostaje merchantOrderID')
+            # raise ValueError('Nedostaje merchantOrderID')
+            raise ValueError('Nedostaje orderID')
 
         # Čuvanje PaySpot callback podataka
         callback_data = request.args.to_dict()
         new_payspot_callback = PaySpotCallback(
             invoice_id=invoice_id,
-            amount=request.args.get('merchantOrderAmount'),
+            # amount=request.args.get('merchantOrderAmount'),
+            amount=request.args.get('amount'),
             recived_at=datetime.datetime.now(),
             callback_data=callback_data
         )
