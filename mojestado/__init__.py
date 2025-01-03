@@ -31,8 +31,9 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 #kod ispod treba da reši problem Internal Server Error - komunikacija sa serverom
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "pool_pre_ping": True,
-    "pool_recycle": 300,
+    'pool_recycle': 280,  # recycle connections after 280 seconds
+    'pool_timeout': 20,   # timeout after 20 seconds
+    'pool_pre_ping': True # enable automatic ping before getting connection
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['FLASK_APP'] = 'run.py'
