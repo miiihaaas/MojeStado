@@ -15,9 +15,9 @@ from logging.handlers import RotatingFileHandler
 load_dotenv()
 
 # Podešavanje logovanja
-if not os.path.exists('logs'):
-    os.mkdir('logs')
-file_handler = RotatingFileHandler('logs/mojestado.log', maxBytes=10240, backupCount=10, encoding='utf-8')
+if not os.path.exists('app_logs'):
+    os.mkdir('app_logs')
+file_handler = RotatingFileHandler('app_logs/mojestado.log', maxBytes=10240, backupCount=10, encoding='utf-8')
 file_handler.setFormatter(logging.Formatter(
     '%(asctime)s %(levelname)s in %(module)s [%(pathname)s:%(lineno)d]: %(message)s'
 ))
@@ -38,13 +38,23 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['FLASK_APP'] = 'run.py'
 
-app.config['SESSION_TYPE'] = 'sqlalchemy'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config['SESSION_TYPE'] = 'sqlalchemy'
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config['SESSION_PERMANENT'] = True
+# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=10)
+
+# Kreiranje direktorijuma za sesije ako ne postoji
+if not os.path.exists('flask_session'):
+    os.mkdir('flask_session')
+
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = 'flask_session'
+app.config['SESSION_FILE_THRESHOLD'] = 500  # maksimalan broj fajlova u session direktorijumu
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=10)
 
 db = SQLAlchemy(app)
-app.config['SESSION_SQLALCHEMY'] = db
+# app.config['SESSION_SQLALCHEMY'] = db
 
 Session(app)
 
