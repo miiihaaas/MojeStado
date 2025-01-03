@@ -451,7 +451,27 @@ def calculate_hash(plaintext):
     print(f'** calculate hash: {hash_=}')
     return hash_
 
+def save_session_id_for_invoice(invoice_id, session_id):
+    """Čuva session ID za datu fakturu u fajl sistemu"""
+    try:
+        session_file = os.path.join(app.config['SESSION_FILE_DIR'], f'invoice_{invoice_id}_session.txt')
+        with open(session_file, 'w') as f:
+            f.write(session_id)
+        return True
+    except Exception as e:
+        app.logger.error(f'Greška pri čuvanju session ID-ja: {str(e)}')
+        return False
 
+def get_session_id_for_invoice(invoice_id):
+    """Vraća session ID za datu fakturu iz fajl sistema"""
+    try:
+        session_file = os.path.join(app.config['SESSION_FILE_DIR'], f'invoice_{invoice_id}_session.txt')
+        if os.path.exists(session_file):
+            with open(session_file, 'r') as f:
+                return f.read().strip()
+    except Exception as e:
+        app.logger.error(f'Greška pri čitanju session ID-ja: {str(e)}')
+    return None
 
 def create_invoice():
     '''
@@ -492,6 +512,12 @@ def create_invoice():
     )
     db.session.add(new_invoice)
     db.session.commit()
+    
+    #! Čuvamo session ID za ovu fakturu
+    try:
+        save_session_id_for_invoice(new_invoice.id, session.id)
+    except Exception as e:
+        app.logger.error(f'Greška pri čuvanju session ID-ja za fakturu {new_invoice.id}: {str(e)}')
     
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu

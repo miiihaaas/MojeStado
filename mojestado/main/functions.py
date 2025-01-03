@@ -8,40 +8,40 @@ from mojestado import mail, app
 
 
 
-def clear_cart_session():
-    """Čisti sve podatke o korpi iz sesije."""
+def clear_cart_session(session_id=None):
+    """Čisti sve podatke o korpi iz sesije.
+    
+    Args:
+        session_id: Ako je prosleđen, čisti specifičnu sesiju. Ako nije, čisti trenutnu.
+    """
     try:
         # Lista svih ključeva koje treba očistiti
         cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
         
-        # Čuvamo informaciju o tome šta je bilo u korpi pre čišćenja
-        cart_contents = {
-            'animals': session.get('animals', []),
-            'products': session.get('products', []),
-            'fattening': session.get('fattening', []),
-            'services': session.get('services', []),
-            'delivery': session.get('delivery', {})
-        }
+        if session_id:
+            # Učitavamo specifičnu sesiju iz fajl sistema
+            session_file = os.path.join(app.config['SESSION_FILE_DIR'], f'sess_{session_id}')
+            if os.path.exists(session_file):
+                with open(session_file, 'r') as f:
+                    session_data = json.loads(f.read())
+                # Čistimo specifične ključeve
+                for key in cart_keys:
+                    if key in session_data:
+                        del session_data[key]
+                # Čuvamo izmenjenu sesiju
+                with open(session_file, 'w') as f:
+                    json.dump(session_data, f)
+            else:
+                app.logger.warning(f'Sesija {session_id} nije pronađena')
+                return False
+        else:
+            # Čistimo trenutnu sesiju
+            for key in cart_keys:
+                if key in session:
+                    del session[key]
+            session.modified = True
         
-        # Provera da li je korpa stvarno prazna
-        has_items = any(
-            len(items) > 0 if isinstance(items, list) else bool(items)
-            for items in cart_contents.values()
-        )
-        
-        if not has_items:
-            app.logger.info('Korpa je već bila prazna')
-            return True
-            
-        # Čišćenje specifičnih ključeva iz sesije
-        for key in cart_keys:
-            if key in session:
-                del session[key]
-        
-        # Označavamo da je sesija modifikovana
-        session.modified = True
-        
-        app.logger.info(f'Uspešno očišćena korpa. Prethodni sadržaj: {cart_contents}')
+        app.logger.info('Korpa je očišćena')
         return True
         
     except Exception as e:
