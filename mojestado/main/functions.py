@@ -20,7 +20,8 @@ def clear_cart_session(session_id=None):
         
         if session_id:
             # Učitavamo specifičnu sesiju iz fajl sistema
-            session_file = os.path.join(app.config['SESSION_FILE_DIR'], f'sess_{session_id}')
+            # Flask kreira fajlove bez 'sess_' prefiksa
+            session_file = os.path.join(app.config['SESSION_FILE_DIR'], session_id)
             if os.path.exists(session_file):
                 with open(session_file, 'r') as f:
                     session_data = json.loads(f.read())
@@ -31,6 +32,8 @@ def clear_cart_session(session_id=None):
                 # Čuvamo izmenjenu sesiju
                 with open(session_file, 'w') as f:
                     json.dump(session_data, f)
+                app.logger.info(f'Korpa je očišćena za sesiju {session_id}')
+                return True
             else:
                 app.logger.warning(f'Sesija {session_id} nije pronađena')
                 return False
@@ -40,9 +43,8 @@ def clear_cart_session(session_id=None):
                 if key in session:
                     del session[key]
             session.modified = True
-        
-        app.logger.info('Korpa je očišćena')
-        return True
+            app.logger.info('Korpa je očišćena za trenutnu sesiju')
+            return True
         
     except Exception as e:
         app.logger.error(f'Greška prilikom čišćenja korpe: {str(e)}', exc_info=True)
