@@ -3,8 +3,8 @@ import json
 from flask import session
 from flask import current_app as app
 from flask_mail import Message
-from flask_session import Session
-from mojestado import mail, sess
+from itsdangerous import Signer
+from mojestado import mail
 
 
 def clear_cart_session(session_id=None):
@@ -18,6 +18,8 @@ def clear_cart_session(session_id=None):
         cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
         
         if session_id:
+            # Inicijalizujemo signer sa Flask secret key
+            signer = Signer(app.config['SECRET_KEY'])
             session_files = os.listdir(app.config['SESSION_FILE_DIR'])
             session_found = False
             
@@ -27,9 +29,20 @@ def clear_cart_session(session_id=None):
                 if not filename.endswith('_session.txt') and len(filename) == 32:  # Flask session fajlovi su 32 karaktera hex string
                     file_path = os.path.join(app.config['SESSION_FILE_DIR'], filename)
                     try:
-                        # Učitavamo sesiju koristeći Flask session interfejs
+                        # Učitavamo sesiju
                         with open(file_path, 'rb') as f:
-                            session_data = sess.serializer.loads(f.read())
+                            raw_data = f.read()
+                            # Prvo pokušavamo da učitamo kao JSON
+                            try:
+                                session_data = json.loads(raw_data)
+                            except:
+                                # Ako ne uspe, pokušavamo da unsign-ujemo pa onda da parsiramo kao JSON
+                                try:
+                                    unsigned_data = signer.unsign(raw_data)
+                                    session_data = json.loads(unsigned_data)
+                                except:
+                                    raise ValueError("Nije moguće dekodirati session podatke")
+
                             if session_data.get('_id') == session_id:
                                 # Čistimo specifične ključeve
                                 modified = False
@@ -40,8 +53,10 @@ def clear_cart_session(session_id=None):
                                 
                                 if modified:
                                     # Čuvamo izmenjenu sesiju
+                                    json_data = json.dumps(session_data)
+                                    signed_data = signer.sign(json_data.encode('utf-8'))
                                     with open(file_path, 'wb') as f:
-                                        f.write(sess.serializer.dumps(session_data))
+                                        f.write(signed_data)
                                     app.logger.info(f'Korpa je očišćena za sesiju {session_id} u fajlu {filename}')
                                     session_found = True
                                     break
