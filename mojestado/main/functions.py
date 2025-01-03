@@ -14,10 +14,26 @@ def clear_cart_session():
         # Lista svih ključeva koje treba očistiti
         cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
         
-        # Čuvamo informaciju o tome šta je bilo u korpi pre čišćenja (za logging)
-        cart_contents = {key: session.get(key) for key in cart_keys if key in session}
+        # Čuvamo informaciju o tome šta je bilo u korpi pre čišćenja
+        cart_contents = {
+            'animals': session.get('animals', []),
+            'products': session.get('products', []),
+            'fattening': session.get('fattening', []),
+            'services': session.get('services', []),
+            'delivery': session.get('delivery', {})
+        }
         
-        # Čišćenje samo specifičnih ključeva iz sesije
+        # Provera da li je korpa stvarno prazna
+        has_items = any(
+            len(items) > 0 if isinstance(items, list) else bool(items)
+            for items in cart_contents.values()
+        )
+        
+        if not has_items:
+            app.logger.info('Korpa je već bila prazna')
+            return True
+            
+        # Čišćenje specifičnih ključeva iz sesije
         for key in cart_keys:
             if key in session:
                 del session[key]
