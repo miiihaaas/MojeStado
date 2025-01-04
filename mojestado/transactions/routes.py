@@ -433,11 +433,12 @@ def process_payment_statment():
                 'payment_statement_id': new_payment_statement.id
             })
         number_of_errors = 0
-        user_ids = [str(user.id).zfill(4) for user in User.query.filter_by(user_type='user').all()]
-        invoice_items_ids = [str(invoice_item.id).zfill(4) for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()]
+        user_ids = [str(user.id).zfill(5) for user in User.query.filter_by(user_type='user').all()]
+        invoice_items_ids = [str(invoice_item.id).zfill(6) for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()]
         for record in records:
-            user_id = record['poziv_na_broj'][-4:] #! provali ovde koji deo iz poziva na broj je user_id
-            invoice_item_id = record['poziv_na_broj'][:4] #! provali ovde koji deo iz poziva na broj je invoice_item_id
+            user_id = record['poziv_na_broj'][:5]
+            # Ako postoji crtica u pozivu na broj, uzimamo sve nakon crtice, inače uzimamo poslednjih 6 cifara
+            invoice_item_id = record['poziv_na_broj'].split('-')[1] if '-' in record['poziv_na_broj'] else record['poziv_na_broj'][5:]
             amaunt = float(record['iznos'].replace(',', '.'))
             payment_error = False
             if (user_id not in user_ids) or (invoice_item_id not in invoice_items_ids):
