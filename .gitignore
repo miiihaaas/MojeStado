@@ -5,6 +5,7 @@
 # Manual added
 #TODO: komanda za brisanje fajlova sa gita: git rm -r --cached .\your\file\destination\file.extension
 app_logs/
+flask_session/
 mojestado/site.db
 mojestado/__pycache__/
 mojestado/schools/__pycache__/
@@ -140,6 +141,8 @@ __pypackages__/
 
 # Celery stuff
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 celerybeat.pid
 
 # SageMath parsed files

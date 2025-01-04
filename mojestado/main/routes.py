@@ -329,10 +329,6 @@ def view_cart():
             "delivery_status": False  # Uvek postavljamo na False kada se prvi put kreira
         }
         cart_contents['delivery'] = session['delivery']  # Ažuriramo i lokalni cart_contents
-    else:
-        delivery_total = session['delivery']['delivery_total']
-        delivery_status = session['delivery']['delivery_status']
-        cart_contents['delivery'] = session['delivery']  # Ažuriramo i lokalni cart_contents
     delivery_status = cart_contents['delivery']['delivery_status']
     app.logger.debug(f'Delivery status: {delivery_status}')
     
