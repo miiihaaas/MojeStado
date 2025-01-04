@@ -324,7 +324,8 @@ def callback_local_test():
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
     flash('Uspešna transakcija', 'success')
-    return redirect(url_for('main.home'))
+    # return redirect(url_for('main.home'))
+    return redirect(url_for('main.clear_cart'))
 
 
 @transactions.route('/cancel_url', methods=['GET', 'POST'])
