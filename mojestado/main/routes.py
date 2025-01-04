@@ -242,19 +242,30 @@ def add_product_to_cart(product_id):
     return redirect(url_for('marketplace.product_detail', product_id=product.id))
 
 
-@main.route('/add_delevery_to_cart', methods=['POST'])
-def add_delevery_to_cart():
-    if 'delivery' not in session:
-        session['delivery'] = []
-    session['delivery'] = {
-        "delivery_total": request.form['delivery_total']
-    }
+# @main.route('/add_delevery_to_cart', methods=['POST'])
+# def add_delevery_to_cart():
+    # pass
 
 
 @main.route('/view_cart', methods=['GET', 'POST'])
 def view_cart():
     route_name = request.endpoint
+    # print(f'debug session pre: {session=}')
     
+    # Prvo proveravamo da li ima stavki u korpi
+    has_items = any([
+        session.get('animals', []),
+        session.get('products', []),
+        session.get('fattening', []),
+        session.get('services', [])
+    ])
+    
+    # Ako nema stavki, brišemo delivery iz sesije
+    if not has_items and 'delivery' in session:
+        del session['delivery']
+        session.modified = True
+    
+    # print(f'debug session posle: {session=}')
     # Dohvatamo sve podatke iz korpe
     cart_contents = {
         'animals': session.get('animals', []),
@@ -289,6 +300,8 @@ def view_cart():
     services = cart_contents['services']
     delivery = cart_contents['delivery']
     
+    print(f'debug delivery: {delivery=}')
+    
     submit_button = 'nije_na_rate'
     if fattening:  # Koristimo već izvučenu listu
         for f in fattening:
@@ -309,14 +322,17 @@ def view_cart():
         cart_contents['delivery'] = session['delivery']  # Ažuriramo i lokalni cart_contents
         return redirect(url_for('main.view_cart'))
         
+    # Računamo cenu dostave
     if 'delivery' not in session:
-        delivery_status = delivery_total == 0
         session['delivery'] = {
             "delivery_total": delivery_total,
-            "delivery_status": delivery_status
+            "delivery_status": False  # Uvek postavljamo na False kada se prvi put kreira
         }
         cart_contents['delivery'] = session['delivery']  # Ažuriramo i lokalni cart_contents
-    
+    else:
+        delivery_total = session['delivery']['delivery_total']
+        delivery_status = session['delivery']['delivery_status']
+        cart_contents['delivery'] = session['delivery']  # Ažuriramo i lokalni cart_contents
     delivery_status = cart_contents['delivery']['delivery_status']
     app.logger.debug(f'Delivery status: {delivery_status}')
     
@@ -329,6 +345,7 @@ def view_cart():
                             submit_button=submit_button, 
                             fattening=fattening,
                             services=services, 
+                            delivery=delivery,
                             merchant_order_amount=merchant_order_amount,
                             installment_total=installment_total,
                             delivery_total=delivery_total,

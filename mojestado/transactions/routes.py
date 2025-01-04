@@ -8,7 +8,7 @@ from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, generate_payment_slips_attach, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products, get_session_id_for_invoice
+from mojestado.transactions.functions import calculate_hash, generate_payment_slips_attach, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products
 
 
 transactions = Blueprint('transactions', __name__)
@@ -202,17 +202,6 @@ $response
         if received_hash != calculated_hash_value:
             app.logger.error('Callback_url: Neuspešna hash validacija')
             return jsonify({"error": "Invalid hash"}), 400
-
-        # Čišćenje korpe pre bilo kakvih izmena u bazi
-        try:
-            session_id = get_session_id_for_invoice(invoice_id)
-            if session_id and clear_cart_session(session_id):
-                app.logger.info(f'Korpa uspešno očišćena za sesiju {session_id}')
-            else:
-                app.logger.warning('Nije uspelo čišćenje korpe')
-        except Exception as e:
-            app.logger.error(f'Greška pri čišćenju sesije: {str(e)}')
-            # Nastavljamo sa izvršavanjem jer greška u čišćenju sesije nije kritična
 
         # Započinjemo transakciju
         try:

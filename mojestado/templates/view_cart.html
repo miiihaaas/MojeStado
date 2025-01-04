@@ -277,24 +277,24 @@
             </table>
             <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
             {% endif %}
-            {% if session.get('delivery') %}
-            <h3>Dostava</h3>
-            {% if delivery_total == 0 %}
-            Dostava je besplatna
-            {% else %}
-            <legend>Cena dostave sadržaja korpe</legend>
-            <input type="text" class="form-control" value="{{ delivery_total }} rsd" id="delivery_total_" name="delivery_total_" disabled>
-            {% endif %}
-            <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
-                <div class="form-check">
-                    {% if delivery_status %}
-                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total" checked>
-                    {% else %}
-                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total">
-                    {% endif %}
-                    <label for="delivery_total" class="form-check-label">Želim dostavu</label>
-                </div>
-            </form>
+            {% if animals or products or fattening %}
+                <h3>Dostava</h3>
+                {% if delivery_total == 0 %}
+                    Dostava je besplatna
+                {% else %}
+                    <legend>Cena dostave sadržaja korpe</legend>
+                    <input type="text" class="form-control" value="{{ delivery_total }} rsd" id="delivery_total_" name="delivery_total_" disabled>
+                {% endif %}
+                <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
+                    <div class="form-check">
+                        {% if delivery_status %}
+                        <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total" checked>
+                        {% else %}
+                        <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total">
+                        {% endif %}
+                        <label for="delivery_total" class="form-check-label">Želim dostavu</label>
+                    </div>
+                </form>
             {% endif %}
 
             {% if merchant_order_amount %}

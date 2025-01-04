@@ -4,6 +4,7 @@
 
 # Manual added
 #TODO: komanda za brisanje fajlova sa gita: git rm -r --cached .\your\file\destination\file.extension
+app_logs/
 mojestado/site.db
 mojestado/__pycache__/
 mojestado/schools/__pycache__/
