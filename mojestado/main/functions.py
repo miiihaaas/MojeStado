@@ -89,16 +89,23 @@ def calculate_delivery_price(animal_weight):
 
 
 def send_faq_email(email, question):
-    sender = email
     subject = 'Novo pitanje na portalu "Moje stado"'
     body = f'''
 Pitanje: {question}
-Odgovor slati na mejl: {sender}'''
-    
-    message = Message(subject=subject, sender=sender, recipients=[os.environ.get('MAIL_ADMIN'), sender], body=body)
+
+Poslato od korisnika sa email adrese: {email}'''
     
     try:
+        message = Message(
+            subject=subject,
+            recipients=[app.config['MAIL_ADMIN']],
+            body=body,
+            reply_to=email
+        )
+        
         mail.send(message)
-        print('wip: email sa pitanjem korisnika poslat adminu portala')
+        app.logger.info(f'FAQ pitanje uspešno poslato od {email}')
+        return True
     except Exception as e:
-        print(f'Greška slajna mejla: {e}')
+        app.logger.error(f'Greška pri slanju FAQ mejla: {str(e)}')
+        return False

@@ -39,15 +39,26 @@ def about():
 def faq():
     route_name = request.endpoint
     faq = FAQ.query.all()
+    
     if request.method == 'POST':
-        print(f'{request.form=}')
-        flash('Uspesno ste poslali pitanje timu portala "Moje stado"!', 'success')
-        #! razviti funkciju koja će da pošalje mejl sa pitanjem vlasniku portala
-        email = request.form['email']
-        question = request.form['question']
-        send_faq_email(email, question)
-        return render_template('faq.html', title='Najžešće postavljena pitanja',
+        email = request.form.get('email')
+        question = request.form.get('question')
+        
+        if not email or not question:
+            flash('Molimo popunite sva polja.', 'danger')
+            return render_template('faq.html', 
+                                route_name=route_name,
+                                title='Najčešće postavljena pitanja',
                                 faq=faq)
+        
+        if send_faq_email(email, question):
+            flash('Uspešno ste poslali pitanje timu portala "Moje stado"!', 'success')
+        else:
+            flash('Došlo je do greške pri slanju pitanja. Molimo pokušajte kasnije.', 'danger')
+            app.logger.error(f'Neuspelo slanje FAQ pitanja od korisnika {email}')
+        
+        return redirect(url_for('main.faq'))
+    
     return render_template('faq.html', 
                             route_name=route_name, 
                             title='Najčešće postavljena pitanja',
