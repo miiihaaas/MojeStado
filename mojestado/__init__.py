@@ -105,6 +105,7 @@ from mojestado.main.routes import main
 from mojestado.marketplace.routes import marketplace
 from mojestado.transactions.routes import transactions
 from mojestado.users.routes import users
+from mojestado.errors.routes import errors
 from mojestado.animals.functions import schedule_daily_weight_gain  # Dodajte ovu liniju
 
 # print('__init__ checkpoint 9')
@@ -116,6 +117,8 @@ app.register_blueprint(main)
 app.register_blueprint(marketplace)
 app.register_blueprint(transactions)
 app.register_blueprint(users)
+app.register_blueprint(errors)
+
 
 # Pozovite funkciju za zakazivanje zadatka
 # schedule_daily_weight_gain(scheduler)

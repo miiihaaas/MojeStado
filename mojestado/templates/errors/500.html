@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container text-center pt-40">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="display-1">500</h1>
+            <h2>Interna greška servera</h2>
+            <p class="lead">Došlo je do neočekivane greške. Naš tim je obavešten i radi na rešavanju problema.</p>
+            <a href="{{ url_for('main.home') }}" class="btn btn-primary mt-4">Vratite se na početnu stranu</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
