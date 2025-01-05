@@ -466,3 +466,8 @@ def terms_and_conditions():
 @main.route('/privacy_policy')
 def privacy_policy():
     return render_template('privacy_policy.html')
+
+
+@main.route('/cookie_policy')
+def cookie_policy():
+    return render_template('cookie_policy.html')
