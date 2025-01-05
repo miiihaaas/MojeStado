@@ -4,7 +4,8 @@ import random
 from flask import Blueprint, jsonify, session
 from flask import  render_template, flash, redirect, url_for, request
 from flask_login import current_user
-from mojestado import app, db
+from flask_mail import Message
+from mojestado import app, db, mail
 from mojestado.main.functions import clear_cart_session, get_cart_total, send_faq_email
 from mojestado.models import FAQ, Animal, AnimalCategory, Product
 from mojestado.transactions.functions import calculate_hash, generate_random_string
@@ -53,9 +54,35 @@ def faq():
                             faq=faq)
 
 
-@main.route('/contact')
+@main.route('/contact', methods=['GET', 'POST'])
 def contact():
     route_name = request.endpoint
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        message = request.form.get('message')
+        
+        try:
+            msg = Message('Nova poruka sa kontakt forme',
+                        recipients=[app.config['MAIL_ADMIN']],
+                        reply_to=email)
+            
+            msg.body = f"""
+            Nova poruka od: {name}
+            Email: {email}
+            
+            Poruka:
+            {message}
+            """
+            
+            mail.send(msg)
+            flash('Vaša poruka je uspešno poslata!', 'success')
+            return redirect(url_for('main.contact'))
+            
+        except Exception as e:
+            app.logger.error(f'Greška pri slanju mejla: {str(e)}')
+            flash('Došlo je do greške pri slanju poruke. Molimo pokušajte kasnije.', 'danger')
+    
     return render_template('contact.html', 
                             route_name=route_name,
                             title='Kontakt strana')

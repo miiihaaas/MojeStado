@@ -95,9 +95,9 @@
                     {% if invoice_item.invoice_item_type == 1 %}
                     <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
                     {% elif invoice_item.invoice_item_type == 2 %}
-                    <td>{{ invoice_item.invoice_item_details["current_weight"] }}</td>
+                    <td>{{ "{:.2f}".format(invoice_item.invoice_item_details["current_weight"]|float) }}</td>
                     {% elif invoice_item.invoice_item_type == 3 %}
-                    <td>{{ invoice_item.invoice_item_details["current_weight"] }}</td>
+                    <td>{{ "{:.2f}".format(invoice_item.invoice_item_details["current_weight"]|float) }}</td>
                     {% elif invoice_item.invoice_item_type == 4 %}
                     <td>--</td>
                     {% endif %}
