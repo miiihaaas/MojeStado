@@ -283,12 +283,13 @@ def edit_product(product_id):
     product.product_name = request.form['product_name']
     product.product_description = request.form['product_description']
     product.unit_of_measurement = request.form['unit_of_measurement']
-    product.product_price_per_unit = request.form['product_price_per_unit']
+    product.product_price_per_unit_farmer = request.form['product_price_per_unit']
+    product.product_price_per_unit = float(request.form['product_price_per_unit']) * 1.38
     product.weight_conversion = request.form['weight_conversion']
     if request.form['unit_of_measurement'] == 'kg':
         product.product_price_per_kg = product.product_price_per_unit
     elif request.form['unit_of_measurement'] == 'kom':
-        product.product_price_per_kg = float(request.form['product_price_per_unit']) / float(request.form['weight_conversion'])
+        product.product_price_per_kg = product.product_price_per_unit / float(request.form['weight_conversion'])
     if request.form.get('organic_product') == 'on':
         product.organic_product = True
     else:

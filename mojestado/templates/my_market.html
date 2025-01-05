@@ -70,7 +70,7 @@
                             <td>{{ product.product_subcategory.product_subcategory_name }}</td>
                             <td>{{ product.product_name }}</td>
                             <td>{{ product.unit_of_measurement }}</td>
-                            <td>{{ product.product_price_per_unit }}</td>
+                            <td>{{ product.product_price_per_unit_farmer }}</td>
                             <td>{{ product.quantity }}</td>
                             <td>{{ product.product_description }}</td>
                             <td>
@@ -128,8 +128,8 @@
                                             {{ form.unit_of_measurement (class="form-select form-select-lg", id="unit_of_measurement") }}
                                         </div>
                                         <div class="form-group">
-                                            {{ form.weight_conversion.label }}
-                                            {{ form.weight_conversion (class="form-control form-control-lg", id="product_price_per_unit", type="number", step="0.05") }}
+                                            {{ form.weight_conversion.label }} 
+                                            {{ form.weight_conversion (class="form-control form-control-lg", id="product_price_per_unit", type="number", step="0.05", placeholder="0.00 (Unesite težinu jednog komada u kg)") }}
                                         </div>
                                         <div class="form-group">
                                             {{ form.product_price_per_unit.label }}
@@ -164,7 +164,7 @@
                         <th>Naziv</th>
                         <th>Jedinica mere</th>
                         <th>Cena po jedinici mere</th>
-                        <th>datum prodaje</th>
+                        <th>Datum prodaje</th>
                         <th>Količina/masa</th>
                         <th>Ukupna cena</th>
                         <th>Kupac</th>
@@ -177,10 +177,10 @@
                         <td>{{ invoice_item.invoice_item_details["subcategory"] }}</td>
                         <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
                         <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
-                        <td>{{ invoice_item.invoice_item_details["product_price_per_unit"] }}</td>
+                        <td>{{ invoice_item.invoice_item_details["product_price_per_unit_farmer"] }}</td>
                         <td>{{ invoice_item.invoice.datetime }}</td>
                         <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
-                        <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
+                        <td>{{ "{:.2f}".format(invoice_item.invoice_item_details["total_price"] / 1.38) }}</td>
                         <td>{{ invoice_item.invoice.user_invoice.name }} {{ invoice_item.invoice.user_invoice.surname }}</td>
                     </tr>
                     {% endfor %}

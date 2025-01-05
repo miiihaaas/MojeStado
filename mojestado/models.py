@@ -169,6 +169,7 @@ class Product(db.Model):
     product_image_collection = db.Column(db.JSON, nullable=True)
     unit_of_measurement = db.Column(db.String(20), nullable=False)
     weight_conversion = db.Column(db.String(20), nullable=True)
+    product_price_per_unit_farmer = db.Column(db.String(20), nullable=False) #! implementirati ovu izmenu u kodu i sql-u
     product_price_per_unit = db.Column(db.String(20), nullable=False)
     product_price_per_kg = db.Column(db.String(20), nullable=True)
     organic_product = db.Column(db.Boolean, nullable=False)
