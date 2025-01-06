@@ -37,7 +37,9 @@
     <div class="container">
         <h2>Pregled stanja: {{ user.name }} {{ user.surname }}</h2>
         {% for tov_id, transactions in tovovi.items() %}
-        <h3>Tov ID: {{ tov_id }}</h3> <a href="{{ url_for('users.cancel_fattening', invoice_item_id=tov_id) }}" class="btn btn-danger">Prekini tov ({{ tov_id }})</a>
+        <h3>Tov ID: {{ tov_id }}</h3> 
+        
+        <a href="{{ url_for('users.cancel_fattening', invoice_item_id=tov_id) }}" class="btn btn-danger">Prekini tov ({{ tov_id }})</a>
         <table class="table table-striped">
             <thead>
                 <tr>
