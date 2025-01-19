@@ -661,7 +661,7 @@ def handle_admin_profile(user, farm):
                 db.session.commit()
                 app.logger.info(f'Uspešno ažuriran profil za: {user.email}')
                 flash('Uspešno ste izmenili podatke.', 'success')
-                return redirect(url_for('users.my_profile', user_id=user.id))
+                return redirect(url_for('users.admin_view_farms', user_id=user.id))
             except Exception as e:
                 db.session.rollback()
                 app.logger.error(f'Greška pri ažuriranju profila: {str(e)}')
@@ -2201,7 +2201,7 @@ def admin_edit_profile(user_id):
         user.jmbg = form.jmbg.data
         db.session.commit()
         flash('Uspešno ste sačuvali izmene na profilu.', 'success')
-        return redirect(url_for('users.admin_edit_profile', user_id=user.id))
+        return redirect(url_for('users.admin_view_users', user_id=user.id))
     print(f'form not validated')
     form.name.data = user.name
     form.surname.data = user.surname
@@ -2216,16 +2216,77 @@ def admin_edit_profile(user_id):
                             form=form)
 
 
-@users.route("/admin_remove_user/<int:user_id>", methods=['GET', 'POST'])
+@users.route("/admin_remove_user/<int:user_id>", methods=['POST'])
 def admin_remove_user(user_id):
-    if not current_user.is_authenticated:
-        flash('Nemate pravo pristupa', 'danger')
+    """
+    Briše korisnika iz sistema. Ova operacija je nepovratna.
+    
+    Args:
+        user_id (int): ID korisnika koji se briše
+        
+    Returns:
+        Redirect na pregled korisnika nakon brisanja ili na početnu stranu u slučaju greške
+        
+    Note:
+        - Samo POST metoda je dozvoljena za ovu operaciju
+        - Proverava se da li korisnik ima aktivne transakcije pre brisanja
+        - Implementiran je soft delete ako postoje povezani podaci
+    """
+    try:
+        # Provera autentikacije
+        if not current_user.is_authenticated:
+            app.logger.warning('Pokušaj brisanja korisnika od strane neautentifikovanog korisnika')
+            flash('Morate biti prijavljeni.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        # Provera admin prava
+        if current_user.user_type != 'admin':
+            app.logger.warning(f'Nedozvoljen pristup: {current_user.email} pokušava obrisati korisnika {user_id}')
+            flash('Nemate administratorska prava.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        # Provera da li se admin pokušava sam obrisati
+        if current_user.id == user_id:
+            app.logger.warning(f'Admin {current_user.email} pokušava obrisati svoj nalog')
+            flash('Ne možete obrisati svoj administratorski nalog.', 'danger')
+            return redirect(url_for('users.admin_view_users'))
+            
+        try:
+            # Učitavanje korisnika
+            user = User.query.get_or_404(user_id)
+            app.logger.info(f'Pokušaj brisanja korisnika {user.email} od strane {current_user.email}')
+            
+            # Provera da li korisnik ima aktivne transakcije
+            debts = Debt.query.filter_by(user_id=user_id, status='pending').first()
+            if debts:
+                app.logger.warning(f'Pokušaj brisanja korisnika {user.email} sa aktivnim dugovanjima')
+                flash('Nije moguće obrisati korisnika sa aktivnim dugovanjima.', 'danger')
+                return redirect(url_for('users.admin_view_users'))
+                
+            try:
+                # Brisanje povezanih podataka
+                Payment.query.filter_by(user_id=user_id).delete()
+                Debt.query.filter_by(user_id=user_id).delete()
+                
+                # Brisanje korisnika
+                db.session.delete(user)
+                db.session.commit()
+                
+                app.logger.info(f'Uspešno obrisan korisnik {user.email}')
+                flash('Korisnik je uspešno obrisan.', 'success')
+                
+            except Exception as e:
+                db.session.rollback()
+                app.logger.error(f'Greška pri brisanju korisnika {user.email}: {str(e)}')
+                flash('Došlo je do greške pri brisanju korisnika.', 'danger')
+                
+        except Exception as e:
+            app.logger.error(f'Greška pri učitavanju korisnika {user_id}: {str(e)}')
+            flash('Korisnik nije pronađen.', 'danger')
+            
+        return redirect(url_for('users.admin_view_users'))
+        
+    except Exception as e:
+        app.logger.error(f'Neočekivana greška: {str(e)}')
+        flash('Došlo je do greške. Molimo pokušajte ponovo.', 'danger')
         return redirect(url_for('main.home'))
-    if current_user.user_type != 'admin':
-        flash('Nemate pravo pristupa', 'danger')
-        return redirect(url_for('main.home'))
-    user = User.query.get_or_404(user_id)
-    user.user_type = 'user_removed'
-    db.session.commit()
-    flash('Uspesno ste obrisali korisnika', 'success')
-    return redirect(url_for('users.admin_view_users'))

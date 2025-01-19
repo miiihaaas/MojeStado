@@ -42,6 +42,7 @@ class User(db.Model, UserMixin):
         except:
             return None
         return User.query.get(user_id)
+    
 
     def __repr__(self):
         return f"User('{self.name}', '{self.email}')"
