@@ -11,6 +11,7 @@ from mojestado import db, mail
 from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User
 
 from flask import flash, json, redirect, render_template, session, url_for
+from flask import current_app as app
 from flask_login import current_user
 from flask_mail import Message, Attachment
 
@@ -451,27 +452,6 @@ def calculate_hash(plaintext):
     print(f'** calculate hash: {hash_=}')
     return hash_
 
-def save_session_id_for_invoice(invoice_id, session_id):
-    """Čuva session ID za datu fakturu u fajl sistemu"""
-    try:
-        session_file = os.path.join(app.config['SESSION_FILE_DIR'], f'invoice_{invoice_id}_session.txt')
-        with open(session_file, 'w') as f:
-            f.write(session_id)
-        return True
-    except Exception as e:
-        app.logger.error(f'Greška pri čuvanju session ID-ja: {str(e)}')
-        return False
-
-def get_session_id_for_invoice(invoice_id):
-    """Vraća session ID za datu fakturu iz fajl sistema"""
-    try:
-        session_file = os.path.join(app.config['SESSION_FILE_DIR'], f'invoice_{invoice_id}_session.txt')
-        if os.path.exists(session_file):
-            with open(session_file, 'r') as f:
-                return f.read().strip()
-    except Exception as e:
-        app.logger.error(f'Greška pri čitanju session ID-ja: {str(e)}')
-    return None
 
 def create_invoice():
     '''
@@ -513,12 +493,7 @@ def create_invoice():
     db.session.add(new_invoice)
     db.session.commit()
     
-    #! Čuvamo session ID za ovu fakturu
-    try:
-        save_session_id_for_invoice(new_invoice.id, session.id)
-    except Exception as e:
-        app.logger.error(f'Greška pri čuvanju session ID-ja za fakturu {new_invoice.id}: {str(e)}')
-    
+
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu
     #! Nastavi kod koji će iz session kopre da doda svaku stavku u fakturu
@@ -707,23 +682,21 @@ def create_debt(user, invoice_item):
 
 def provera_validnosti_poziva_na_broj(podaci):
     debts = Debt.query.all()
-    all_reference_numbers = [f'{record.user_id:06d}-{record.invoice_item_id:09d}' for record in debts]
+    all_reference_numbers = [f'{record.user_id:05d}-{record.invoice_item_id:06d}' for record in debts]
     
-    
-    if len(podaci['PozivNaBrojApp']) == 7: #!izmeni vrednost kada definišeš generisanje poziva na broj
-        # proverava da li je forma '0001001' i dodaje crtu tako da bude 0001-001
-        formated_poziv_odobrenja = f"{podaci['PozivNaBrojApp'][:4]}-{podaci['PozivNaBrojApp'][4:]}"
+    if len(podaci['PozivNaBrojApp']) == 11:  # Format bez crtice: '00052000138'
+        # Formatira string u oblik sa crticom (5 brojeva - 6 brojeva)
+        formated_poziv_odobrenja = f"{podaci['PozivNaBrojApp'][:5]}-{podaci['PozivNaBrojApp'][5:]}"
         if formated_poziv_odobrenja in all_reference_numbers:
             podaci['Validnost'] = True
         else:
             podaci['Validnost'] = False
-    elif len(podaci['PozivNaBrojApp']) == 8:
-        # proverava da li je forma '000001-000000001'
+    elif len(podaci['PozivNaBrojApp']) == 12 and '-' in podaci['PozivNaBrojApp']:  # Format: '00052-000138'
         if podaci['PozivNaBrojApp'] in all_reference_numbers:
             podaci['Validnost'] = True
         else:
             podaci['Validnost'] = False
     else:
-        # nije dobar poziv na broj
+        # Poziv na broj nije u ispravnom formatu (treba da bude 11 cifara ili format 5-6 cifara)
         podaci['Validnost'] = False
     return podaci

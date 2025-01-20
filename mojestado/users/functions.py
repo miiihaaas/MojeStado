@@ -2,7 +2,40 @@ import os
 from fpdf import FPDF
 from flask import render_template, url_for, current_app
 from flask_mail import Message, Attachment
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from mojestado import mail
+
+
+def generate_confirmation_token(user):
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return s.dumps(user.email, salt='email-confirm')
+
+def confirm_token(token, expiration=1800):
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = s.loads(token, salt='email-confirm', max_age=expiration)
+        return {'success': True, 'email': email}
+    except SignatureExpired as e:
+        current_app.logger.warning(f'Token je istekao: {str(e)}')
+        return {'success': False, 'error': 'expired'}
+    except BadSignature as e:
+        current_app.logger.warning(f'Neispravan token: {str(e)}')
+        return {'success': False, 'error': 'invalid'}
+    except Exception as e:
+        current_app.logger.error(f'Neočekivana greška pri validaciji tokena: {str(e)}')
+        return {'success': False, 'error': 'unknown'}
+
+
+def send_confirmation_email(user):
+    token = generate_confirmation_token(user)
+    confirm_url = url_for('users.confirm_email', token=token, _external=True)
+    html = render_template('message_html_confirm_email.html',
+                            user=user,
+                            confirm_url=confirm_url)
+    subject = "Molimo potvrdite svoju registraciju"
+    msg = Message(subject=subject, recipients=[user.email], html=html, sender=current_app.config['MAIL_DEFAULT_SENDER'])
+    mail.send(msg)
+
 
 
 def send_contract(user):

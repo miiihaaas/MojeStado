@@ -27,8 +27,13 @@
                     <p><a href="{{ url_for('marketplace.products_market', product_category_id=product.product_category_id) }}">{{ product.product_category.product_category_name }}</a> > {{ product.product_subcategory.product_subcategory_name }} > {{ product.product_section.product_section_name }}</p>
                     <p><strong>Opis: </strong>{{product.product_description}}</p>
                     <p><strong>Jedinica mere: </strong>{{product.unit_of_measurement}}</p>
-                    <p><strong>Cena po jedinici mere: </strong>{{product.product_price_per_unit}} rsd/{{product.unit_of_measurement}}</p>
-                    <p><strong>Cena po kg: </strong>{{product.product_price_per_kg}} rsd/kg</p>
+                    {% if current_user.id == product.farm_product.user_farm.id %}
+                    <p><strong>Cena po jedinici mere: </strong>{{"{:.1f}".format(product.product_price_per_unit_farmer)}} rsd/{{product.unit_of_measurement}}</p>
+                    <p><strong>Cena po kg: </strong>{{"{:.1f}".format(product.product_price_per_kg / 1.38)}} rsd/kg</p>
+                    {% else %}
+                    <p><strong>Cena po jedinici mere: </strong>{{"{:.1f}".format(product.product_price_per_unit)}} rsd/{{product.unit_of_measurement}}</p>
+                    <p><strong>Cena po kg: </strong>{{"{:.1f}".format(product.product_price_per_kg)}} rsd/kg</p>
+                    {% endif %}
                     <p><strong>Raspoloživa količina: </strong>{{product.quantity}} {{product.unit_of_measurement}}</p>
                     {% if product.organic_product %}
                     <p><strong>Organska proizvodnja</strong></p>
@@ -74,11 +79,11 @@
                                             </div>
                                             <div class="form-group mb-3">
                                                 <label for="weight_conversion">Konverzija</label>
-                                                <input type="text" name="weight_conversion" value="{{ product.weight_conversion }}" class="form-control width-auto">
+                                                <input type="number" step="0.1" name="weight_conversion" value="{{ product.weight_conversion }}" class="form-control width-auto">
                                             </div>
                                             <div class="form-group mb-3">
                                                 <label for="product_price_per_unit">Cena po jedinici</label>
-                                                <input type="text" name="product_price_per_unit" value="{{ product.product_price_per_unit }}" class="form-control width-auto">
+                                                <input type="number" step="1" name="product_price_per_unit" value="{{ product.product_price_per_unit_farmer }}" class="form-control width-auto">
                                             </div>
                                             <div class="form-check form-switch mb-3 ml-2">
                                                 {% if product.organic_product %}

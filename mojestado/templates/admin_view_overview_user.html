@@ -5,7 +5,7 @@
     <div class="container">
         <h2>Moji podaci - Admin</h2>
         <div class="row">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <nav class="navbar navbar-expand-lg navbar-light my-navbar">
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -37,7 +37,9 @@
     <div class="container">
         <h2>Pregled stanja: {{ user.name }} {{ user.surname }}</h2>
         {% for tov_id, transactions in tovovi.items() %}
-        <h3>Tov ID: {{ tov_id }}</h3> <a href="{{ url_for('users.cancel_fattening', invoice_item_id=tov_id) }}" class="btn btn-danger">Prekini tov ({{ tov_id }})</a>
+        <h3>Tov ID: {{ tov_id }}</h3> 
+        
+        <a href="{{ url_for('users.cancel_fattening', invoice_item_id=tov_id) }}" class="btn btn-danger">Prekini tov ({{ tov_id }})</a>
         <table class="table table-striped">
             <thead>
                 <tr>

@@ -3,12 +3,12 @@ import json
 import xml.etree.ElementTree as ET
 import os
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, send_file, session, url_for
-from flask_login import current_user
+from flask_login import current_user, login_required
 from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, generate_payment_slips_attach, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products, get_session_id_for_invoice
+from mojestado.transactions.functions import calculate_hash, generate_payment_slips_attach, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products
 
 
 transactions = Blueprint('transactions', __name__)
@@ -59,93 +59,192 @@ transactions = Blueprint('transactions', __name__)
 
 @transactions.route('/user_payment_form', methods=['GET', 'POST'])
 def user_payment_form():
-    # new_invoice = create_invoice()
-    form = GuestForm()
+    """
+    Prikazuje i obrađuje formu za unos podataka o kupcu.
+    Podržava i registrovane i neregistrovane korisnike.
+    
+    Returns:
+        GET: Renderovan template sa formom
+        POST: Redirect na make_order ili login stranicu
         
-    if request.method == 'POST':
+    Note:
+        - Za ulogovane korisnike, forma se automatski popunjava njihovim podacima
+        - Za neulogovane korisnike, kreira se gost nalog
+        - Ako email već postoji, korisnik se preusmerava na login
+    """
+    try:
+        app.logger.debug('Pristup formi za unos podataka o kupcu')
+        form = GuestForm()
+        
+        if request.method == 'POST':
+            if current_user.is_authenticated:
+                app.logger.info(f'Ulogovan korisnik {current_user.id} nastavlja ka kreiranju porudžbine')
+                return redirect(url_for('transactions.make_order'))
+            
+            # Validacija forme za neregistrovane korisnike
+            if not form.validate_on_submit():
+                app.logger.warning('Nevalidna forma za gost korisnika')
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        flash(f'Greška u polju {field}: {error}', 'danger')
+                return render_template('user_payment_form.html', form=form)
+            
+            # Pokušaj registracije gost korisnika
+            try:
+                new_user_id = register_guest_user(form.data)
+                if new_user_id:
+                    app.logger.info(f'Kreiran novi gost korisnik: {new_user_id}')
+                    return redirect(url_for('transactions.make_order'))
+                else:
+                    app.logger.warning('Pokušaj registracije sa postojećim emailom')
+                    flash('Email adresa već postoji. Molimo vas da se prijavite.', 'danger')
+                    return redirect(url_for('users.login'))
+            except Exception as e:
+                app.logger.error(f'Greška pri registraciji gost korisnika: {str(e)}')
+                flash('Došlo je do greške pri registraciji. Molimo pokušajte ponovo.', 'danger')
+                return render_template('user_payment_form.html', form=form)
+        
+        # GET zahtev - priprema forme
         if current_user.is_authenticated:
-            print(f'{current_user=} je ulogovoan, nastavi kreiranje porudžbenice')
-            return redirect(url_for('transactions.make_order'))
-        else:
-            form_object = request.form
-            new_user_id = register_guest_user(form_object)
-            print(f'{new_user_id=}')
-        if new_user_id:
-            print(f'novi korisnik je kreiran : {new_user_id=}, nastavi kreiranje porudžbenice')
-            return redirect(url_for('transactions.make_order'))
-        else:
-            flash ('Email adresa već postoji', 'danger')
-            return redirect(url_for('users.login'))
-    if current_user.is_authenticated:
-        form.email.data = current_user.email
-        form.name.data = current_user.name
-        form.surname.data = current_user.surname
-        form.phone.data = current_user.phone
-        form.address.data = current_user.address
-        form.city.data = current_user.city
-        form.zip_code.data = current_user.zip_code
-    
-    
-    
-    
-    return render_template('user_payment_form.html',
-                            form=form,
-                            )
-                            # company_id=company_id,
-                            # rnd=rnd,
-                            # hash_value=hash_value, 
-                            # merchant_order_id=merchant_order_id, 
-                            # merchant_order_amount=merchant_order_amount, 
-                            # current_date=current_date)
+            app.logger.debug(f'Popunjavanje forme podacima ulogovanog korisnika {current_user.id}')
+            form.email.data = current_user.email
+            form.name.data = current_user.name
+            form.surname.data = current_user.surname
+            form.phone.data = current_user.phone
+            form.address.data = current_user.address
+            form.city.data = current_user.city
+            form.zip_code.data = current_user.zip_code
+        
+        return render_template('user_payment_form.html', form=form)
+        
+    except Exception as e:
+        app.logger.error(f'Neočekivana greška u user_payment_form: {str(e)}')
+        flash('Došlo je do neočekivane greške. Molimo pokušajte ponovo.', 'danger')
+        return redirect(url_for('main.home'))
 
 
 @transactions.route('/make_order', methods=['GET', 'POST'])
 def make_order():
-    animals = session.get('animals', [])
-    products = session.get('products', [])
-    fattening = session.get('fattening', [])
-    services = session.get('services', [])
+    """
+    Kreira novu porudžbinu i priprema podatke za plaćanje.
     
-    new_invoice = create_invoice()
-    print(f'{new_invoice=}')
-    
-    if current_user.is_authenticated:
-        user_id = current_user.id
-    else:
-        guest_user = User.query.filter_by(email=session['guest_email']).first()
-        user_id = guest_user.id
-    user = User.query.get(user_id)
-    
-    
-    
-    company_id = os.environ.get('PAYSPOT_COMPANY_ID')
-    rnd = generate_random_string()
-    merchant_order_id = f'MS-{new_invoice.id:09}'  # Treba da se generiše jedinstveni ID za svaku transakciju
-    merchant_order_amount, installment_total, delivery_total = get_cart_total()
-    print(f'*** {session["delivery"]["delivery_status"]=}')
-    if session['delivery']['delivery_status'] == True:
-        merchant_order_amount = merchant_order_amount + delivery_total
-    print(f'{merchant_order_amount=}')
-    current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
-    
-    plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
-    hash_value = calculate_hash(plaintext)
-    
-    print(f'* view_chart: {rnd=}')
-    print(f'* view_chart: {hash_value=}')
-    return render_template('make_order.html',
-                            animals=animals,
-                            products=products,
-                            fattening=fattening,
-                            services=services,
-                            user=user,
-                            company_id=company_id,
-                            rnd=rnd,
-                            hash_value=hash_value, 
-                            merchant_order_id=merchant_order_id, 
-                            merchant_order_amount=merchant_order_amount, 
-                            current_date=current_date)
+    Returns:
+        GET: Renderovan template sa pregledom porudžbine i formom za plaćanje
+        
+    Note:
+        - Podržava i registrovane i gost korisnike
+        - Za kupovinu na rate potrebna je registracija
+        - Podržava korpu sa životinjama, proizvodima, uslugama tova i drugim uslugama
+        - Automatski računa ukupan iznos sa dostavom
+        - Generiše hash vrednost za sigurno plaćanje
+    """
+    try:
+        app.logger.debug('Pristup kreiranju porudžbine')
+        
+        # Provera da li ima stavki u korpi
+        animals = session.get('animals', [])
+        products = session.get('products', [])
+        fattening = session.get('fattening', [])
+        services = session.get('services', [])
+        
+        if not any([animals, products, fattening, services]):
+            app.logger.warning('Pokušaj kreiranja prazne porudžbine')
+            flash('Vaša korpa je prazna.', 'warning')
+            return redirect(url_for('main.home'))
+            
+        # Provera da li je kupovina na rate
+        _, installment_total, _ = get_cart_total()
+        if installment_total > 0 and not current_user.is_authenticated:
+            app.logger.warning('Gost korisnik pokušao kupovinu na rate')
+            flash('Za kupovinu na rate potrebno je da se registrujete.', 'warning')
+            return redirect(url_for('users.register'))
+            
+        # Kreiranje fakture
+        try:
+            new_invoice = create_invoice()
+            app.logger.info(f'Kreirana nova faktura: {new_invoice.id}')
+        except Exception as e:
+            app.logger.error(f'Greška pri kreiranju fakture: {str(e)}')
+            flash('Došlo je do greške pri kreiranju porudžbine. Molimo pokušajte ponovo.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        # Učitavanje korisnika
+        try:
+            if current_user.is_authenticated:
+                user_id = current_user.id
+            else:
+                guest_email = session.get('guest_email')
+                if not guest_email:
+                    app.logger.error('Nedostaje email gost korisnika')
+                    flash('Došlo je do greške sa vašom sesijom. Molimo prijavite se ponovo.', 'danger')
+                    return redirect(url_for('users.login'))
+                    
+                guest_user = User.query.filter_by(email=guest_email).first()
+                if not guest_user:
+                    app.logger.error(f'Gost korisnik nije pronađen: {guest_email}')
+                    flash('Došlo je do greške sa vašim nalogom. Molimo prijavite se ponovo.', 'danger')
+                    return redirect(url_for('users.login'))
+                user_id = guest_user.id
+                
+            user = User.query.get_or_404(user_id)
+            app.logger.debug(f'Učitan korisnik: {user_id}')
+        except Exception as e:
+            app.logger.error(f'Greška pri učitavanju korisnika: {str(e)}')
+            flash('Došlo je do greške pri učitavanju vaših podataka. Molimo pokušajte ponovo.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        # Priprema podataka za plaćanje
+        try:
+            company_id = os.environ.get('PAYSPOT_COMPANY_ID')
+            if not company_id:
+                raise ValueError('Nedostaje PAYSPOT_COMPANY_ID')
+                
+            rnd = generate_random_string()
+            merchant_order_id = f'MS-{new_invoice.id:09}'
+            
+            # Računanje ukupnog iznosa
+            merchant_order_amount, installment_total, delivery_total = get_cart_total()
+            
+            # Dodavanje troškova dostave ako je izabrana
+            delivery_status = session.get('delivery', {}).get('delivery_status', False)
+            if delivery_status:
+                merchant_order_amount += delivery_total
+                
+            app.logger.debug(f'Ukupan iznos za naplatu: {merchant_order_amount}')
+            
+            # Generisanje hash vrednosti
+            current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+            if not secret_key:
+                raise ValueError('Nedostaje PAYSPOT_SECRET_KEY')
+                
+            plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
+            hash_value = calculate_hash(plaintext)
+            
+            app.logger.debug('Uspešno pripremljeni podaci za plaćanje')
+            
+            return render_template('make_order.html',
+                                animals=animals,
+                                products=products,
+                                fattening=fattening,
+                                services=services,
+                                user=user,
+                                company_id=company_id,
+                                rnd=rnd,
+                                hash_value=hash_value, 
+                                merchant_order_id=merchant_order_id, 
+                                merchant_order_amount=merchant_order_amount, 
+                                current_date=current_date)
+                                
+        except ValueError as e:
+            app.logger.error(f'Nedostaje konfiguracija za plaćanje: {str(e)}')
+            flash('Sistem za plaćanje nije ispravno konfigurisan. Molimo kontaktirajte podršku.', 'danger')
+            return redirect(url_for('main.home'))
+            
+    except Exception as e:
+        app.logger.error(f'Neočekivana greška u make_order: {str(e)}')
+        flash('Došlo je do neočekivane greške. Molimo pokušajte ponovo.', 'danger')
+        return redirect(url_for('main.home'))
 
 
 @transactions.route('/callback_url', methods=['POST'])
@@ -202,17 +301,6 @@ $response
         if received_hash != calculated_hash_value:
             app.logger.error('Callback_url: Neuspešna hash validacija')
             return jsonify({"error": "Invalid hash"}), 400
-
-        # Čišćenje korpe pre bilo kakvih izmena u bazi
-        try:
-            session_id = get_session_id_for_invoice(invoice_id)
-            if session_id and clear_cart_session(session_id):
-                app.logger.info(f'Korpa uspešno očišćena za sesiju {session_id}')
-            else:
-                app.logger.warning('Nije uspelo čišćenje korpe')
-        except Exception as e:
-            app.logger.error(f'Greška pri čišćenju sesije: {str(e)}')
-            # Nastavljamo sa izvršavanjem jer greška u čišćenju sesije nije kritična
 
         # Započinjemo transakciju
         try:
@@ -324,7 +412,8 @@ def callback_local_test():
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
     flash('Uspešna transakcija', 'success')
-    return redirect(url_for('main.home'))
+    # return redirect(url_for('main.home'))
+    return redirect(url_for('main.clear_cart'))
 
 
 @transactions.route('/cancel_url', methods=['GET', 'POST'])
@@ -340,19 +429,37 @@ def error_url():
 
 
 @transactions.route('/process_payment_statment', methods=['POST'])
+@login_required
 def process_payment_statment():
-    print(f'** *{request.form=}')
+    """
+    Obrađuje XML fajl bankovnog izvoda i kreira odgovarajuće zapise u bazi.
+    Zahteva admin privilegije.
+    
+    Returns:
+        POST (importButton): Renderovan template sa pregledom učitanog izvoda
+        POST (saveAndProcessButton): Redirect na admin_view_slips nakon obrade
+        
+    Note:
+        - Podržava dva tipa akcija: učitavanje XML fajla i čuvanje podataka
+        - Proverava da li izvod već postoji u bazi
+        - Validira pozive na broj i beleži greške u obradi
+    """
+    if current_user.user_type != 'admin':
+        flash('Pristup nije dozvoljen. Potrebne su admin privilegije.', 'danger')
+        return redirect(url_for('main.home'))
+        
     if request.method == 'POST' and ('importButton' in request.form):
+        # Učitavanje i validacija XML fajla
         file = request.files['fileUpload']
         if file.filename == '':
-            error_message = 'Nije izabran CML fajl.'
-            print(error_message)
-            flash(error_message, 'danger')
+            flash('Nije izabran XML fajl.', 'danger')
             return render_template('admin_view_slips.html', title='Izvodi')
+            
+        # Parsiranje XML fajla
         tree = ET.parse(file)
         root = tree.getroot()
         
-        # Pristupanje atributima u elementu 'Zaglavlje'
+        # Učitavanje zaglavlja izvoda
         zaglavlje_element = root.find('.//Zaglavlje')
         if zaglavlje_element is not None:
             datum_izvoda_element = zaglavlje_element.attrib.get('DatumIzvoda')
@@ -361,78 +468,67 @@ def process_payment_statment():
         else:
             flash("Greška prilikom čitanja zaglavlja XML fajla.", "danger")
             return redirect(url_for('users.admin_view_slips'))
-        # Pronalaženje broja pojavljivanja elementa <Stavka>
+            
+        # Učitavanje stavki izvoda
         broj_pojavljivanja = len(root.findall('.//Stavke'))
-        print(f'** {broj_pojavljivanja=}')
-        
-        #todo: implementacija provere da li je učitani izvod već u bazi
-        
         stavke = []
+        
         for stavka in root.findall('Stavke'):
-            podaci = {}
-            podaci['RacunZaduzenja'] = stavka.attrib.get('BrojRacunaPrimaocaPosiljaoca') #! onaj ko plaća
-            podaci['NazivZaduzenja'] = stavka.attrib.get('NalogKorisnik') #! ime onog ko plaća
-            # podaci['MestoZaduzenja'] = stavka.find('MestoZaduzenja').text #? izgleda da ne treba
-            # podaci['IzvorInformacije'] = stavka.find('IzvorInformacije').text #? izgleda da ne treba
-            # podaci['ModelPozivaZaduzenja'] = stavka.find('ModelPozivaZaduzenja').text #? izgleda da ne treba
-            # podaci['PozivZaduzenja'] = stavka.find('PozivZaduzenja').text #? izgleda da ne treba
-            # podaci['SifraPlacanja'] = stavka.find('SifraPlacanja').text #? izgleda da ne treba
-            podaci['Iznos'] = stavka.attrib.get('Potrazuje')
-            # podaci['RacunOdobrenja'] = stavka.find('RacunOdobrenja').text #! onom kome se plaća ||| izgleda da ne treba
-            # podaci['NazivOdobrenja'] = stavka.find('NazivOdobrenja').text #? izgleda da ne treba
-            # podaci['MestoOdobrenja'] = stavka.find('MestoOdobrenja').text #? izgleda da ne treba
-            # podaci['ModelPozivaOdobrenja'] = stavka.find('ModelPozivaOdobrenja').text #? izgleda da ne treba
-            # podaci['PozivOdobrenja'] = stavka.find('PozivOdobrenja').text if stavka.find('PozivOdobrenja').text else "-" #! ako nije None onda preuzmi vrednost iz xml, akoj je None onda mu dodeli "-"
-            podaci['SvrhaDoznake'] = stavka.attrib.get('Opis') #! ovo je svrha uplate:  isti princip kao gornji red 
-            #! jedno od ova dva je svrha uplate: podaci['SvrhaDoznake'] = stavka.attrib.get('Opis') #! ovo je svrha uplate:  isti princip kao gornji red 
-            podaci['PozivNaBrojApp'] = stavka.attrib.get('PozivNaBrojKorisnika')
-            # podaci['DatumValute'] = stavka.find('DatumValute').text #? izgleda da ne treba
-            # podaci['PodatakZaReklamaciju'] = stavka.find('PodatakZaReklamaciju').text #? izgleda da ne treba
-            # podaci['VremeUnosa'] = stavka.find('VremeUnosa').text #? izgleda da ne treba
-            # podaci['VremeIzvrsenja'] = stavka.find('VremeIzvrsenja').text #? izgleda da ne treba
-            # podaci['StatusNaloga'] = stavka.find('StatusNaloga').text #? izgleda da ne treba
-            # podaci['TipSloga'] = stavka.find('TipSloga').text #? izgleda da ne treba
+            podaci = {
+                'RacunZaduzenja': stavka.attrib.get('BrojRacunaPrimaocaPosiljaoca'),
+                'NazivZaduzenja': stavka.attrib.get('NalogKorisnik'),
+                'Iznos': stavka.attrib.get('Potrazuje'),
+                'SvrhaDoznake': stavka.attrib.get('Opis'),
+                'PozivNaBrojApp': stavka.attrib.get('PozivNaBrojKorisnika')
+            }
             
             provera_validnosti_poziva_na_broj(podaci)
-            
             stavke.append(podaci)
-        
-        print(f'ako je uvezi izvod: vraćaj na istu stranu')
-        flash(f'Uspešno učitan XML fajl.', 'success')
+            
+        flash('Uspešno učitan XML fajl.', 'success')
         return render_template('admin_view_slips.html', 
-                                title='Izvodi',
-                                broj_izvoda_element=broj_izvoda_element,
-                                datum_izvoda_element=datum_izvoda_element,
-                                iznos_potrazuje_element=iznos_potrazuje_element,
-                                broj_pojavljivanja=broj_pojavljivanja,
-                                stavke=stavke)
+                            title='Izvodi',
+                            broj_izvoda_element=broj_izvoda_element,
+                            datum_izvoda_element=datum_izvoda_element,
+                            iznos_potrazuje_element=iznos_potrazuje_element,
+                            broj_pojavljivanja=broj_pojavljivanja,
+                            stavke=stavke)
+                            
     if request.method == 'POST' and ('saveAndProcessButton' in request.form):
-        print(f'ako je sačuvaj i rasknjiži: ----')
-        print(f'{request.form=}')
+        # Učitavanje podataka iz forme
         statement_number = int(request.form['statement_number'])
         payment_date = datetime.datetime.strptime(request.form['payment_date'], '%d.%m.%Y')
         total_payment_amount = float(request.form['total_payment_amount'].replace(',', '.'))
         number_of_items = int(request.form['number_of_items'])
-        print(f'** {statement_number=}; {payment_date=}')
-        existing_payment_statement = PaymentStatement.query.filter_by(payment_date=payment_date, 
-                                                                        statement_number=statement_number).first()
+        
+        # Provera da li izvod već postoji
+        existing_payment_statement = PaymentStatement.query.filter_by(
+            payment_date=payment_date, 
+            statement_number=statement_number
+        ).first()
+        
         if existing_payment_statement:
-            error_message = f'Uplata za dati datum ({payment_date}) i broj računa ({statement_number}) već postoji u bazi. Izaberite novi XML fajl i pokušajte ponovo.'
-            flash(error_message, 'danger')
+            flash(f'Uplata za dati datum ({payment_date}) i broj računa ({statement_number}) već postoji u bazi.', 'danger')
             return redirect(url_for('users.admin_view_slips'))
-        new_payment_statement = PaymentStatement(payment_date=payment_date,
-                                                statement_number=statement_number,
-                                                total_payment_amount=total_payment_amount,
-                                                number_of_items=number_of_items,
-                                                number_of_errors=0)
+            
+        # Kreiranje novog izvoda
+        new_payment_statement = PaymentStatement(
+            payment_date=payment_date,
+            statement_number=statement_number,
+            total_payment_amount=total_payment_amount,
+            number_of_items=number_of_items,
+            number_of_errors=0
+        )
         db.session.add(new_payment_statement)
         db.session.commit()
-        #TODO: dodati u tabelu pyments svaku stavku
+        
+        # Učitavanje podataka o uplatama
         uplatioci = request.form.getlist('uplatilac')
         iznosi = request.form.getlist('iznos')
         pozivi_na_broj = request.form.getlist('poziv_na_broj')
         svrha_uplate = request.form.getlist('svrha_uplate')
         
+        # Priprema podataka za obradu
         records = []
         for i in range(len(iznosi)):
             records.append({
@@ -442,42 +538,78 @@ def process_payment_statment():
                 'svrha_uplate': svrha_uplate[i],
                 'payment_statement_id': new_payment_statement.id
             })
+            
+        # Obrada uplata i validacija
         number_of_errors = 0
-        user_ids = [str(user.id).zfill(4) for user in User.query.filter_by(user_type='user').all()]
-        invoice_items_ids = [str(invoice_item.id).zfill(4) for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()]
+        user_ids = [str(user.id).zfill(5) for user in User.query.filter_by(user_type='user').all()]
+        invoice_items_ids = [str(invoice_item.id).zfill(6) 
+                            for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()]
+        
         for record in records:
-            user_id = record['poziv_na_broj'][-4:] #! provali ovde koji deo iz poziva na broj je user_id
-            invoice_item_id = record['poziv_na_broj'][:4] #! provali ovde koji deo iz poziva na broj je invoice_item_id
-            amaunt = float(record['iznos'].replace(',', '.'))
+            user_id = record['poziv_na_broj'][:5]
+            invoice_item_id = (record['poziv_na_broj'].split('-')[1] 
+                                if '-' in record['poziv_na_broj'] 
+                                else record['poziv_na_broj'][5:])
+            amount = float(record['iznos'].replace(',', '.'))
+            
             payment_error = False
             if (user_id not in user_ids) or (invoice_item_id not in invoice_items_ids):
                 user_id = 1
                 invoice_item_id = 0
                 payment_error = True
                 number_of_errors += 1
-            new_payment = Payment(amount=amaunt,
-                                user_id=user_id,
-                                invoice_item_id=invoice_item_id,
-                                payment_statement_id=new_payment_statement.id,
-                                purpose_of_payment=record['svrha_uplate'],
-                                payer=record['uplatilac'],
-                                reference_number=record['poziv_na_broj'],
-                                payment_error=payment_error)
+                
+            new_payment = Payment(
+                amount=amount,
+                user_id=user_id,
+                invoice_item_id=invoice_item_id,
+                payment_statement_id=new_payment_statement.id,
+                purpose=record['svrha_uplate'],
+                payer=record['uplatilac'],
+                reference_number=record['poziv_na_broj'],
+                payment_error=payment_error
+            )
             db.session.add(new_payment)
-            db.session.commit()
+            
+        # Ažuriranje broja grešaka i čuvanje promena
         new_payment_statement.number_of_errors = number_of_errors
         db.session.commit()
-        flash(f'Uspešno ste uvezli izvod broj: {new_payment_statement.statement_number}), od datuma {new_payment_statement.payment_date.strftime("%d.%m.%Y.")}', 'success')
-        return redirect(url_for('users.admin_view_slips'))
-    payment_statements = PaymentStatement.query.all()
-    print(f'{payment_statements=}')
+        
+        flash('Uspešno proknjižene uplate.', 'success')
+        payment_statements = PaymentStatement.query.all()
+        return render_template('admin_view_slips.html', payment_statements=payment_statements)
 
-    return render_template('admin_view_slips.html', payment_statments=payment_statements)
+    payment_statements = PaymentStatement.query.all()
+    return render_template('admin_view_slips.html', payment_statements=payment_statements)
+
 
 @transactions.route("/edit_payment_statement/<int:payment_statement_id>", methods=['GET', 'POST'])
+@login_required
 def edit_payment_statement(payment_statement_id):
+    """
+    Prikazuje formu za izmenu izvoda i pripadajućih uplata.
+    Zahteva admin privilegije.
+    
+    Args:
+        payment_statement_id: ID izvoda koji se menja
+        
+    Returns:
+        GET: Renderovan template sa formom za izmenu
+        
+    Note:
+        - Učitava podatke o izvodu, uplatama, korisnicima i stavkama faktura
+        - Priprema podatke za JavaScript obradu na frontendu
+        - Podržava ignorisane uplate (user_id=0)
+    """
+    if current_user.user_type != 'admin':
+        flash('Pristup nije dozvoljen. Potrebne su admin privilegije.', 'danger')
+        return redirect(url_for('main.home'))
+        
+    # Učitavanje izvoda i uplata
     payment_statement = PaymentStatement.query.get_or_404(payment_statement_id)
     payments = Payment.query.filter_by(payment_statement_id=payment_statement_id).all()
+    
+    # Priprema podataka o korisnicima
     users = User.query.filter_by(user_type='user').all()
     users_data = [
         {
@@ -486,16 +618,16 @@ def edit_payment_statement(payment_statement_id):
             'user_surname': 'uplata'
         }
     ]
+    
     for user in users:
-        user_data = {
+        users_data.append({
             'user_id': user.id,
             'user_name': user.name,
             'user_surname': user.surname
-        }
-        users_data.append(user_data)
-    print(f'** {users_data=}')
+        })
+        
+    # Priprema podataka o stavkama faktura
     invoice_items = InvoiceItems.query.filter_by(invoice_item_type=4).all()
-    invoice_item_ids = []
     invoice_items_data = [
         {
             'invoice_item_id': 0,
@@ -503,17 +635,16 @@ def edit_payment_statement(payment_statement_id):
             'invoice_item_farm': ''
         }
     ]
+    invoice_item_ids = []
+    
     for invoice_item in invoice_items:
-        invoice_item_data = {
+        invoice_items_data.append({
             'invoice_item_id': invoice_item.id,
             'invoice_item_animal': invoice_item.invoice_item_details['category'],
             'invoice_item_farm': invoice_item.invoice_item_details['farm']
-            # 'invoice_item_animal': json.loads(invoice_item.invoice_item_details)['category'],
-            # 'invoice_item_farm': json.loads(invoice_item.invoice_item_details)['farm']
-        }
-        invoice_items_data.append(invoice_item_data)
+        })
         invoice_item_ids.append(invoice_item.id)
-    print(f'** {invoice_items_data=}')
+        
     return render_template('edit_payment_statement.html', 
                             payment_statement=payment_statement,
                             payments=payments,
@@ -523,34 +654,65 @@ def edit_payment_statement(payment_statement_id):
 
 
 @transactions.route("/submit_records", methods=['POST'])
+@login_required
 def submit_records():
+    """
+    Obrađuje izmene u postojećem izvodu i ažurira uplate.
+    Zahteva admin privilegije.
+    
+    Returns:
+        POST: ID obrađenog izvoda
+        
+    Note:
+        - Prima JSON podatke sa izmenama uplata
+        - Validira reference brojeve sa postojećim dugovima
+        - Ažurira status grešaka za svaku uplatu
+        - Ažurira ukupan broj grešaka u izvodu
+    """
+    if current_user.user_type != 'admin':
+        flash('Pristup nije dozvoljen. Potrebne su admin privilegije.', 'danger')
+        return redirect(url_for('main.home'))
+        
+    # Učitavanje podataka iz zahteva
     data = request.get_json()
-    print(f'{data=}')
-    print('izmena postojećeg izvoda')
-    payment_statement_id=data['payment_statement_id']
+    payment_statement_id = data['payment_statement_id']
+    
+    # Učitavanje postojećih uplata i dugova
     payments = Payment.query.filter_by(payment_statement_id=payment_statement_id).all()
     debts = Debt.query.all()
-    all_reference_numbers = [f'{debt.user_id:05d}-{debt.invoice_item_id:06d}' for debt in debts]
-    all_reference_numbers.append('00001-000000')
-    print(f'{all_reference_numbers=}')
     
-    number_of_errors = 0
+    # Priprema validnih referenci brojeva
+    all_reference_numbers = [
+        f'{debt.user_id:05d}-{debt.invoice_item_id:06d}' 
+        for debt in debts
+    ]
+    all_reference_numbers.append('00001-000000')
+    
+    # Priprema validnih ID-jeva
     user_ids = [user.id for user in User.query.filter_by(user_type='user').all()]
-    invoice_items_ids = [invoice_item.id for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()]
-    print(f'{user_ids=}')
-    print(f'{invoice_items_ids=}')
-    for i in range(len(data['records'])):
-        record_id = data['records'][i]['record_id']
-        user_id = data['records'][i]['user_id']
-        invoice_item_id = data['records'][i]['invoice_item_id']
-        print(f'{record_id=}, {user_id=}, {invoice_item_id=}')
+    invoice_items_ids = [
+        invoice_item.id 
+        for invoice_item in InvoiceItems.query.filter_by(invoice_item_type=4).all()
+    ]
+    
+    # Obrada svake izmene
+    number_of_errors = 0
+    for record in data['records']:
+        record_id = record['record_id']
+        user_id = record['user_id']
+        invoice_item_id = record['invoice_item_id']
+        
+        # Validacija ID-jeva
         if (user_id not in user_ids) or (invoice_item_id not in invoice_items_ids):
-            print(f'**** debug, nema u listama user_ids i invoice_items_ids, {user_id=} vs {user_ids}, {invoice_item_id=} vs {invoice_items_ids}')
             user_id = 1
             invoice_item_id = 0
+            
+        # Ažuriranje uplate
         edit_payment = Payment.query.get(record_id)
         edit_payment.user_id = user_id
         edit_payment.invoice_item_id = invoice_item_id
+        
+        # Provera reference broja
         reference_number = f'{user_id:05d}-{invoice_item_id:06d}'
         if reference_number == '00001-000000':
             number_of_errors += 1
@@ -560,30 +722,46 @@ def submit_records():
         else:
             number_of_errors += 1
             edit_payment.payment_error = True
+            
         db.session.commit()
+        
+    # Ažuriranje broja grešaka u izvodu
     payment_statement = PaymentStatement.query.get(payment_statement_id)
     payment_statement.number_of_errors = number_of_errors
     db.session.commit()
+    
     flash(f'Uspešno su sačuvane izmene u uplati broj: {payment_statement.statement_number}, od datuma {payment_statement.payment_date.strftime("%d.%m.%Y.")}', 'success')
 
     return str(payment_statement_id)
 
+
 @transactions.route('/generate_payment_slips/<int:payment_statement_id>', methods=['GET', 'POST'])
 def generate_payment_slips(payment_statement_id):
+    """
+    Generiše PDF uplatnicu za zadati izvod i vraća URL do generisanog fajla.
+    
+    Args:
+        payment_statement_id: ID izvoda za koji se generiše uplatnica
+        
+    Returns:
+        GET/POST: Redirect na URL generisanog PDF fajla
+        
+    Note:
+        - Generiše PDF uplatnicu koristeći generate_payment_slips_attach funkciju
+        - Čuva PDF u static/payment_slips direktorijumu
+        - Vraća public URL do generisanog fajla
+    """
+    # Učitavanje stavke fakture
     invoice_item = InvoiceItems.query.get_or_404(payment_statement_id)
-    # Ova funkcija vraća apsolutnu putanju
+    
+    # Generisanje PDF uplatnice
     full_file_path = generate_payment_slips_attach(invoice_item)
     filename = os.path.basename(full_file_path)
-    # Generišite relativni URL do fajla za klijentsku stranu
-    file_url = url_for('static', filename=f'payment_slips/{filename}', _external=True)
-    # current_file_path = os.path.abspath(__file__)
-    # project_folder = os.path.dirname(os.path.dirname(current_file_path))
-    # filepath = os.path.join(project_folder, 'static', 'payment_slips', filename)
     
-    # Relativna putanja do fajla za klijentsku stranu
-    file_url = url_for('static', filename=f'payment_slips/{filename}', _external=True)
+    # Kreiranje URL-a za pristup fajlu
+    file_url = url_for('static', 
+                        filename=f'payment_slips/{filename}', 
+                        _external=True)
     
     flash('Generisana uplatnica', 'success')
-    
-    # Preusmeravanje na generisani PDF fajl
     return redirect(file_url)
