@@ -80,6 +80,7 @@ header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover
 .navbar { transition: all 0.5s ease; ; }
 .nav-item.dropdown:hover .dropdown-menu { display: block; margin-top: 0; }
 .shrink .navbar { position: fixed; top: -100px; width: 100%; z-index: 9999; animation: slideDown 0.5s forwards; }
+.shrink .navbar ul.main-menu li a { color: #fff; }
 ul.navbar-nav.main-menu .dropdown-item { color: #5e4432; }
 ul.navbar-nav.main-menu .dropdown-item:hover { background-color: #e0bd5d; }
 .shrink .top-bar { display: none; }
@@ -153,7 +154,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .select2-container .select2-selection--single { height: 48px; }
 .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 45px; }
 
-.page-hero { padding-bottom: 100px; margin-top: -160px; padding-top: 160px; }
+.page-hero { padding-bottom: 100px; margin-top: -191px; padding-top: 160px; }
 .page-hero-txt { color:#fff; font-weight: 600; }
 .aboutpage { background: url(../images/hero-1.jpg) no-repeat center center; background-size: cover; /*padding-bottom: 50px;*/ }
 .livestock-0 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; }
@@ -203,6 +204,11 @@ i.fa-solid.fa-info { color: white; background-color: deepskyblue; border-radius:
 .btn-toolbar .focus-btn-group { display: none; }
 .btn-toolbar .btn-group .btn { border-radius: 6px !important; margin-right: 5px; }
 
+.info-text { font-size: 14px;}
+table.info-table { border-left: 1px solid #eee; border-top: 1px solid #eee; }
+table.info-table td { border-right: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px; }
+table.info-table .info-table-header { background-color: #eee !important;}
+
 /***  Nalog   ***/
 .loginform { max-width: 300px; margin: auto; padding: 50px 0; }
 .my-navbar { border-bottom: 1px solid #e0bd5d; }
@@ -248,6 +254,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 @media (max-width: 767px) {
     body { font-size: 16px; }
     body:not(.main\.home) nav.navbar-dark { background-color: #5e4432; }
+    .navbar-nav.main-menu .nav-item a { color: #ffffff; }
     section.page-hero { background-position-y: 160px; background-size: contain; padding-bottom: 0; }
     section.page-hero .container .row > .col-md-6 { margin-top: 26%; padding-top: 30px; /*background-color: #f8f2e9;*/ }
     section.page-hero .container .row > .col-md-6 .wht-text { color: #5e4432; text-shadow: none; }
