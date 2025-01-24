@@ -157,7 +157,7 @@
                             <th>Osigurano</th>
                             <th>Organsko</th>
                             <th>Usluge</th>
-                            <th>Karton grla</th>
+                            <th>Karton<br>grla</th>
                             <th>PG</th>
                             <th>Lokacija</th>
                             <th></th>
@@ -206,7 +206,7 @@
                             </td>
                             <td>
                                 {% if animal.cardboard %}
-                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
                                 {% endif %}
                             </td>
                             <td><a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm_animal.farm_name }}</a></td>

@@ -283,7 +283,7 @@
                             <th>Projektovani datum završetka tova</th>
                             <th>Osigurano</th>
                             <th>Organski uzgoj</th>
-                            <th>Karton grla</th>
+                            <th>Karton<br>grla</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -302,7 +302,7 @@
                             <td>{{ animal.organic_animal }}</td>
                             <td>
                                 {% if animal.cardboard %}
-                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary services-btn">Karton</a>
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9 services-btn"><i class="fa-regular fa-clipboard"></i></a>
                                 {% endif %}
                             </td>
                             <td>
