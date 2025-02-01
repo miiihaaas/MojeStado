@@ -1,147 +1,157 @@
 {% extends "layout.html" %}
 {% block content %}
 <section>
+  <div class="container">
     <div class="row">
         <div class="col-8">
             <h1>Pregled korpe</h1>
             {% if products %}
             <h3>Gotovi proizvodi</h3>
-            <table class="table table-striped" id="productsTable">
-                <thead>
-                    <tr>
-                        <th>Kategorija proizvoda</th>
-                        <th>Podkategorija proizvoda</th>
-                        <th>Sektor proizvoda</th>
-                        <th>Naziv</th>
-                        <th>Količina</th>
-                        <th>Jedinica mere</th>
-                        <th>Cena po jedinici mere</th>
-                        <th>Cena</th>
-                        <th>Ukupna cena</th>
-                        <th>PG</th>
-                        <th>lokacija</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>
-                            {{ product.category }}
-                        </td>
-                        <td>
-                            {{ product.subcategory }}
-                        </td>
-                        <td>
-                            {{ product.section }}
-                        </td>
-                        <td>
-                            {{ product.product_name }}
-                        </td>
-                        <td>
-                            {{ product.quantity }}
-                        </td>
-                        <td>
-                            {{ product.unit_of_measurement }}
-                        </td>
-                        <td>
-                            {{ product.product_price_per_unit }}
-                        </td>
-                        <td>
-                            {{ product.product_price_per_kg }}
-                        </td>
-                        <td>
-                            {{ product.total_price }}
-                        </td>
-                        <td>
-                            {{ product.farm }}
-                        </td>
-                        <td>
-                            {{ product.location }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-overflow">
+                <table class="table table-striped" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Kategorija proizvoda</th>
+                            <th>Podkategorija proizvoda</th>
+                            <th>Sektor proizvoda</th>
+                            <th>Naziv</th>
+                            <th>Količina</th>
+                            <th>Jedinica mere</th>
+                            <th>Cena po jedinici mere</th>
+                            <th>Cena</th>
+                            <th>Ukupna cena</th>
+                            <th>PG</th>
+                            <th>lokacija</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                {{ product.category }}
+                            </td>
+                            <td>
+                                {{ product.subcategory }}
+                            </td>
+                            <td>
+                                {{ product.section }}
+                            </td>
+                            <td>
+                                {{ product.product_name }}
+                            </td>
+                            <td>
+                                {{ product.quantity }}
+                            </td>
+                            <td>
+                                {{ product.unit_of_measurement }}
+                            </td>
+                            <td>
+                                {{ product.product_price_per_unit }}
+                            </td>
+                            <td>
+                                {{ product.product_price_per_kg }}
+                            </td>
+                            <td>
+                                {{ product.total_price }}
+                            </td>
+                            <td>
+                                {{ product.farm }}
+                            </td>
+                            <td>
+                                {{ product.location }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             <input type="hidden" name="product_count" value="{{ products|length }}">
             {% endif %}
 
             {% if animals %}
             <h3>Živa vaga</h3>
-            <table class="table table-striped" id="animalsTable">
-                <thead>
-                    <tr>
-                        <th>ID životinje</th>
-                        <th>Kategorija</th>
-                        <th>Potkategorija</th>
-                        <th>Rasa</th>
-                        <th>Pol</th>
-                        <th>Trenutna masa</th>
-                        <th>Cena po kg (rsd)</th>
-                        <th>Ukupna (rsd)</th>
-                        <th>Osigurano</th>
-                        <th>Organsko</th>
-                        <th>PG</th>
-                        <th>Lokacija</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for animal in animals %}
-                    <tr>
-                        <td>
-                            {{ animal.animal_id }}
-                        </td>
-                        <td>
-                            {{ animal.category }}
-                        </td>
-                        <td>
-                            {{ animal.subcategory }}
-                        </td>
-                        <td>
-                            {{ animal.race }}
-                        </td>
-                        <td>
-                            {{ animal.animal_gender }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.current_weight) }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.price_per_kg) }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.total_price) }}
-                        </td>
-                        <td>
-                            {% if animal.insured %}
-                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if animal.organic_animal %}
-                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ animal.farm }}
-                            <!-- <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a> -->
-                        </td>
-                        <td>
-                            {{ animal.location }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-overflow">
+                <table class="table table-striped popupable" id="animalsTable">
+                    <thead>
+                        <tr>
+                            <th>ID životinje</th>
+                            <th>Kategorija</th>
+                            <th>Potkategorija</th>
+                            <th>Rasa</th>
+                            <th>Pol</th>
+                            <th>Trenutna masa</th>
+                            <th>Cena po kg (rsd)</th>
+                            <th>Ukupna (rsd)</th>
+                            <th>Osigurano</th>
+                            <th>Organsko</th>
+                            <th>PG</th>
+                            <th>Lokacija</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for animal in animals %}
+                        <tr>
+                            <td>
+                                {% if animal.animal_id %}
+                                    <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                    <div class="popup-id">{{ animal.animal_id }}</div>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ animal.category }}
+                            </td>
+                            <td>
+                                {{ animal.subcategory }}
+                            </td>
+                            <td>
+                                {{ animal.race }}
+                            </td>
+                            <td>
+                                {{ animal.animal_gender }}
+                            </td>
+                            <td>
+                                {{ "{:.2f}".format(animal.current_weight) }}
+                            </td>
+                            <td>
+                                {{ "{:.2f}".format(animal.price_per_kg) }}
+                            </td>
+                            <td>
+                                {{ "{:.2f}".format(animal.total_price) }}
+                            </td>
+                            <td>
+                                {% if animal.insured %}
+                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if animal.organic_animal %}
+                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ animal.farm }}
+                                <!-- <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a> -->
+                            </td>
+                            <td>
+                                {{ animal.location }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             <input type="hidden" name="animal_count" value="{{ animals|length }}">
             {% endif %}
             
             {% if services %}
             <h3>Usluge</h3>
-            <table class="table table-striped" id="servicesTable">
+            <table class="table table-striped popupable" id="servicesTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -158,7 +168,12 @@
                     {% for animal in services %}
                     <tr>
                         <td>
-                            {{ animal.animal_id }}
+                            {% if animal.animal_id %}
+                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                <div class="popup-id">{{ animal.animal_id }}</div>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td>
                             {{ animal.category }}
@@ -177,10 +192,10 @@
                         </td>
                         <td>
                             {% if animal.slaughterService %}
-                            Klanje
+                                <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" title="Usluga klanja" width="32" height="32">
                             {% endif %}
                             {% if animal.processingService %}
-                            Obrada
+                                <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" title="Usluga obrade" width="32" height="32">
                             {% endif %}
                         </td>
                         <td>
@@ -195,7 +210,7 @@
 
             {% if fattening %}
             <h3>Tov</h3>
-            <table class="table table-striped" id="fatteningTable">
+            <table class="table table-striped popupable" id="fatteningTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -214,7 +229,12 @@
                     {% for animal in fattening %}
                     <tr>
                         <td>
-                            {{ animal.animal_id }}
+                            {% if animal.animal_id %}
+                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                <div class="popup-id">{{ animal.animal_id }}</div>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td>
                             {{ animal.category }}
@@ -296,7 +316,7 @@
             <input type="hidden" name="timeout" value='600' />
             <input type="hidden" name="currentDate" id="currentDate" value="{{ current_date }}" />
 
-            <button class="btn btn-primary" type="submit">Nastavi ka uplati</button>
+            <button class="btn btn-primary mb-20" type="submit">Nastavi ka uplati</button>
         </form>
     </div>
     <!-- Druga forma za slanje POST zahteva -->
@@ -305,5 +325,6 @@
         <input type="hidden" name="merchantOrderAmount" value="{{ merchant_order_amount }}" />
         <button class="btn btn-danger" type="submit">callback_local_test</button>
     </form>
+  </div>
 </section>
 {% endblock %}
