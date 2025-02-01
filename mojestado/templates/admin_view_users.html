@@ -56,9 +56,9 @@
                     <td>{{ user.email }}</td>
                     <td>
                         {% if user.user_type == 'user' %}
-                            <a href="{{ url_for('users.admin_edit_profile', user_id=user.id) }}" class="btn btn-primary">Edit</a>
+                            <a href="{{ url_for('users.admin_edit_profile', user_id=user.id) }}" class="btn btn-primary font-size-14" title="Uredi"><i class="fa-solid fa-pen-to-square"></i></a>
                         {% endif %}
-                        <a href="{{ url_for('users.admin_remove_user', user_id=user.id) }}" class="btn btn-danger">Ukloni</a>
+                        <a href="{{ url_for('users.admin_remove_user', user_id=user.id) }}" class="btn btn-danger font-size-14"  title="Ukloni"><i class="fa-solid fa-trash"></i></a>
                     </td>
                 </tr>
                 {% endfor %}

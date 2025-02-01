@@ -371,5 +371,20 @@
                 }
             }
         </script>
+        <script>
+            document.querySelectorAll('.clickable-image').forEach(image => {
+                image.addEventListener('click', (event) => {
+                    const popup = event.target.nextElementSibling;
+                    document.querySelectorAll('.popup-id').forEach(p => p.style.display = 'none');
+                    popup.style.display = 'block';
+                });
+            });
+        
+            document.addEventListener('click', (event) => {
+                if (!event.target.classList.contains('clickable-image')) {
+                    document.querySelectorAll('.popup-id').forEach(popup => popup.style.display = 'none');
+                }
+            });
+        </script>
     </body>
 </html>

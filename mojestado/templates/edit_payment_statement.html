@@ -34,7 +34,7 @@
             <h3>Pregled izvoda: {{ payment_statement.statement_number }} ({{ payment_statement.payment_date }})</h3>
         </div>
     </div>
-    <div>
+    <div class="container">
         <table id="data" class="table table-striped dataTable no-footer invoices">
             <thead>
                 <tr>
@@ -63,7 +63,7 @@
                         {% elif payment.user_id == 1 %}
                         <input type="text" class="form-control" value="Greška" readonly>
                         {% else %}
-                        <a href="{{ url_for('users.admin_view_overview_user', user_id=payment.user_id) }}" class="btn btn-primary">{{ payment.user.name }} {{ payment.user.surname }}</a>
+                        <a href="{{ url_for('users.admin_view_overview_user', user_id=payment.user_id) }}" class="btn btn-primary font-size-14">{{ payment.user.name }} {{ payment.user.surname }}</a>
                         {% endif %}
                     </td>
                     <td>{{ payment.reference_number }}</td>

@@ -89,7 +89,7 @@
                 <div>
                     {% if animals %}
                     <h2>Živa vaga</h2>
-                    <table class="table table-striped mobtable">
+                    <table class="table table-striped mobtable popupable">
                         <thead>
                             <tr>
                                 <th>ID životinje</th>
@@ -110,7 +110,14 @@
                         <tbody>
                             {% for animal in animals %}
                             <tr>
-                                <td>{{ animal.animal_id }}</td>
+                                <td><!--{{ animal.animal_id }}-->
+                                    {% if animal.animal_id %}
+                                        <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                        <div class="popup-id">{{ animal.animal_id }}</div>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                                 <td>{{ animal.animal_category.animal_category_name }}</td>
                                 <td>{{ animal.animal_categorization.subcategory }}</td>
                                 <td>{{ animal.animal_race.animal_race_name }}</td>
@@ -118,8 +125,20 @@
                                 <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
                                 <td>{{ "{:.2f}".format(animal.price_per_kg) }}</td>
                                 <td>{{ "{:.2f}".format(animal.total_price) }}</td>
-                                <td>{{ animal.insured }}</td>
-                                <td>{{ animal.organic_animal }}</td>
+                                <td><!--{{ animal.insured }}-->
+                                    {% if animal.insured %}
+                                        <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                    {% endif %}
+                                </td>
+                                <td><!--{{ animal.organic_animal }}-->
+                                    {% if animal.organic_animal %}
+                                        <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% for service, category in farm.services.items() %}
                                         {% for category_id, price in category.items() %}
@@ -184,7 +203,7 @@
                                     <h5 class="card-title">{{ product.product_name }}</h5>
                                     <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
                                     <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unit_of_measurement}}</strong></p>
-                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary">Kupi</a>
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary font-size-14"><i class="fa-solid fa-basket-shopping"></i></a>
                                 </div>
                             </div>
                         </div>

@@ -14,7 +14,7 @@
         </div>
     </div>
 </section>
-<section>
+<section class="main-content">
     <div class="container">
         <!-- <form action="" method="POST"> -->
             {% if products %}
@@ -132,13 +132,21 @@
                             {{ "{:.2f}".format(animal.total_price) }}
                         </td>
                         <td>
-                            {{ animal.insured }}
+                            {% if animal.insured %}
+                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                            {% endif %}
                         </td>
                         <td>
-                            {{ animal.organic_animal }}
+                            {% if animal.organic_animal %}
+                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                            {% endif %}
                         </td>
                         <td>
-                            test
+                            -
                         </td>
                         <td>
                             {% if animal.cardboard %}
@@ -307,7 +315,7 @@
             {% endif %}
             <input type="hidden" id="cartData" name="cartData" value="">
 
-            
+            <div class="pt-20"></div>
             {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
             {% if not current_user.is_authenticated and installment_total %}
             <a href="{{ url_for('users.login')}}" class="btn btn-primary">Uloguj/Registruj se</a>
@@ -316,6 +324,7 @@
             {% endif %}
             <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">Obriši korpu</a>
             {% endif %}
+            </div>
             
         <!-- </form> -->
 

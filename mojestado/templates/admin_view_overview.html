@@ -54,7 +54,7 @@
                     <td>{{ user.debts_total or 0 }}</td>
                     <td>{{ user.payments_total or 0 }}</td>
                     <td>{{ user.saldo or 0 }}</td>
-                    <td><a href="{{ url_for('users.admin_view_overview_user', user_id=user.id) }}" class="btn btn-primary">pregled</a></td>
+                    <td><a href="{{ url_for('users.admin_view_overview_user', user_id=user.id) }}" class="btn btn-primary font-size-14" title="Pregled"><i class="fa-solid fa-eye"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>

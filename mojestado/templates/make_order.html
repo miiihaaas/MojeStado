@@ -112,10 +112,18 @@
                             {{ "{:.2f}".format(animal.total_price) }}
                         </td>
                         <td>
-                            {{ animal.insured }}
+                            {% if animal.insured %}
+                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                            {% endif %}
                         </td>
                         <td>
-                            {{ animal.organic_animal }}
+                            {% if animal.organic_animal %}
+                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                            {% endif %}
                         </td>
                         <td>
                             {{ animal.farm }}
