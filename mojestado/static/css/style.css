@@ -18,7 +18,10 @@ a:hover { color: #5e4432; }
 .mr-4 { margin-right: 3em; }
 .mr-5 { margin-right: 4em; }
 .mb-2 { margin-bottom: 1em; }
+.mb-5p { margin-bottom: 5px; }
+.mb-20 { margin-bottom: 20px; }
 .mb-50 { margin-bottom: 50px; }
+.mt-20 { margin-top: 20px; }
 .pr-20 { padding-right: 20px; }
 .pl-0 { padding-left: 0; }
 .pl-20 { padding-left: 20px; }
@@ -27,6 +30,7 @@ a:hover { color: #5e4432; }
 .ptb-10 { padding-top: 10px; padding-bottom: 10px; }
 .pb-10 { padding-bottom: 10px; }
 .pb-20 { padding-bottom: 20px; }
+.pt-20 { padding-top: 20px; }
 .pt-40 { padding-top: 40px; }
 .btn { border-radius: .3rem; /*font-family: "Roboto Slab", serif;*/ font-size: 18px; font-weight: 600; }
 .btn-primary { color: #fff;  background-color: #5e4432; border-color: #5e4432; }
@@ -63,6 +67,7 @@ button.close:hover { background-color: #5e4432; }
 .gap-20 { gap: 20px; }
 .soft-border-right:first-child { border-right: 1px solid #ddd; }
 .faded { opacity: 0.5; }
+.font-size-14 { font-size: 14px; }
 
 nav.navbar-dark { background-color: rgba(255, 255, 255, 0.5); }
 .top-bar a { color: #e0bd5d !important; }
@@ -79,6 +84,7 @@ header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover
 .navbar-nav.main-menu .nav-item a { font-size: 16px; color: #5e4432; }
 .navbar { transition: all 0.5s ease; ; }
 .nav-item.dropdown:hover .dropdown-menu { display: block; margin-top: 0; }
+.navbar-nav.main-menu .nav-item .dropdown-menu a { color: #5e4432;}
 .shrink .navbar { position: fixed; top: -100px; width: 100%; z-index: 9999; animation: slideDown 0.5s forwards; }
 .shrink .navbar ul.main-menu li a { color: #fff; }
 ul.navbar-nav.main-menu .dropdown-item { color: #5e4432; }
@@ -114,6 +120,7 @@ section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
 .slick-arrow.slick-next { right: -40px; transform: rotate(180deg); }
 .slick-arrow.slick-prev { left: -40px; }
 
+section.main-content { padding: 50px 0; }
 /*section.gotoviproizvodi { background-color: #f5f5f5; padding: 50px 0; }*/
 section.gotoviproizvodi { /*background-image: url('../images/texture-1.jpg');*/ padding: 50px 0; }
 section.gotoviproizvodi .card { border-radius: 1rem; overflow: hidden; border: 0; box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); }
@@ -209,6 +216,10 @@ table.info-table { border-left: 1px solid #eee; border-top: 1px solid #eee; }
 table.info-table td { border-right: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px; }
 table.info-table .info-table-header { background-color: #eee !important;}
 
+ul.pagination .page-link { color: #6e5646; }
+ul.pagination .page-item.active .page-link { background-color: #e0bd5d; border-color: #e0bd5d; }
+ul.pagination .page-link:focus { box-shadow: none; }
+
 /***  Nalog   ***/
 .loginform { max-width: 300px; margin: auto; padding: 50px 0; }
 .my-navbar { border-bottom: 1px solid #e0bd5d; }
@@ -224,9 +235,12 @@ table.table { font-size: 14px; }
 .table>:not(:last-child)>:last-child>* { border-bottom-color: inherit; }
 .table>thead { background-color: #e0bd5d; }
 .table-overflow { overflow: auto; height: fit-content; }
+table.popupable td { position: relative; }
+.popup-id { display: none; position: absolute; bottom: 52%; left: 135%; transform: translateX(-50%); background-color: #5e4432; color: white; padding: 5px 10px; border-radius: 5px; white-space: nowrap; z-index: 1; }
+.clickable-image { cursor: pointer }
 
 /***  Footer   ***/
-footer.footer { padding: 30px 0; color: #ddd4cb; }
+footer.footer { padding: 30px 0; color: #ddd4cb; margin-top: 50px; }
 footer.footer .navbar-nav li { width: 100%; }
 footer.footer .navbar-nav li a { display: block; color: #ddd4cb; text-decoration: none; border-bottom: 1px solid #e0bd5d; padding: 3px 0; transition: all ease 0.3s; }
 footer.footer .navbar-nav li a:hover { color: #e0bd5d; }
@@ -250,6 +264,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     nav.navbar .collapsing { margin: 0 -12px; background-color: #5e4432; }
     .navbar-collapse.collapse { background-color: #5e4432; margin: 0 -12px; }
     header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover, header.hero .navbar-nav .nav-link.active { border-bottom: none; color: #e0bd5d; }
+    header.hero .navbar-nav .nav-link { border-bottom: none; }
 }
 @media (max-width: 767px) {
     body { font-size: 16px; }

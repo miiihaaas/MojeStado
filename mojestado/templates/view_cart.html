@@ -14,7 +14,7 @@
         </div>
     </div>
 </section>
-<section>
+<section class="main-content">
     <div class="container">
         <!-- <form action="" method="POST"> -->
             {% if products %}
@@ -84,7 +84,7 @@
 
             {% if animals %}
             <h3>Živa vaga</h3>
-            <table class="table table-striped" id="animalsTable">
+            <table class="table table-striped popupable" id="animalsTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -108,7 +108,12 @@
                     {% for animal in animals %}
                     <tr>
                         <td>
-                            {{ animal.animal_id }}
+                            {% if animal.animal_id %}
+                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                <div class="popup-id">{{ animal.animal_id }}</div>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td>
                             {{ animal.category }}
@@ -132,17 +137,27 @@
                             {{ "{:.2f}".format(animal.total_price) }}
                         </td>
                         <td>
-                            {{ animal.insured }}
+                            {% if animal.insured %}
+                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                            {% endif %}
                         </td>
                         <td>
-                            {{ animal.organic_animal }}
+                            {% if animal.organic_animal %}
+                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                            {% endif %}
                         </td>
                         <td>
-                            test
+                            -
                         </td>
                         <td>
                             {% if animal.cardboard %}
-                            <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
+                            {% else %}
+                                -
                             {% endif %}
                         </td>
                         <td>
@@ -152,7 +167,7 @@
                             {{ animal.location }}
                         </td>
                         <td>
-                            <a href="{{ url_for('main.remove_animal_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
+                            <a href="{{ url_for('main.remove_animal_from_cart', animal_id=animal.id)}}" class="btn btn-danger font-size-14" title="Ukloni iz korpe"><i class="fa-solid fa-trash"></i></a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -163,7 +178,7 @@
             
             {% if services %}
             <h3>Usluge</h3>
-            <table class="table table-striped" id="servicesTable">
+            <table class="table table-striped popupable" id="servicesTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -181,7 +196,12 @@
                     {% for animal in services %}
                     <tr>
                         <td>
-                            {{ animal.animal_id }}
+                            {% if animal.animal_id %}
+                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                <div class="popup-id">{{ animal.animal_id }}</div>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td>
                             {{ animal.category }}
@@ -200,10 +220,10 @@
                         </td>
                         <td>
                             {% if animal.slaughterService %}
-                            Klanje
+                                <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" width="32" height="32">
                             {% endif %}
                             {% if animal.processingService %}
-                            Obrada
+                                <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" width="32" height="32">
                             {% endif %}
                         </td>
                         <td>
@@ -219,7 +239,7 @@
 
             {% if fattening %}
             <h3>Tov</h3>
-            <table class="table table-striped" id="fatteningTable">
+            <table class="table table-striped popupable" id="fatteningTable">
                 <thead>
                     <tr>
                         <th>ID životinje</th>
@@ -239,7 +259,12 @@
                     {% for animal in fattening %}
                     <tr>
                         <td>
-                            {{ animal.animal_id }}
+                            {% if animal.animal_id %}
+                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                <div class="popup-id">{{ animal.animal_id }}</div>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td>
                             {{ animal.category }}
@@ -307,7 +332,7 @@
             {% endif %}
             <input type="hidden" id="cartData" name="cartData" value="">
 
-            
+            <div class="pt-20"></div>
             {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
             {% if not current_user.is_authenticated and installment_total %}
             <a href="{{ url_for('users.login')}}" class="btn btn-primary">Uloguj/Registruj se</a>
@@ -316,6 +341,7 @@
             {% endif %}
             <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">Obriši korpu</a>
             {% endif %}
+            </div>
             
         <!-- </form> -->
 

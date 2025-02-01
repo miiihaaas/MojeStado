@@ -60,10 +60,10 @@
                     <td>data</td>
                     <td>
                         {% if farm.user_farm.user_type == 'farm_active' %}
-                        <a class="btn btn-primary" href="{{ url_for('users.my_profile', user_id=farm.user_id ) }}">Edit</a>
-                        <a href="{{ url_for('users.deactivate_farm_user', user_id=farm.user_id ) }}" class="btn btn-danger">Deaktiviraj PG</a>
+                        <a class="btn btn-primary font-size-14" href="{{ url_for('users.my_profile', user_id=farm.user_id ) }}"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <a href="{{ url_for('users.deactivate_farm_user', user_id=farm.user_id ) }}" class="btn btn-danger font-size-14">Deaktiviraj PG</a>
                         {% elif farm.user_farm.user_type == 'farm_inactive' %}
-                        <a href="{{ url_for('users.activate_farm_user', user_id=farm.user_id ) }}" class="btn btn-success">Aktiviraj PG</a>
+                        <a href="{{ url_for('users.activate_farm_user', user_id=farm.user_id ) }}" class="btn btn-success font-size-14">Aktiviraj PG</a>
                         {% endif %}
                     </td>
                 </tr>

@@ -48,7 +48,7 @@
             <div class="col-md-12">
                 <h2>Moje stado</h2>
                 <h3>U ponudi</h3>
-                <table class="table table-striped" id="Data">
+                <table class="table table-striped popupable" id="Data">
                     <thead>
                         <tr>
                             <th>ID grla</th>
@@ -63,16 +63,18 @@
                             <th>Organski uzgoj</th>
                             <th>Usluge PG</th>
                             <th>Karton</th>
-                            <th>Ukloni životinju</th>
+                            <th>Akcije</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for animal in animals %}
                         <tr>
                             <td>
-                            {% if animal.animal_id %}
-                                {{ animal.animal_id }}
-                            {% endif %}
+                                {% if animal.animal_id %}
+                                    <!--{{ animal.animal_id }}-->
+                                    <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                    <div class="popup-id">{{ animal.animal_id }}</div>
+                                {% endif %}
                             </td>
                             <td>{{ animal.animal_category.animal_category_name }}</td>
                             <td>{{ animal.animal_categorization.subcategory }}</td>
@@ -81,16 +83,28 @@
                             <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
                             <td>{{ "{:.2f}".format(animal.price_per_kg_farmer) }}</td>
                             <td>{{ "{:.2f}".format(animal.total_price | float / 1.38) }}</td>
-                            <td>{{ animal.insured }}</td>
-                            <td>{{ animal.organic_animal }}</td>
+                            <td>
+                                {% if animal.insured %}
+                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if animal.organic_animal %}
+                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                {% endif %}
+                            </td>
                             <td>
                                 {% for service, category in farm.services.items() %}
                                 {% for category_id, price in category.items() %}
                                 {% if price | float > 0 and category_id | int == animal.animal_category.id %}
                                 {% if service == 'klanje' %}
-                                slika klanja
+                                    <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" title="Usluga klanja" width="32" height="32">
                                 {% elif service == 'obrada' %}
-                                slika obrade
+                                    <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" title="Usluga obrade" width="32" height="32">
                                 {% endif %}
                                 {% endif %}
                                 {% endfor %}
@@ -98,11 +112,13 @@
                             </td>
                             <td>
                                 {% if animal.cardboard %}
-                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary services-btn">Karton</a>
+                                    <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
+                                {% else %}
+                                    -
                                 {% endif %}
                             </td>
                             <td>
-                                <button type="button" class="btn btn-primary edit-animal services-btn" data-bs-toggle="modal" data-bs-target="#editModal"
+                                <button type="button" class="btn btn-primary edit-animal font-size-14 mb-5p" title="Uredi" data-bs-toggle="modal" data-bs-target="#editModal"
                                     data-animal-id="{{ animal.id }}"
                                     data-intended-for="{{ animal.intended_for }}"
                                     data-category="{{ animal.animal_category.animal_category_name }}"
@@ -114,12 +130,12 @@
                                     data-price="{{ animal.price_per_kg_farmer }}"
                                     data-insured="{{ animal.insured }}"
                                     data-organic="{{ animal.organic_animal }}">
-                                    Izmeni
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 <form action="{{ url_for('users.remove_animal', animal_id=animal.id) }}" method="post">
                                     {{ form.hidden_tag() }}
                                     <input type="hidden" name="animal_id" value="{{ animal.animal_id }}">
-                                    <button class="btn btn-danger unisize-btn">Ukloni</button>
+                                    <button class="btn btn-danger font-size-14" title="Ukloni"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

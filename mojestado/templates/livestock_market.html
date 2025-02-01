@@ -144,7 +144,7 @@
             <div class="col-md-10 table-overflow">
                 <p>Kategorija:</p>
                 <h2>{{ animal_category.animal_category_name }}</h2>
-                <table class="table table-striped mobtable">
+                <table class="table table-striped mobtable popupable">
                     <thead>
                         <tr>
                             <th>ID životinje</th>
@@ -168,7 +168,9 @@
                         <tr>
                             <td>
                             {% if animal.animal_id %}
-                                {{ animal.animal_id }}
+                                <!--{{ animal.animal_id }}-->
+                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                <div class="popup-id">{{ animal.animal_id }}</div>
                             {% endif %}
                             </td>
                             <td>{{ animal.animal_categorization.subcategory }}</td>
@@ -179,16 +181,16 @@
                             <td>{{ "{:.2f}".format(animal.total_price) }}</td>
                             <td>
                                 {% if animal.insured %}
-                                    Osigurano
+                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
                                 {% else %}
-                                    -
+                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
                                 {% endif %}
                             </td>
                             <td>
                                 {% if animal.organic_animal %}
-                                    Organsko
+                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
                                 {% else %}
-                                    -
+                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
                                 {% endif %}
                             </td>
                             <td>
