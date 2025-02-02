@@ -330,7 +330,7 @@ def deactivate_product(product_id):
         product = Product.query.get_or_404(product_id)
         
         # Provera da li je trenutni korisnik vlasnik
-        if product.farm.user_id != current_user.id:
+        if product.farm_product.user_id != current_user.id:
             app.logger.warning(f'Korisnik {current_user.id} pokušao da deaktivira tuđ proizvod {product_id}')
             flash('Nemate dozvolu za ovu akciju.', 'danger')
             return redirect(url_for('main.home'))
@@ -376,7 +376,7 @@ def upload_product_image(product_id):
         product = Product.query.get_or_404(product_id)
         
         # Provera da li je trenutni korisnik vlasnik
-        if product.farm.user_id != current_user.id:
+        if product.farm_product.user_id != current_user.id:
             app.logger.warning(f'Korisnik {current_user.id} pokušao da doda sliku za tuđ proizvod {product_id}')
             flash('Nemate dozvolu za ovu akciju.', 'danger')
             return redirect(url_for('main.home'))
@@ -470,7 +470,7 @@ def delete_product_image():
         product = Product.query.get_or_404(product_id)
         
         # Provera da li je trenutni korisnik vlasnik
-        if product.farm.user_id != current_user.id:
+        if product.farm_product.user_id != current_user.id:
             app.logger.warning(f'Korisnik {current_user.id} pokušao da obriše sliku za tuđ proizvod {product_id}')
             flash('Nemate dozvolu za ovu akciju.', 'danger')
             return redirect(url_for('main.home'))
@@ -546,7 +546,7 @@ def default_product_image():
         product = Product.query.get_or_404(product_id)
         
         # Provera da li je trenutni korisnik vlasnik
-        if product.farm.user_id != current_user.id:
+        if product.farm_product.user_id != current_user.id:
             app.logger.warning(f'Korisnik {current_user.id} pokušao da promeni naslovnu sliku za tuđ proizvod {product_id}')
             flash('Nemate dozvolu za ovu akciju.', 'danger')
             return redirect(url_for('main.home'))
@@ -599,7 +599,7 @@ def edit_product(product_id):
         product = Product.query.get_or_404(product_id)
         
         # Provera da li je trenutni korisnik vlasnik
-        if product.farm.user_id != current_user.id:
+        if product.farm_product.user_id != current_user.id:
             app.logger.warning(f'Korisnik {current_user.id} pokušao da izmeni tuđ proizvod {product_id}')
             flash('Nemate dozvolu za ovu akciju.', 'danger')
             return redirect(url_for('main.home'))
