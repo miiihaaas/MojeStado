@@ -58,7 +58,7 @@
                             <th>Organska proizvodnja</th>
                             <th>PG</th>
                             <th>Lokacija</th>
-                            <th>Karton grla</th>
+                            <th>Karton<br>grla</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -84,7 +84,7 @@
                             <td>{{ animal.farm_animal.farm_city }}</td>
                             <td>
                                 {% if animal.cardboard %}
-                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Karton</a>
+                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
                                 {% endif %}
                             </td>
                         </tr>

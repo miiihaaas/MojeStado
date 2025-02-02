@@ -39,7 +39,7 @@
         {% for tov_id, transactions in tovovi.items() %}
         <h3>Tov ID: {{ tov_id }}</h3> 
         
-        <a href="{{ url_for('users.cancel_fattening', invoice_item_id=tov_id) }}" class="btn btn-danger">Prekini tov ({{ tov_id }})</a>
+        <a href="{{ url_for('users.cancel_fattening', invoice_item_id=tov_id) }}" class="btn btn-danger font-size-14">Prekini tov ({{ tov_id }})</a>
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -59,9 +59,9 @@
                     <td>{{ "{:.2f}".format(transaction.saldo) }}</td>
                     <td>
                         {% if transaction.type == 'debt' %}
-                        <a href="{{ url_for('transactions.generate_payment_slips', payment_statement_id=tov_id )}}" target="_blank" class="btn btn-secondary">Generiši uplatnicu</a>
+                        <a href="{{ url_for('transactions.generate_payment_slips', payment_statement_id=tov_id )}}" target="_blank" class="btn btn-secondary font-size-14">Generiši uplatnicu</a>
                         {% elif transaction.type == 'payment' %}
-                        <a href="{{ url_for('transactions.edit_payment_statement', payment_statement_id=transaction.payment_statement_id) }}" class="btn btn-primary">Pogledaj izvod</a>
+                        <a href="{{ url_for('transactions.edit_payment_statement', payment_statement_id=transaction.payment_statement_id) }}" class="btn btn-primary font-size-14">Pogledaj izvod</a>
                         {% endif %}
                     </td>
                 </tr>

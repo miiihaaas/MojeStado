@@ -66,7 +66,7 @@
             <nav class="navbar navbar-expand-lg navbar-dark">
                 <div class="container">
                     <a class="navbar-brand" href="{{ url_for('main.home') }}">
-                        <img src="{{ url_for('static', filename='images/moje-stado-logo-medium.png') }}" alt="Moje Stado logo" width="200" height="130">
+                        <img src="{{ url_for('static', filename='images/moje-stado-logo-medium.png') }}" alt="Moje Stado logo" class="most-head-logo">
                     </a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
@@ -127,6 +127,7 @@
 -->
         </header>
         <main role="main" class="">
+<!--
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                 {% for category, message in messages %}
@@ -137,6 +138,7 @@
                 {% endfor %}
                 {% endif %}
             {% endwith %}
+-->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -149,6 +151,7 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
+
             {% block content %}{% endblock %}
             {% if not current_user.is_authenticated %}
             <section class="registracija">
@@ -367,6 +370,21 @@
                     document.body.classList.remove("shrink");
                 }
             }
+        </script>
+        <script>
+            document.querySelectorAll('.clickable-image').forEach(image => {
+                image.addEventListener('click', (event) => {
+                    const popup = event.target.nextElementSibling;
+                    document.querySelectorAll('.popup-id').forEach(p => p.style.display = 'none');
+                    popup.style.display = 'block';
+                });
+            });
+        
+            document.addEventListener('click', (event) => {
+                if (!event.target.classList.contains('clickable-image')) {
+                    document.querySelectorAll('.popup-id').forEach(popup => popup.style.display = 'none');
+                }
+            });
         </script>
     </body>
 </html>
