@@ -8,6 +8,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 from mojestado import bcrypt, db, app, mail
 from mojestado.animals.functions import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, AddProductForm, EditFarmForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
@@ -1675,6 +1676,55 @@ def activate_farm_user(user_id):
         return redirect(url_for('users.admin_view_farms'))
         
     except Exception as e:
+        app.logger.error(f'Neočekivana greška: {str(e)}')
+        flash('Došlo je do greške. Molimo pokušajte ponovo.', 'danger')
+        return redirect(url_for('main.home'))
+
+
+@users.route('/remove_farm_user/<int:user_id>')
+def remove_farm_user(user_id):
+    """
+    Brisanje poljoprivrednog gazdinstva i korisnika - samo za administratore.
+    
+    Args:
+        user_id (int): ID korisnika čije se PG brise
+        
+    Returns:
+        Redirect na admin pregled farmi nakon brisanja
+        
+    Note:
+        TODO: Dodati mogućnost povezivanja ugovora kroz modal i formu za upload fajla prilikom brisanja
+    """
+    try:
+        # Provera admin prava
+        if current_user.user_type != 'admin':
+            app.logger.warning(f'Nedozvoljen pristup: {current_user.email} pokušava obrisati PG')
+            flash('Nemate administratorska prava.', 'danger')
+            return redirect(url_for('main.home'))
+            
+        app.logger.info(f'Pokušaj brisanja PG za korisnika {user_id} od strane {current_user.email}')
+        
+        try:
+            user = User.query.get_or_404(user_id)
+            # Pronalazimo farmu koja pripada korisniku
+            farm = Farm.query.filter_by(user_id=user.id).first_or_404()
+            if user.user_type in ['farm_unverified', 'farm_inactive']:
+                db.session.delete(farm)
+                db.session.delete(user)
+                db.session.commit()
+                app.logger.info(f'Uspešno obrisano PG za korisnika {user_id} od strane {current_user.email}')
+                flash('Poljoprivredno gazdinstvo je obrisano.', 'success')
+            else:
+                app.logger.warning(f'Pokušaj obrisivanja već aktivnog PG {user_id}')
+                flash('Poljoprivredno gazdinstvo je već aktivno.', 'danger')
+            return redirect(url_for('users.admin_view_farms'))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            app.logger.error(f'Greška pri brisanju PG za korisnika {user_id}: {str(e)}')
+            flash('Došlo je do greške. Molimo pokušajte ponovo.', 'danger')
+            return redirect(url_for('users.admin_view_farms'))
+    except Exception as e:
+        db.session.rollback()
         app.logger.error(f'Neočekivana greška: {str(e)}')
         flash('Došlo je do greške. Molimo pokušajte ponovo.', 'danger')
         return redirect(url_for('main.home'))
