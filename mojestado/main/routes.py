@@ -7,7 +7,7 @@ from flask_login import current_user
 from flask_mail import Message
 from mojestado import app, db, mail
 from mojestado.main.functions import clear_cart_session, get_cart_total, send_faq_email
-from mojestado.models import FAQ, Animal, AnimalCategory, Product
+from mojestado.models import FAQ, Animal, AnimalCategory, Farm, Product
 from mojestado.transactions.functions import calculate_hash, generate_random_string
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -23,10 +23,22 @@ def home():
         faq = FAQ.query.all()
         faq = [question for question in faq if question.id < 4]
         animal_categories = AnimalCategory.query.all()
+        
+        # Nasumično izaberi tačno 6 farmi
+        all_farms = Farm.query.all()
+        active_farms = [farm for farm in all_farms if farm.user_farm.user_type == 'farm_active']
+        farm_list = random.sample(active_farms, min(6, len(active_farms)))
+        
+        # Nasumično izaberi tačno 6 proizvoda
+        all_products = Product.query.all()
+        active_products = [product for product in all_products if product.farm_product.user_farm.user_type == 'farm_active']
+        product_list = random.sample(active_products, min(6, len(active_products)))
         return render_template('home.html', title='Početna strana',
                                 route_name=route_name,
                                 faq=faq,
-                                animal_categories=animal_categories)
+                                animal_categories=animal_categories,
+                                farm_list=farm_list,
+                                product_list=product_list)
     except SQLAlchemyError as e:
         app.logger.error(f'Greška pri pristupu bazi podataka na početnoj strani: {str(e)}')
         return render_template('errors/500.html'), 500

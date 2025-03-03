@@ -48,6 +48,9 @@
                 sve gotove proizvode i polu-proizvode poljoprivrednih gazdinstava krajnjim potrošačima.
                 Ovde možete pronaći i pretražiti ponudu svih gotovih i polu-gotovih proizvoda registrovanih poljoprivrednih gazdinstava.
             </div>
+            {% for product in product_list %}
+            {{ product.product_name }} | {{ product.farm_product.farm_name }} || 
+            {% endfor %}
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
                 <div class="col">
                     <div class="card h-100">
@@ -148,6 +151,9 @@
             <div class="text-center mb-5 mt-5">
                 Farme je strana platforme „Moje stado“ na kojoj poljoprivredna gazdinstva predstavljaju sebe i svoje usluge.
             </div>
+            {% for farm in farm_list %}
+            {{ farm.farm_name }} | 
+            {% endfor %}
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-3"> 
                 <div class="col">
                     <div class="card h-100">
