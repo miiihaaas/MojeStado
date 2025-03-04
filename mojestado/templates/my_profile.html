@@ -200,7 +200,11 @@
                         </div>
                         <div class="col-md-3">
                             {{ form.municipality.label(class="form-label") }}
+                            {% if current_user.user_type != 'admin' %}
                             {{ form.municipality(class="form-control", readonly=(current_user.user_type != 'admin')) }}
+                            {% else %}
+                            {{ form.municipality(class="form-select") }}
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row mb-3">
