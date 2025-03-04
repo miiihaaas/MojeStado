@@ -18,6 +18,7 @@ main = Blueprint('main', __name__)
 @main.route('/')
 @main.route('/home')
 def home():
+    random.seed(datetime.datetime.now().timestamp())
     route_name = request.endpoint
     try:
         faq = FAQ.query.all()
@@ -33,12 +34,18 @@ def home():
         all_products = Product.query.all()
         active_products = [product for product in all_products if product.farm_product.user_farm.user_type == 'farm_active']
         product_list = random.sample(active_products, min(6, len(active_products)))
+        
+        # Dodaj anti-cache parametar za sprečavanje keširanja
+        anti_cache = int(datetime.datetime.now().timestamp())
+        
+        
         return render_template('home.html', title='Početna strana',
                                 route_name=route_name,
                                 faq=faq,
                                 animal_categories=animal_categories,
                                 farm_list=farm_list,
-                                product_list=product_list)
+                                product_list=product_list,
+                                anti_cache=anti_cache)
     except SQLAlchemyError as e:
         app.logger.error(f'Greška pri pristupu bazi podataka na početnoj strani: {str(e)}')
         return render_template('errors/500.html'), 500
