@@ -49,90 +49,26 @@
                 Ovde možete pronaći i pretražiti ponudu svih gotovih i polu-gotovih proizvoda registrovanih poljoprivrednih gazdinstava.
             </div>
             {% for product in product_list %}
-            {{ product.product_name }} | {{ product.farm_product.farm_name }} || 
+                {% if loop.index0 % 3 == 0 %}
+                <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+                {% endif %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="image-wrapper">
+                            <img src="static/product_image/{{ product.product_image }}" class="card-img-top" alt="Slika proizvoda">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.product_name }}</h5>
+                            <p class="card-text"><strong>{{ product.farm_product.farm_name }}</strong>, {{ product.farm_product.farm_city }}</p>
+                            <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{ product.unit_of_measurement }}</strong></p>
+                            <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary">Kupi</a>
+                        </div>
+                    </div>
+                </div>
+                {% if loop.index % 3 == 0 or loop.last %}
+                </div>
+                {% endif %}
             {% endfor %}
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="image-wrapper">
-                            <img src="static/product_image/slanina.jpg" class="card-img-top" alt="Slika proizvoda">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Slanina</h5>
-                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                            <a href="#" class="btn btn-secondary">Kupi</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="image-wrapper">
-                            <img src="static/product_image/prsuta.jpg" class="card-img-top" alt="Slika proizvoda">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Pršuta</h5>
-                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                            <a href="#" class="btn btn-secondary">Kupi</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="image-wrapper">
-                            <img src="static/product_image/kobasica.jpg" class="card-img-top" alt="Slika proizvoda">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Kobasica</h5>
-                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                            <a href="#" class="btn btn-secondary">Kupi</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="image-wrapper">
-                            <img src="static/product_image/kulen.jpg" class="card-img-top" alt="Slika proizvoda">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Kulen</h5>
-                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                            <a href="#" class="btn btn-secondary">Kupi</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="image-wrapper">
-                            <img src="static/product_image/sir.jpg" class="card-img-top" alt="Slika proizvoda">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Sir</h5>
-                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                            <a href="#" class="btn btn-secondary">Kupi</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="image-wrapper">
-                            <img src="static/product_image/kajmak.jpg" class="card-img-top" alt="Slika proizvoda">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Kajmak</h5>
-                            <p class="card-text"><strong>PG Panić</strong>, Gornji Milanovac</p>
-                            <p class="card-text"><strong>1100 rsd/kg</strong></p>
-                            <a href="#" class="btn btn-secondary">Kupi</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <a class="btn btn-alt mx-auto more-button" href="{{ url_for('marketplace.products_market', product_category_id=0) }}">Vidi sve</a>
         </div>
     </section>
@@ -152,78 +88,24 @@
                 Farme je strana platforme „Moje stado“ na kojoj poljoprivredna gazdinstva predstavljaju sebe i svoje usluge.
             </div>
             {% for farm in farm_list %}
-            {{ farm.farm_name }} | 
+                {% if loop.index0 % 3 == 0 %}
+                <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+                {% endif %}
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="{{ url_for('farms.farm_detail', farm_id=farm.id) }}" class="image-wrapper">
+                            <img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top zoom" alt="Slika Farme">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ farm.farm_name }}</h5>
+                            <p class="card-text">{{ farm.farm_city }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% if loop.index % 3 == 0 or loop.last %}
+                </div>
+                {% endif %}
             {% endfor %}
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3"> 
-                <div class="col">
-                    <div class="card h-100">
-                        <a href="#" class="image-wrapper">
-                            <img src="static/farm_image/farma-1.jpg" class="card-img-top zoom" alt="Slika Farme">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Farma Panić</h5>
-                            <p class="card-text">Brusnica</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <a href="#" class="image-wrapper">
-                            <img src="static/farm_image/farma-2.jpg" class="card-img-top zoom" alt="Slika Farme">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Farma Panić</h5>
-                            <p class="card-text">Brusnica</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <a href="#" class="image-wrapper">
-                            <img src="static/farm_image/farma-3.jpg" class="card-img-top zoom" alt="Slika Farme">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Farma Panić</h5>
-                            <p class="card-text">Brusnica</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-3"> 
-                <div class="col">
-                    <div class="card h-100">
-                        <a href="#" class="image-wrapper">
-                            <img src="static/farm_image/farma-4.jpg" class="card-img-top zoom" alt="Slika Farme">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Farma Panić</h5>
-                            <p class="card-text">Brusnica</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <a href="#" class="image-wrapper">
-                            <img src="static/farm_image/farma-5.jpg" class="card-img-top zoom" alt="Slika Farme">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Farma Panić</h5>
-                            <p class="card-text">Brusnica</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100">
-                        <a href="#" class="image-wrapper">
-                            <img src="static/farm_image/farma-6.jpg" class="card-img-top zoom" alt="Slika Farme">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Farma Panić</h5>
-                            <p class="card-text">Brusnica</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <a class="btn btn-alt mx-auto more-button" href="{{ url_for('farms.farm_list') }}">Vidi sve</a>
         </div>
     </section>
@@ -258,4 +140,4 @@
             </div>
         </div>
     </section>
-{% endblock content%}
+{% endblock content %}
