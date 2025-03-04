@@ -658,6 +658,7 @@ def handle_admin_profile(user, farm):
                 user.email = request.form.get('email')
                 if farm:
                     farm.farm_account_number = request.form.get('account_number')
+                    farm.farm_municipality_id = request.form.get('municipality')
                 
                 db.session.commit()
                 app.logger.info(f'Uspešno ažuriran profil za: {user.email}')
@@ -970,7 +971,7 @@ def remove_animal(animal_id):
         app.logger.info(f'Pokušaj uklanjanja životinje ID {animal_id} sa farme {animal.farm_id}')
         
         # Provera pristupa
-        if current_user.id != animal.farm.user_id:
+        if current_user.id != animal.farm_animal.user_id:
             app.logger.warning(f'Nedozvoljen pristup: {current_user.email} pokušava ukloniti životinju {animal_id}')
             flash('Nemate pravo pristupa ovoj životinji.', 'danger')
             return redirect(url_for('main.home'))
@@ -1273,9 +1274,9 @@ def my_market(farm_id):
                     product_price_per_unit_farmer=float(form.product_price_per_unit.data),
                     product_price_per_unit=float(form.product_price_per_unit.data) * 1.38,
                     product_price_per_kg=(
-                        float(form.product_price_per_unit.data) / weight_conversion 
+                        (float(form.product_price_per_unit.data) / weight_conversion) * 1.38 
                         if form.unit_of_measurement.data == 'kom' 
-                        else float(form.product_price_per_unit.data)
+                        else float(form.product_price_per_unit.data) * 1.38
                     ),
                     organic_product=form.organic_product.data,
                     quantity=float(form.quantity.data),
