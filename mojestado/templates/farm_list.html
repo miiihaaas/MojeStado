@@ -54,7 +54,9 @@
                     {% for farm in farm_list %}
                     <div class="col">
                         <div class="card h-100">
-                            <img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
+                            <div class="sameimage-wrapper">
+                                <img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
+                            </div>
                             <div class="card-body">
                             <h5 class="card-title">{{ farm.farm_name }}</h5>
                             <p class="card-text">Lokacija: {{ farm.farm_city }}</p>
