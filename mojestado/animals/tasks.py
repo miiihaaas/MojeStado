@@ -16,8 +16,7 @@ def daily_weight_gain_task():
         
         while True:
             animals = Animal.query.filter(
-                Animal.active == True,
-                Animal.intended_for == "tov"
+                Animal.active == True
             ).limit(per_page).offset(page * per_page).all()
             
             if not animals:
@@ -27,12 +26,12 @@ def daily_weight_gain_task():
                 try:
                     current_weight = float(animal.current_weight)
                     
-                    # Provera da li je životinja dostigla željenu težinu
-                    if animal.fattening and animal.wanted_weight and current_weight >= float(animal.wanted_weight):
+                    # Provera željene težine samo za životinje u tovu
+                    if animal.intended_for == "tov" and animal.fattening and animal.wanted_weight and current_weight >= float(animal.wanted_weight):
                         logger.info(f'ID:{animal.id} - Životinja je postigla željenu masu od {animal.wanted_weight}kg!')
                         continue
                     
-                    # Provera kategorije i računanje prirasta
+                    # Provera kategorije i računanje prirasta za sve životinje
                     if animal.animal_categorization and animal.animal_categorization.min_weight >= 0:
                         avg_gain = (animal.animal_categorization.min_weight_gain + animal.animal_categorization.max_weight_gain) / 2
                         new_weight = round(current_weight + avg_gain, 2)  # zaokružujemo na 2 decimale
@@ -42,11 +41,15 @@ def daily_weight_gain_task():
                         
                         # Provera za prelazak u sledeću kategoriju
                         if new_weight > animal.animal_categorization.max_weight:
-                            next_category = AnimalCategorization.query.get(animal.animal_categorization_id + 1)
+                            # Tražimo sledeću kategoriju koja pripada istom tipu životinje
+                            next_category = AnimalCategorization.query.filter(
+                                AnimalCategorization.animal_category_id == animal.animal_category_id,
+                                AnimalCategorization.intended_for == animal.intended_for,
+                                AnimalCategorization.min_weight > animal.animal_categorization.max_weight
+                            ).order_by(AnimalCategorization.min_weight).first()
+                            
                             if next_category:
                                 animal.animal_categorization_id = next_category.id
-                                if next_category.intended_for == 'priplod':
-                                    animal.intended_for = 'priplod'
                     
                     total_processed += 1
                 
