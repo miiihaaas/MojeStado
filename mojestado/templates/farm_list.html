@@ -22,11 +22,11 @@
                     <!--<h2>Filteri</h2>-->
                     <div class="card mb-3">
                         <div class="card-header">
-                            Lokacija
+                            Opština
                         </div>
                         <div class="card-body">
                             <select class="form-select mb-2" id="municipality" name="municipality">
-                            <option value="0">Sve lokacije</option>
+                            <option value="0">Sve opštine</option>
                             {% for municipality in municipality_filter_list %}
                                 <option value="{{municipality.id}}">{{municipality.municipality_name}}</option>
                             {% endfor %}
@@ -60,6 +60,7 @@
                             <div class="card-body">
                             <h5 class="card-title">{{ farm.farm_name }}</h5>
                             <p class="card-text">Lokacija: {{ farm.farm_city }}</p>
+                            <p class="card-text">Opština: {{ farm.municipality_farm.municipality_name }}</p>
                             <br>
                             <a href="{{url_for('farms.farm_detail', farm_id=farm.id)}}" class="btn btn-primary font-size-14">Detaljnije</a>
                             </div>
@@ -78,7 +79,7 @@
         $("#municipality").select2({
             multiple: true,
             closeOnSelect: false,
-            placeholder: "Pretraži lokacije",
+            placeholder: "Izaberi opštinu",
             allowClear: true,
             dropdownAutoWidth: true,
             width: '100%',
