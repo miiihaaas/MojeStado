@@ -78,7 +78,7 @@ def faq():
             
             try:
                 if send_faq_email(email, question):
-                    flash('Uspešno ste poslali pitanje timu portala "Moje stado"!', 'success')
+                    flash('Uspešno ste poslali pitanje timu portala "Moje stado".', 'success')
                 else:
                     flash('Došlo je do greške pri slanju pitanja. Molimo pokušajte kasnije.', 'danger')
                     app.logger.error(f'Neuspelo slanje FAQ pitanja od korisnika {email}')
@@ -125,7 +125,7 @@ def contact():
             """
             
             mail.send(msg)
-            flash('Vaša poruka je uspešno poslata!', 'success')
+            flash('Vaša poruka je uspešno poslata.', 'success')
             return redirect(url_for('main.contact'))
             
         except Exception as e:
@@ -210,7 +210,7 @@ def add_services_to_chart():
                 flash('Došlo je do greške pri dodavanju usluge. Molimo pokušajte ponovo.', 'danger')
                 return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
         
-        flash('Uspešno ste dodali uslugu u korpu!', 'success')
+        flash('Uspešno ste dodali uslugu u korpu.', 'success')
         return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
         
     except Exception as e:
@@ -257,10 +257,10 @@ def add_fattening_to_chart():
         
         if existing_fattening:
             existing_fattening.update(new_fattening)
-            flash('Uspesno ste ažurirali ovu zivotinju u korpi za tov!', 'success')
+            flash('Uspešno ste ažurirali ovu životinju u korpi za tov.', 'success')
         else:
             session['fattening'].append(new_fattening)
-            flash('Uspesno ste dodali ovu zivotinju u korpu za tov!', 'success')
+            flash('Uspešno ste dodali ovu životinju u korpu za tov.', 'success')
         
         session.modified = True
         
@@ -302,7 +302,7 @@ def add_fattening_to_chart():
                     
                 session['services'].append(new_service)
                 
-            flash('Uspesno ste dodali uslugu u korpu!', 'success')
+            flash('Uspešno ste dodali uslugu u korpu.', 'success')
         
         return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
         
@@ -320,7 +320,7 @@ def add_animal_to_cart(animal_id):
             session['animals'] = []
             
         if animal.id in [a['id'] for a in session['animals']]:
-            flash('Ova zivotinja se vec nalazi u korpi!', 'danger')
+            flash('Ova životinja se već nalazi u korpi.', 'danger')
             return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
         
         new_animal = {column.name: getattr(animal, column.name) for column in animal.__table__.columns}
@@ -333,7 +333,7 @@ def add_animal_to_cart(animal_id):
         session['animals'].append(new_animal)
         session.modified = True
         
-        flash('Uspesno ste dodali ovu zivotinju u korpu!', 'success')
+        flash('Uspešno ste dodali ovu životinju u korpu.', 'success')
         return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
         
     except Exception as e:
@@ -350,7 +350,7 @@ def add_product_to_cart(product_id):
             session['products'] = []
             
         if product.id in [p['id'] for p in session['products']]:
-            flash('Proizvod se vec nalazi u korpi!', 'danger')
+            flash('Proizvod se već nalazi u korpi.', 'danger')
             return redirect(url_for('marketplace.product_detail', product_id=product.id))
         
         new_product = {column.name: getattr(product, column.name) for column in product.__table__.columns}
@@ -365,7 +365,7 @@ def add_product_to_cart(product_id):
         session['products'].append(new_product)
         session.modified = True
         
-        flash('Uspesno ste dodali ovaj proizvod u korpu!', 'success')
+        flash('Uspešno ste dodali ovaj proizvod u korpu.', 'success')
         return redirect(url_for('marketplace.product_detail', product_id=product.id))
         
     except Exception as e:
@@ -413,7 +413,7 @@ def view_cart():
         )
         
         if not has_items:
-            flash('Korpa je prazna!', 'info')
+            flash('Korpa je prazna.', 'info')
             return render_template('view_cart.html', 
                                 title='Korpa', 
                                 route_name=route_name, 
@@ -492,14 +492,14 @@ def remove_animal_from_cart(animal_id):
         
         if 'animals' not in session or not isinstance(session.get('animals'), list):
             app.logger.warning('Korpa je prazna ili je došlo do greške sa sesijom')
-            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            flash('Korpa je prazna ili je došlo do greške.', 'info')
             return redirect(url_for('main.view_cart'))
             
         try:
             animal = Animal.query.get(animal_id)
             if animal is None:
                 app.logger.error(f'Životinja sa ID {animal_id} nije pronađena u bazi')
-                flash('Životinja nije pronađena!', 'danger')
+                flash('Životinja nije pronađena.', 'danger')
                 return redirect(url_for('main.view_cart'))
         except SQLAlchemyError as e:
             app.logger.error(f'Greška pri pristupu bazi za životinju {animal_id}: {str(e)}')
@@ -516,7 +516,7 @@ def remove_animal_from_cart(animal_id):
         session.modified = True
         
         app.logger.info(f'Životinja {animal_id} je uspešno uklonjena iz korpe')
-        flash('Uspešno ste obrisali ovu životinju iz korpe!', 'success')
+        flash('Uspešno ste obrisali ovu životinju iz korpe.', 'success')
         return redirect(url_for('main.view_cart'))
         
     except Exception as e:
@@ -531,14 +531,14 @@ def remove_product_from_cart(product_id):
         
         if 'products' not in session or not isinstance(session.get('products'), list):
             app.logger.warning('Korpa je prazna ili je došlo do greške sa sesijom')
-            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            flash('Korpa je prazna ili je došlo do greške.', 'info')
             return redirect(url_for('main.view_cart'))
             
         try:
             product = Product.query.get(product_id)
             if product is None:
                 app.logger.error(f'Proizvod sa ID {product_id} nije pronađen u bazi')
-                flash('Proizvod nije pronađen!', 'danger')
+                flash('Proizvod nije pronađen.', 'danger')
                 return redirect(url_for('main.view_cart'))
         except SQLAlchemyError as e:
             app.logger.error(f'Greška pri pristupu bazi za proizvod {product_id}: {str(e)}')
@@ -548,7 +548,7 @@ def remove_product_from_cart(product_id):
         session.modified = True
         
         app.logger.info(f'Proizvod {product_id} je uspešno uklonjen iz korpe')
-        flash('Uspešno ste obrisali ovaj proizvod iz korpe!', 'success')
+        flash('Uspešno ste obrisali ovaj proizvod iz korpe.', 'success')
         return redirect(url_for('main.view_cart'))
         
     except Exception as e:
@@ -563,14 +563,14 @@ def remove_fattening_from_cart(animal_id):
         
         if 'fattening' not in session or not isinstance(session.get('fattening'), list):
             app.logger.warning('Korpa je prazna ili je došlo do greške sa sesijom')
-            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            flash('Korpa je prazna ili je došlo do greške.', 'info')
             return redirect(url_for('main.view_cart'))
             
         try:
             animal = Animal.query.get(animal_id)
             if animal is None:
                 app.logger.error(f'Životinja sa ID {animal_id} nije pronađena u bazi')
-                flash('Životinja nije pronađena!', 'danger')
+                flash('Životinja nije pronađena.', 'danger')
                 return redirect(url_for('main.view_cart'))
                 
             session['fattening'] = [animal for animal in session['fattening'] if animal.get('id') != animal_id]
@@ -586,7 +586,7 @@ def remove_fattening_from_cart(animal_id):
         session.modified = True
         
         app.logger.info(f'Tov za životinju {animal_id} je uspešno uklonjen iz korpe')
-        flash('Uspešno ste obrisali ovaj proizvod iz korpe!', 'success')
+        flash('Uspešno ste obrisali ovaj proizvod iz korpe.', 'success')
         return redirect(url_for('main.view_cart'))
         
     except Exception as e:
@@ -601,14 +601,14 @@ def remove_service_from_cart(service_id):
         
         if 'services' not in session or not isinstance(session.get('services'), list):
             app.logger.warning('Korpa je prazna ili je došlo do greške sa sesijom')
-            flash('Korpa je prazna ili je došlo do greške!', 'info')
+            flash('Korpa je prazna ili je došlo do greške.', 'info')
             return redirect(url_for('main.view_cart'))
             
         try:
             animal = Animal.query.get(service_id)
             if animal is None:
                 app.logger.error(f'Životinja sa ID {service_id} nije pronađena u bazi')
-                flash('Životinja nije pronađena!', 'danger')
+                flash('Životinja nije pronađena.', 'danger')
                 return redirect(url_for('main.view_cart'))
         except SQLAlchemyError as e:
             app.logger.error(f'Greška pri pristupu bazi za životinju {service_id}: {str(e)}')
@@ -618,7 +618,7 @@ def remove_service_from_cart(service_id):
         session.modified = True
         
         app.logger.info(f'Usluga za životinju {service_id} je uspešno uklonjena iz korpe')
-        flash('Uspešno ste obrisali ovu uslugu iz korpe!', 'success')
+        flash('Uspešno ste obrisali ovu uslugu iz korpe.', 'success')
         return redirect(url_for('main.view_cart'))
         
     except Exception as e:
@@ -644,7 +644,7 @@ def clear_cart():
         
         if not has_items:
             app.logger.info('Korpa je već prazna')
-            flash('Korpa je već prazna!', 'info')
+            flash('Korpa je već prazna.', 'info')
             return redirect(url_for('main.view_cart'))
             
         try:
@@ -665,7 +665,7 @@ def clear_cart():
             
         clear_cart_session()
         app.logger.info('Korpa je uspešno očišćena')
-        flash('Uspešno ste očistili korpu!', 'success')
+        flash('Uspešno ste očistili korpu.', 'success')
         return redirect(url_for('main.view_cart'))
         
     except Exception as e:
