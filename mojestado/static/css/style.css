@@ -86,7 +86,7 @@ header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover
 .nav-item.dropdown:hover .dropdown-menu { display: block; margin-top: 0; }
 .navbar-nav.main-menu .nav-item .dropdown-menu a { color: #5e4432;}
 .shrink .navbar { position: fixed; top: -100px; width: 100%; z-index: 9999; animation: slideDown 0.5s forwards; }
-.shrink .navbar ul.main-menu li a { color: #fff; }
+.shrink .navbar ul.main-menu li a { color: #fff !important; }
 ul.navbar-nav.main-menu .dropdown-item { color: #5e4432; }
 ul.navbar-nav.main-menu .dropdown-item:hover { background-color: #e0bd5d; }
 .shrink .top-bar { display: none; }
@@ -184,6 +184,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .productspage { background: url(../images/hero-proizvodi-4.jpg) no-repeat center center; background-size: cover; }
 .cartpage { background: url(../images/hero-korpa.jpg) no-repeat center center; background-size: cover; }
 .firstsection { padding-top: 50px; }
+.title-link:hover h5 { color: #e0bd5d; }
 
 /*.form-switch .form-check-input:checked { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23efc65e'/%3e%3c/svg%3e");}*/
 .form-switch .form-check-input:focus { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");}

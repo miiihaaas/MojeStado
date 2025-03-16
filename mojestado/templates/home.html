@@ -97,7 +97,9 @@
                             <img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top zoom" alt="Slika Farme">
                         </a>
                         <div class="card-body">
-                            <h5 class="card-title">{{ farm.farm_name }}</h5>
+                            <a href="{{ url_for('farms.farm_detail', farm_id=farm.id) }}" class="title-link">
+                                <h5 class="card-title">{{ farm.farm_name }}</h5>
+                            </a>
                             <p class="card-text">{{ farm.farm_city }}</p>
                         </div>
                     </div>
