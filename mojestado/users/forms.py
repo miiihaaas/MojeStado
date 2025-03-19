@@ -98,7 +98,7 @@ class AddAnimalForm(FlaskForm):
     insured = BooleanField('Osigurano')
     organic = BooleanField('Organska proizvodnja')
     cardboard = FileField('Karton', validators=[])
-    animal_gender = SelectField('Pol', choices=['','m', 'z'])
+    animal_gender = SelectField('Pol', choices=['','M', 'Ž'])
     submit = SubmitField('Dodajte novu zivotinju')
 
 

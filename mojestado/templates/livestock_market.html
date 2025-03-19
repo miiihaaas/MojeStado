@@ -144,6 +144,7 @@
             <div class="col-md-10 table-overflow">
                 <p>Kategorija:</p>
                 <h2>{{ animal_category.animal_category_name }}</h2>
+                {% if animals %}
                 <table class="table table-striped mobtable popupable">
                     <thead>
                         <tr>
@@ -243,7 +244,13 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                
+                {% else %}
+                <div class="col-12 text-center my-5">
+                    <div class="alert alert-info">
+                        <h4>Ne postoje životinje za zadati kriterijum selekcije. Molimo Vas da pokušate sa drugim parametrima.</h4>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
         <!-- Tov Modal -->
