@@ -144,7 +144,7 @@ def register_farm():
             try:
                 # Slanje mejla za potvrdu
                 send_confirmation_email(user)
-                flash('Uspešno ste poslali zahtev za registraciju. Na Vaš mejl je poslat ugovor pomoću koga se završava registracija.', 'success')
+                flash('Uspešno ste registrovali nalog na portalu. Na Vaš mejl poslat je link za verifikaciju Vašeg naloga.', 'success')
                 return redirect(url_for('main.home'))
             except Exception as e:
                 current_app.logger.error(f'Greška pri slanju email-a: {str(e)}')
@@ -218,7 +218,7 @@ def register_user():
 
             try:
                 send_confirmation_email(user)
-                flash('Uspešno ste poslali zahtev za registraciju. Na Vaš mejl je poslat ugovor pomoću koga se završava registracija.', 'success')
+                flash('Uspešno ste registrovali nalog na portalu. Na Vaš mejl poslat je link za verifikaciju Vašeg naloga.', 'success')
                 return redirect(url_for('main.home'))
             except Exception as e:
                 current_app.logger.error(f'Greška pri slanju email-a: {str(e)}')
@@ -307,7 +307,7 @@ def confirm_email(token):
         try:
             db.session.commit()
             app.logger.info('Uspešno sačuvane promene u bazi')
-            flash('Vaš mejl je uspešno potvrđen', 'success')
+            flash('Vaš nalog je uspešno verifikovan.', 'success')
         except Exception as e:
             app.logger.error(f'Greška pri čuvanju promena u bazi: {str(e)}')
             db.session.rollback()
