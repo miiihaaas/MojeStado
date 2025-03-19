@@ -1,355 +1,375 @@
 {% extends "layout.html" %}
 {% block content %}
-<section class="page-hero cartpage">
+<section class="page-hero cartpage py-4 bg-primary text-white">
     <div class="container">
-        <div class="row">
-            <div class="col-md-3"></div>
-            <div class="col-md-6">
-                <h1 class="wht-text">Pregled korpe</h1>
-                <div class="home-hero-txt mb-5">
-                    
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1 class="display-4 mb-2">Pregled korpe</h1>
+                <div class="home-hero-txt mb-3">
+                    <p class="lead">Pregled svih proizvoda i usluga u vašoj korpi</p>
                 </div>
             </div>
-            <div class="col-md-3"></div>
         </div>
     </div>
 </section>
-<section class="main-content">
+
+<section class="main-content py-5">
     <div class="container">
-        <!-- <form action="" method="POST"> -->
+        {% if not products and not animals and not fattening and not services %}
+            <div class="alert alert-info text-center p-5 shadow-sm">
+                <i class="fa-solid fa-shopping-cart fa-3x mb-3"></i>
+                <h3>Korpa je prazna</h3>
+                <p>Trenutno nemate proizvode u korpi.</p>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-3">Nastavi kupovinu</a>
+            </div>
+        {% else %}
+            <!-- Products Section -->
             {% if products %}
-            <h3>Gotovi proizvodi</h3>
-            <table class="table table-striped" id="productsTable">
-                <thead>
-                    <tr>
-                        <th>Kategorija proizvoda</th>
-                        <th>Podkategorija proizvoda</th>
-                        <th>Sektor proizvoda</th>
-                        <th>Naziv</th>
-                        <th>Količina</th>
-                        <th>Jedinica mere</th>
-                        <th>Cena po jedinici mere</th>
-                        <th>Cena</th>
-                        <th>Ukupna cena</th>
-                        <th>PG</th>
-                        <th>lokacija</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>
-                            {{ product.category }}
-                        </td>
-                        <td>
-                            {{ product.subcategory }}
-                        </td>
-                        <td>
-                            {{ product.section }}
-                        </td>
-                        <td>
-                            {{ product.product_name }}
-                        </td>
-                        <td>
-                            {{ product.quantity }}
-                        </td>
-                        <td>
-                            {{ product.unit_of_measurement }}
-                        </td>
-                        <td>
-                            {{ product.product_price_per_unit }}
-                        </td>
-                        <td>
-                            {{ product.product_price_per_kg }}
-                        </td>
-                        <td>
-                            {{ product.total_price }}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm }}</a>
-                        </td>
-                        <td>
-                            {{ product.location }}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('main.remove_product_from_cart', product_id=product.id)}}">Ukloni iz korpe</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Gotovi proizvodi</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0" id="productsTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Kategorija</th>
+                                    <th>Podkategorija</th>
+                                    <th>Sektor</th>
+                                    <th>Naziv</th>
+                                    <th>Količina</th>
+                                    <th>Jed. mere</th>
+                                    <th>Cena/jed.</th>
+                                    <th>Cena/kg</th>
+                                    <th>Ukupno</th>
+                                    <th>PG</th>
+                                    <th>Lokacija</th>
+                                    <th class="text-center">Akcija</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>{{ product.category }}</td>
+                                    <td>{{ product.subcategory }}</td>
+                                    <td>{{ product.section }}</td>
+                                    <td>{{ product.product_name }}</td>
+                                    <td>{{ product.quantity }}</td>
+                                    <td>{{ product.unit_of_measurement }}</td>
+                                    <td>{{ product.product_price_per_unit }}</td>
+                                    <td>{{ product.product_price_per_kg }}</td>
+                                    <td><strong>{{ product.total_price }}</strong></td>
+                                    <td>
+                                        <a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm }}</a>
+                                    </td>
+                                    <td>{{ product.location }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('main.remove_product_from_cart', product_id=product.id)}}" class="btn btn-sm btn-danger" title="Ukloni iz korpe">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             <input type="hidden" name="product_count" value="{{ products|length }}">
             {% endif %}
 
+            <!-- Animals Section -->
             {% if animals %}
-            <h3>Živa vaga</h3>
-            <table class="table table-striped popupable" id="animalsTable">
-                <thead>
-                    <tr>
-                        <th>ID životinje</th>
-                        <th>Kategorija</th>
-                        <th>Potkategorija</th>
-                        <th>Rasa</th>
-                        <th>Pol</th>
-                        <th>Trenutna masa</th>
-                        <th>Cena po kg (rsd)</th>
-                        <th>Ukupna (rsd)</th>
-                        <th>Osigurano</th>
-                        <th>Organsko</th>
-                        <th>Usluge</th>
-                        <th>Karton<br>grla</th>
-                        <th>PG</th>
-                        <th>Lokacija</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for animal in animals %}
-                    <tr>
-                        <td>
-                            {% if animal.animal_id %}
-                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
-                                <div class="popup-id">{{ animal.animal_id }}</div>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ animal.category }}
-                        </td>
-                        <td>
-                            {{ animal.subcategory }}
-                        </td>
-                        <td>
-                            {{ animal.race }}
-                        </td>
-                        <td>
-                            {{ animal.animal_gender }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.current_weight) }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.price_per_kg) }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.total_price) }}
-                        </td>
-                        <td>
-                            {% if animal.insured %}
-                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if animal.organic_animal %}
-                                <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
-                            {% endif %}
-                        </td>
-                        <td>
-                            -
-                        </td>
-                        <td>
-                            {% if animal.cardboard %}
-                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a>
-                        </td>
-                        <td>
-                            {{ animal.location }}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('main.remove_animal_from_cart', animal_id=animal.id)}}" class="btn btn-danger font-size-14" title="Ukloni iz korpe"><i class="fa-solid fa-trash"></i></a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Živa vaga</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0 popupable" id="animalsTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>ID životinje</th>
+                                    <th>Kategorija</th>
+                                    <th>Potkategorija</th>
+                                    <th>Rasa</th>
+                                    <th>Pol</th>
+                                    <th>Masa</th>
+                                    <th>Cena/kg</th>
+                                    <th>Ukupno</th>
+                                    <th class="text-center">Osigurano</th>
+                                    <th class="text-center">Organsko</th>
+                                    <th class="text-center">Usluge</th>
+                                    <th class="text-center">Karton</th>
+                                    <th>PG</th>
+                                    <th>Lokacija</th>
+                                    <th class="text-center">Akcija</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for animal in animals %}
+                                <tr>
+                                    <td>
+                                        {% if animal.animal_id %}
+                                            <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                            <div class="popup-id">{{ animal.animal_id }}</div>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ animal.category }}</td>
+                                    <td>{{ animal.subcategory }}</td>
+                                    <td>{{ animal.race }}</td>
+                                    <td>{{ animal.animal_gender }}</td>
+                                    <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
+                                    <td>{{ "{:.2f}".format(animal.price_per_kg) }}</td>
+                                    <td><strong>{{ "{:.2f}".format(animal.total_price) }}</strong></td>
+                                    <td class="text-center">
+                                        {% if animal.insured %}
+                                            <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                                        {% else %}
+                                            <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if animal.organic_animal %}
+                                            <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
+                                        {% else %}
+                                            <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">
+                                        {% if animal.cardboard %}
+                                            <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-info">
+                                                <i class="fa-regular fa-clipboard"></i>
+                                            </a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('farms.farm_detail', farm_id=animal.farm_id) }}">{{ animal.farm }}</a>
+                                    </td>
+                                    <td>{{ animal.location }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('main.remove_animal_from_cart', animal_id=animal.id)}}" class="btn btn-sm btn-danger" title="Ukloni iz korpe">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             <input type="hidden" name="animal_count" value="{{ animals|length }}">
             {% endif %}
             
+            <!-- Services Section -->
             {% if services %}
-            <h3>Usluge</h3>
-            <table class="table table-striped popupable" id="servicesTable">
-                <thead>
-                    <tr>
-                        <th>ID životinje</th>
-                        <th>Kategorija</th>
-                        <th>Potkategorija</th>
-                        <th>Rasa</th>
-                        <th>Pol</th>
-                        <th>Trenutna masa</th>
-                        <th>Usluga</th>
-                        <th>Cena</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for animal in services %}
-                    <tr>
-                        <td>
-                            {% if animal.animal_id %}
-                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
-                                <div class="popup-id">{{ animal.animal_id }}</div>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ animal.category }}
-                        </td>
-                        <td>
-                            {{ animal.subcategory }}
-                        </td>
-                        <td>
-                            {{ animal.race }}
-                        </td>
-                        <td>
-                            {{ animal.animal_gender }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.current_weight) }}
-                        </td>
-                        <td>
-                            {% if animal.slaughterService %}
-                                <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" width="32" height="32">
-                            {% endif %}
-                            {% if animal.processingService %}
-                                <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" width="32" height="32">
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ animal.slaughterPrice + animal.processingPrice }}
-                        </td>
-                        <td><a href="{{ url_for('main.remove_service_from_cart', service_id=animal.id)}}">Ukloni iz korpe</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Usluge</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0 popupable" id="servicesTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>ID životinje</th>
+                                    <th>Kategorija</th>
+                                    <th>Potkategorija</th>
+                                    <th>Rasa</th>
+                                    <th>Pol</th>
+                                    <th>Masa</th>
+                                    <th class="text-center">Usluga</th>
+                                    <th>Cena</th>
+                                    <th class="text-center">Akcija</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for animal in services %}
+                                <tr>
+                                    <td>
+                                        {% if animal.animal_id %}
+                                            <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                            <div class="popup-id">{{ animal.animal_id }}</div>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ animal.category }}</td>
+                                    <td>{{ animal.subcategory }}</td>
+                                    <td>{{ animal.race }}</td>
+                                    <td>{{ animal.animal_gender }}</td>
+                                    <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
+                                    <td class="text-center">
+                                        {% if animal.slaughterService %}
+                                            <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" width="32" height="32">
+                                        {% endif %}
+                                        {% if animal.processingService %}
+                                            <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" width="32" height="32">
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ animal.slaughterPrice + animal.processingPrice }}</strong></td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('main.remove_service_from_cart', service_id=animal.id)}}" class="btn btn-sm btn-danger" title="Ukloni iz korpe">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             <input type="hidden" name="service_count" value="{{ services|length }}">
             {% endif %}
 
+            <!-- Fattening Section -->
             {% if fattening %}
-            <h3>Tov</h3>
-            <table class="table table-striped popupable" id="fatteningTable">
-                <thead>
-                    <tr>
-                        <th>ID životinje</th>
-                        <th>Kategorija</th>
-                        <th>Potkategorija</th>
-                        <th>Rasa</th>
-                        <th>Pol</th>
-                        <th>Trenutna masa</th>
-                        <th>Željena masa</th>
-                        <th>Cena tova</th>
-                        <th>Br hranidbenih dana</th>
-                        <th>Br rata</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for animal in fattening %}
-                    <tr>
-                        <td>
-                            {% if animal.animal_id %}
-                                <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
-                                <div class="popup-id">{{ animal.animal_id }}</div>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ animal.category }}
-                        </td>
-                        <td>
-                            {{ animal.subcategory }}
-                        </td>
-                        <td>
-                            {{ animal.race }}
-                        </td>
-                        <td>
-                            {{ animal.animal_gender }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.current_weight|float) }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.desired_weight|float) }}
-                        </td>
-                        <td>
-                            {{ "{:.2f}".format(animal.fattening_price|float) }}
-                        </td>
-                        <td>
-                            {{ animal.feeding_days }}
-                        </td>
-                        <td>
-                            {{ animal.installment_options }}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('main.remove_fattening_from_cart', animal_id=animal.id)}}">Ukloni iz korpe</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Tov</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0 popupable" id="fatteningTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>ID životinje</th>
+                                    <th>Kategorija</th>
+                                    <th>Potkategorija</th>
+                                    <th>Rasa</th>
+                                    <th>Pol</th>
+                                    <th>Trenutna masa</th>
+                                    <th>Željena masa</th>
+                                    <th>Cena tova</th>
+                                    <th>Br dana</th>
+                                    <th>Br rata</th>
+                                    <th class="text-center">Akcija</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for animal in fattening %}
+                                <tr>
+                                    <td>
+                                        {% if animal.animal_id %}
+                                            <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                            <div class="popup-id">{{ animal.animal_id }}</div>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ animal.category }}</td>
+                                    <td>{{ animal.subcategory }}</td>
+                                    <td>{{ animal.race }}</td>
+                                    <td>{{ animal.animal_gender }}</td>
+                                    <td>{{ "{:.2f}".format(animal.current_weight|float) }}</td>
+                                    <td>{{ "{:.2f}".format(animal.desired_weight|float) }}</td>
+                                    <td><strong>{{ "{:.2f}".format(animal.fattening_price|float) }}</strong></td>
+                                    <td>{{ animal.feeding_days }}</td>
+                                    <td>{{ animal.installment_options }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('main.remove_fattening_from_cart', animal_id=animal.id)}}" class="btn btn-sm btn-danger" title="Ukloni iz korpe">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
             {% endif %}
-            {% if animals or products or fattening %}
-                <h3>Dostava</h3>
-                {% if delivery_total == 0 %}
-                    Dostava je besplatna
-                {% else %}
-                    <legend>Cena dostave sadržaja korpe</legend>
-                    <input type="text" class="form-control" value="{{ delivery_total }} rsd" id="delivery_total_" name="delivery_total_" disabled>
-                {% endif %}
-                <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
-                    <div class="form-check">
-                        {% if delivery_status %}
-                        <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total" checked>
-                        {% else %}
-                        <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total">
-                        {% endif %}
-                        <label for="delivery_total" class="form-check-label">Želim dostavu</label>
+
+            <!-- Delivery and Total Section -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    {% if animals or products or fattening %}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h3 class="mb-0">Dostava</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if delivery_total == 0 %}
+                                <div class="alert alert-success mb-0">
+                                    <i class="fa-solid fa-truck me-2"></i> Dostava je besplatna.
+                                </div>
+                            {% else %}
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Cena dostave sadržaja korpe</label>
+                                    <input type="text" class="form-control" value="{{ delivery_total }} rsd" id="delivery_total_" name="delivery_total_" disabled>
+                                </div>
+                            {% endif %}
+                            <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
+                                <div class="form-check">
+                                    {% if delivery_status %}
+                                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total" checked>
+                                    {% else %}
+                                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total">
+                                    {% endif %}
+                                    <label for="delivery_total" class="form-check-label">Želim dostavu</label>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </form>
-            {% endif %}
-
-            {% if merchant_order_amount %}
-            <legend>Ukupno za uplatu: </legend> 
-            <input type="text" class="form-control" value="{{ merchant_order_amount }} rsd" disabled>
-            {% endif %}
-            {% if installment_total %}
-            <legend>Ukupno na rate: </legend>
-            <input type="text" class="form-control" value="{{ installment_total }} rsd" disabled>
-            {% endif %}
-            <input type="hidden" id="cartData" name="cartData" value="">
-
-            <div class="pt-20"></div>
-            {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
-            {% if not current_user.is_authenticated and installment_total %}
-            <a href="{{ url_for('users.login')}}" class="btn btn-primary">Uloguj/Registruj se</a>
-            {% else %}
-            <a href="{{ url_for('transactions.user_payment_form')}}" class="btn btn-primary">Nastavi ka kupovini</a>
-            {% endif %}
-            <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">Obriši korpu</a>
-            {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h3 class="mb-0">Ukupno</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if merchant_order_amount %}
+                            <div class="form-group mb-3">
+                                <label class="form-label">Ukupno za uplatu:</label>
+                                <input type="text" class="form-control form-control-lg bg-light" value="{{ merchant_order_amount }} rsd" disabled>
+                            </div>
+                            {% endif %}
+                            
+                            {% if installment_total %}
+                            <div class="form-group">
+                                <label class="form-label">Ukupno na rate:</label>
+                                <input type="text" class="form-control bg-light" value="{{ installment_total }} rsd" disabled>
+                            </div>
+                            {% endif %}
+                            
+                            <input type="hidden" id="cartData" name="cartData" value="">
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-        <!-- </form> -->
 
-
-
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between mt-4 mb-5">
+                <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">
+                    <i class="fa-solid fa-trash me-2"></i>Obriši korpu
+                </a>
+                
+                {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
+                    {% if not current_user.is_authenticated and installment_total %}
+                    <a href="{{ url_for('users.login')}}" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-user me-2"></i>Uloguj/Registruj se
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('transactions.user_payment_form')}}" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-arrow-right me-2"></i>Nastavi ka kupovini
+                    </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 </section>
-
 {% endblock %}
 
 {% block scripts %}
@@ -398,28 +418,52 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM fully loaded");
         updateCartData();
-    });
-    
-    document.getElementById('cartForm').addEventListener('submit', function(e) {
-        console.log("Form submission started");
-        updateCartData();
-        console.log("Form being submitted with cart data:", document.getElementById('cartData').value);
-    });
-</script>
-<script>
-    console.log("Cart script loading...");
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("DOM fully loaded");
         
-        // Dodajemo event listener na checkbox
+        // Auto-submit delivery form when checkbox changes
         var deliveryCheckbox = document.getElementById('delivery_total');
         if (deliveryCheckbox) {
             deliveryCheckbox.addEventListener('change', function() {
-                console.log("Checkbox changed, submitting form...");
                 document.getElementById('deliveryForm').submit();
             });
         }
+        
+        // Handle popup IDs
+        var clickableImages = document.querySelectorAll('.clickable-image');
+        clickableImages.forEach(function(img) {
+            img.addEventListener('click', function() {
+                var popup = this.nextElementSibling;
+                if (popup.style.display === 'block') {
+                    popup.style.display = 'none';
+                } else {
+                    popup.style.display = 'block';
+                }
+            });
+        });
     });
 </script>
-{% endblock scripts %}
+
+<style>
+    .popup-id {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 10px;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .clickable-image {
+        cursor: pointer;
+    }
+    
+    .table th {
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}

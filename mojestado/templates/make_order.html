@@ -286,9 +286,9 @@
         <input type="text" class="form-control" value="{{ merchant_order_amount }} rsd" disabled>
         {% endif %}
         {% if session.get('delivery')['delivery_status'] %}
-        <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_total']}} rsd je uračunata u ukupan iznos za uplatu</p>
+        <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
         {% else %}
-        <p>Usluga dostave nije izabrana</p>
+        <p>Usluga dostave nije izabrana.</p>
         {% endif %}
         {% if installment_total %}
         <legend>Ukupno na rate: </legend>

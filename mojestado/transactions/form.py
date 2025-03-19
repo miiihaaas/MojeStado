@@ -12,7 +12,7 @@ class GuestForm(FlaskForm):
     phone = StringField('Telefon', validators=[DataRequired()])
     address = StringField('Adresa', validators=[DataRequired()])
     city = StringField('Mesto', validators=[DataRequired()])
-    zip_code = StringField('ZIP', validators=[DataRequired()])
+    zip_code = StringField('Poštanski broj', validators=[DataRequired()])
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
@@ -37,7 +37,7 @@ class GuestForm(FlaskForm):
 
     def validate_zip_code(self, zip_code):
         if len(zip_code.data) != 5:
-            raise ValidationError('ZIP kod mora da sadrži pet znamenki.')
+            raise ValidationError('Poštanski broj mora da sadrži pet cifara.')
 
     def validate_bank_info(self, bank_info):
         if len(bank_info.data) < 2:

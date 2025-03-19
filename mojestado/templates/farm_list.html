@@ -51,6 +51,7 @@
             </div>
             <div class="col-md-9">
                 <div class="row row-cols-1 row-cols-md-4 g-4">
+                    {% if farm_list %}
                     {% for farm in farm_list %}
                     <div class="col">
                         <div class="card h-100">
@@ -67,6 +68,13 @@
                         </div>
                     </div>
                     {% endfor%}
+                    {% else %}
+                    <div class="col-12 text-center my-5">
+                        <div class="alert alert-info">
+                            <h4>Ne postoje farme za zadati kriterijum selekcije. Molimo Vas da pokušate sa drugim parametrima.</h4>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

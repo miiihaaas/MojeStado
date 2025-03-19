@@ -205,12 +205,12 @@ def add_services_to_chart():
                     
                 session['services'].append(new_service)
                 
+                flash('Uspešno ste dodali uslugu u korpu.', 'success')
             except (ValueError, AttributeError) as e:
                 app.logger.error(f'Greška pri kreiranju nove usluge: {str(e)}')
                 flash('Došlo je do greške pri dodavanju usluge. Molimo pokušajte ponovo.', 'danger')
                 return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
         
-        flash('Uspešno ste dodali uslugu u korpu.', 'success')
         return redirect(url_for('marketplace.livestock_market', animal_category_id=animal.animal_category_id))
         
     except Exception as e:

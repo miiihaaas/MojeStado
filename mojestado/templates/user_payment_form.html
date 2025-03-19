@@ -1,51 +1,81 @@
 {% extends "layout.html" %}
 {% block content %}
-<section>
+<section class="py-5">
     <div class="container">
-        <h1>O kupcu</h1>
-        <form id="guestForm" action="{{ url_for('transactions.user_payment_form')}}" method="post">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.email.label(class="") }}
-                {{ form.email(class="form-control", disabled=current_user.is_authenticated) }}
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0 h4">O kupcu</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="guestForm" action="{{ url_for('transactions.user_payment_form')}}" method="post">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        {{ form.name.label(class="form-label") }}
+                                        {{ form.name(class="form-control", disabled=current_user.is_authenticated) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        {{ form.surname.label(class="form-label") }}
+                                        {{ form.surname(class="form-control", disabled=current_user.is_authenticated) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control", disabled=current_user.is_authenticated) }}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control", disabled=current_user.is_authenticated) }}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                {{ form.address.label(class="form-label") }}
+                                {{ form.address(class="form-control", disabled=current_user.is_authenticated) }}
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        {{ form.city.label(class="form-label") }}
+                                        {{ form.city(class="form-control", disabled=current_user.is_authenticated) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        {{ form.zip_code.label(class="form-label") }}
+                                        {{ form.zip_code(class="form-control", disabled=current_user.is_authenticated) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                {% if current_user.is_authenticated %}
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-shopping-cart me-2"></i>Pregled kupovine
+                                </button>
+                                {% else %}
+                                <button class="btn btn-secondary" type="submit">
+                                    <i class="fas fa-shopping-cart me-2"></i>Pregled kupovine
+                                </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                {{ form.name.label(class="") }}
-                {{ form.name(class="form-control", disabled=current_user.is_authenticated) }}
-            </div>
-            <div class="form-group">
-                {{ form.surname.label(class="") }}
-                {{ form.surname(class="form-control", disabled=current_user.is_authenticated) }}
-            </div>
-            <div class="form-group">
-                {{ form.phone.label(class="") }}
-                {{ form.phone(class="form-control", disabled=current_user.is_authenticated) }}
-            </div>
-            <div class="form-group">
-                {{ form.address.label(class="") }}
-                {{ form.address(class="form-control", disabled=current_user.is_authenticated) }}
-            </div>
-            <div class="form-group">
-                {{ form.city.label(class="") }}
-                {{ form.city(class="form-control", disabled=current_user.is_authenticated) }}
-            </div>
-            <div class="form-group">
-                {{ form.zip_code.label(class="") }}
-                {{ form.zip_code(class="form-control", disabled=current_user.is_authenticated) }}
-            </div>
-            {% if current_user.is_authenticated %}
-            <button class="btn btn-primary" type="submit">Pregled kupovine</button>
-            {% else %}
-            <button class="btn btn-primary" type="submit">Pregled kupovine + Kreiraj guest nalog</button>
-            {% endif %}
-        </form>
+        </div>
     </div>
 </section>
-
-
-
 {% endblock %}
+
 {% block scripts %}
-
-
 {% endblock %}
