@@ -357,12 +357,12 @@ def login():
         
         if not user:
             app.logger.warning(f'Pokušaj prijave sa nepostojećim email-om: {email}')
-            flash('Email ili lozinka nisu odgovarajući.', 'danger')
+            flash('Mejl ili lozinka nisu odgovarajući.', 'danger')
             return render_template('login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
         
         if not bcrypt.check_password_hash(user.password, form.password.data):
             app.logger.warning(f'Pogrešna lozinka za korisnika: {email}')
-            flash('Email ili lozinka nisu odgovarajući.', 'danger')
+            flash('Mejl ili lozinka nisu odgovarajući.', 'danger')
             return render_template('login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
         
         # Provera verifikacije naloga
