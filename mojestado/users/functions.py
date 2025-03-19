@@ -32,7 +32,7 @@ def send_confirmation_email(user):
     html = render_template('message_html_confirm_email.html',
                             user=user,
                             confirm_url=confirm_url)
-    subject = "Molimo potvrdite svoju registraciju"
+    subject = "Potvrda registracije"
     msg = Message(subject=subject, recipients=[user.email], html=html, sender=current_app.config['MAIL_DEFAULT_SENDER'])
     mail.send(msg)
 

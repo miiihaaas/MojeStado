@@ -46,17 +46,17 @@
 </head>
 <body>
     <div class="container">
-        <h1>Dobrodošli na portal "Moje stado"</h1>
+        <h1>Dobro došli na portal "Moje stado"</h1>
         <p>Poštovani korisniče,</p>
         {% if user.user_type == "farm_unverified" %}
-        <p>Hvala vam na registraciji na našem portalu. Da biste završili proces registracije svog poljoprivrednog gazdinstva, molimo vas da kliknete na dugme ispod:</p>
+        <p>Hvala Vam na registraciji na našem portalu. Da biste završili proces registracije svog poljoprivrednog gazdinstva, molimo vas da kliknete na dugme ispod:</p>
         {% elif user.user_type == "user_unverified" %}
-        <p>Hvala vam na registraciji na našem portalu. Da biste završili proces registracije i aktivirali svoj korisnički nalog, molimo vas da kliknete na dugme ispod:</p>
+        <p>Hvala Vam na registraciji na našem portalu. Da biste završili proces registracije i aktivirali svoj korisnički nalog, molimo vas da kliknete na dugme ispod:</p>
         {% endif %}
         <p>
             <a href="{{ confirm_url }}" class="btn">Potvrdi registraciju</a>
         </p>
-        <p>Ako niste vi pokrenuli ovu registraciju, molimo vas da ignorišete ovu poruku.</p>
+        <p>Ukoliko Vi niste pokrenuli registraciju naloga na portalu, molimo Vas da ignorišete ovu poruku.</p>
         <p>Srdačan pozdrav,<br>Tim portala "Moje stado"</p>
     </div>
     <div class="footer">
