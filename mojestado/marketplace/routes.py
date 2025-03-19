@@ -39,7 +39,7 @@ def livestock_market(animal_category_id):
         # Ako je kategorija 0, prikaži samo osnovni template
         if animal_category_id == 0:
             app.logger.info('Prikazujem osnovni template za pijacu stoke')
-            return render_template('livestock_market.html', 
+            return render_template('marketplace/livestock_market.html', 
                                 title='Živa vaga',
                                 route_name=route_name, 
                                 animal_categories=animal_categories, 
@@ -110,7 +110,7 @@ def livestock_market(animal_category_id):
         
         app.logger.info(f'Prikazujem {len(animals)} životinja za kategoriju {animal_category.animal_category_name}')
         
-        return render_template('livestock_market.html',
+        return render_template('marketplace/livestock_market.html',
                             title=animal_category.animal_category_name,
                             route_name=route_name,
                             municipality_filter_list=municipality_filter_list,
@@ -166,7 +166,7 @@ def products_market(product_category_id):
         if product_category_id == 0:
             product_categories = ProductCategory.query.all()
             app.logger.info('Prikazujem osnovni template za pijacu proizvoda')
-            return render_template('products_market.html', 
+            return render_template('marketplace/products_market.html', 
                                 route_name=route_name,
                                 title='Gotovi proizvodi',
                                 product_categories=product_categories)
@@ -236,7 +236,7 @@ def products_market(product_category_id):
             
             app.logger.info(f'Prikazujem {len(products)} proizvoda za kategoriju {product_category.product_category_name}')
             
-            return render_template('products_market.html',
+            return render_template('marketplace/products_market.html',
                                 route_name=route_name,
                                 title=product_category.product_category_name,
                                 municipality_filter_list=municipality_filter_list,
@@ -253,7 +253,7 @@ def products_market(product_category_id):
                                 section_filter=section_filter)
                                 
         # GET zahtev
-        return render_template('products_market.html',
+        return render_template('marketplace/products_market.html',
                                 route_name=route_name,
                                 title=product_category.product_category_name,
                                 municipality_filter_list=municipality_filter_list,
@@ -296,7 +296,7 @@ def product_detail(product_id):
         product = Product.query.get_or_404(product_id)
         app.logger.info(f'Prikazujem detalje za proizvod: {product.product_name}')
         
-        return render_template('product_detail.html',
+        return render_template('marketplace/product_detail.html',
                                 product=product)
                                 
     except Exception as e:

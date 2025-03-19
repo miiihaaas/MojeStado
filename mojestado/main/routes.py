@@ -39,7 +39,7 @@ def home():
         anti_cache = int(datetime.datetime.now().timestamp())
         
         
-        return render_template('home.html', title='Početna strana',
+        return render_template('main/home.html', title='Početna strana',
                                 route_name=route_name,
                                 faq=faq,
                                 animal_categories=animal_categories,
@@ -54,7 +54,7 @@ def home():
 @main.route('/about')
 def about():
     route_name = request.endpoint
-    return render_template('about.html', 
+    return render_template('main/about.html', 
                             route_name=route_name,
                             title='O portalu')
 
@@ -71,7 +71,7 @@ def faq():
             
             if not email or not question:
                 flash('Molimo popunite sva polja.', 'danger')
-                return render_template('faq.html', 
+                return render_template('main/faq.html', 
                                     route_name=route_name,
                                     title='Najčešće postavljena pitanja',
                                     faq=faq)
@@ -88,7 +88,7 @@ def faq():
             
             return redirect(url_for('main.faq'))
         
-        return render_template('faq.html', 
+        return render_template('main/faq.html', 
                                 route_name=route_name, 
                                 title='Najčešće postavljena pitanja',
                                 faq=faq)
@@ -107,7 +107,7 @@ def contact():
         
         if not all([name, email, message]):
             flash('Molimo popunite sva polja.', 'danger')
-            return render_template('contact.html', 
+            return render_template('main/contact.html', 
                                 route_name=route_name,
                                 title='Kontakt strana')
         
@@ -132,7 +132,7 @@ def contact():
             app.logger.error(f'Greška pri slanju kontakt mejla od {email}: {str(e)}')
             flash('Došlo je do greške pri slanju poruke. Molimo pokušajte kasnije.', 'danger')
     
-    return render_template('contact.html', 
+    return render_template('main/contact.html', 
                             route_name=route_name,
                             title='Kontakt strana')
 
@@ -414,7 +414,7 @@ def view_cart():
         
         if not has_items:
             flash('Korpa je prazna.', 'info')
-            return render_template('view_cart.html', 
+            return render_template('main/view_cart.html', 
                                 title='Korpa', 
                                 route_name=route_name, 
                                 animals=[],
@@ -467,7 +467,7 @@ def view_cart():
         
         current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
-        return render_template('view_cart.html',
+        return render_template('main/view_cart.html',
                                 route_name=route_name,
                                 animals=animals, 
                                 products=products, 
@@ -675,14 +675,14 @@ def clear_cart():
 
 @main.route('/terms_and_conditions')
 def terms_and_conditions():
-    return render_template('terms_and_conditions.html')
+    return render_template('main/terms_and_conditions.html')
 
 
 @main.route('/privacy_policy')
 def privacy_policy():
-    return render_template('privacy_policy.html')
+    return render_template('main/privacy_policy.html')
 
 
 @main.route('/cookie_policy')
 def cookie_policy():
-    return render_template('cookie_policy.html')
+    return render_template('main/cookie_policy.html')

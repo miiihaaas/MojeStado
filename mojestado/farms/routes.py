@@ -122,7 +122,7 @@ def farm_list():
             animals = Animal.query.filter(Animal.organic_animal == True).all()
             products = Product.query.filter(Product.organic_product == True).all()
             farm_list = [farm for farm in farm_list if farm.id in [animal.farm_id for animal in animals] or farm.id in [product.farm_id for product in products]]
-        return render_template('farm_list.html', title='Farms',
+        return render_template('farms/farm_list.html', title='Farms',
                                 route_name=route_name,
                                 farm_list=farm_list,
                                 municipality_filter_list=municipality_filter_list,
@@ -134,7 +134,7 @@ def farm_list():
         farm_list = Farm.query.all()
         farm_list_active = [farm for farm in farm_list if User.query.get(farm.user_id).user_type == 'farm_active']
         farm_list = farm_list_active
-        return render_template('farm_list.html', title='Farms',
+        return render_template('farms/farm_list.html', title='Farms',
                                 route_name=route_name,
                                 farm_list=farm_list,
                                 municipality_filter_list=municipality_filter_list,
@@ -154,7 +154,7 @@ def farm_detail(farm_id):
         if organic_filter == 'on':
             animals = [animal for animal in animals if animal.organic_animal == 1]
             products = [product for product in products if product.organic_product == 1]
-    return render_template('farm_detail.html',
+    return render_template('farms/farm_detail.html',
                             route_name=route_name, 
                             title=farm.farm_name,
                             organic_filter=json.dumps(organic_filter),
