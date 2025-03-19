@@ -42,7 +42,7 @@ def upload_image():
     #! dodati kod koji će da proširi listu u objektu farm tako što će dodati generisani fajl
     farm.farm_image_collection = farm.farm_image_collection + [farm_image_fn] #! dodati kolonu farm_image_colection
     db.session.commit()
-    flash('Slika je uspješno dodata', 'success')
+    flash('Slika je uspešno dodata.', 'success')
     return redirect(url_for('users.my_farm', farm_id=farm.id))
 
 
