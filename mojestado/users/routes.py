@@ -76,7 +76,7 @@ def register_farm():
                     db.session.rollback()
                     current_app.logger.error(f'Greška pri kreiranju korisnika: {str(e)}')
                     flash('Došlo je do greške pri kreiranju korisnika. Molimo pokušajte ponovo.', 'danger')
-                    return render_template('register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
+                    return render_template('users/register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
                 
                 try:
                     # Kreiranje farme
@@ -114,7 +114,7 @@ def register_farm():
                         pass
                     current_app.logger.error(f'Greška pri kreiranju farme: {str(e)}')
                     flash('Došlo je do greške pri kreiranju farme. Molimo pokušajte ponovo.', 'danger')
-                    return render_template('register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
+                    return render_template('users/register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
             else:
                 try:
                     # Ažuriranje postojećeg korisnika ako je farm_unverified
@@ -139,7 +139,7 @@ def register_farm():
                     db.session.rollback()
                     current_app.logger.error(f'Greška pri ažuriranju korisnika: {str(e)}')
                     flash('Došlo je do greške pri ažuriranju podataka. Molimo pokušajte ponovo.', 'danger')
-                    return render_template('register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
+                    return render_template('users/register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
             
             try:
                 # Slanje mejla za potvrdu
@@ -154,15 +154,15 @@ def register_farm():
         except Exception as e:
             current_app.logger.error(f'Neočekivana greška u register_farm: {str(e)}')
             flash('Došlo je do neočekivane greške. Molimo pokušajte ponovo.', 'danger')
-            return render_template('register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
+            return render_template('users/register_farm.html', title='Registracija poljoprivrednog gazdinstva', form=form)
     
     if request.method == 'GET':
-        return render_template('register_farm.html', 
+        return render_template('users/register_farm.html', 
                                 title='Registracija poljoprivrednog gazdinstva',
                                 form=form)
 
     flash(f'Došlo je do greške: {form.errors}. Molimo pokušajte ponovo.', 'danger')
-    return render_template('register_farm.html', 
+    return render_template('users/register_farm.html', 
                             title='Registracija poljoprivrednog gazdinstva',
                             form=form)
 
@@ -211,7 +211,7 @@ def register_user():
                     db.session.rollback()
                     current_app.logger.error(f'Greška pri kreiranju korisnika: {str(e)}')
                     flash('Došlo je do greške pri kreiranju korisnika. Molimo pokušajte ponovo.', 'danger')
-                    return render_template('register_user.html', title='Registracija korisnika', form=form)
+                    return render_template('users/register_user.html', title='Registracija korisnika', form=form)
             else:
                 flash(f'Već postoji korisnik sa mejlom {form.email.data}.', 'danger')
                 return redirect(url_for('main.home'))
@@ -228,15 +228,15 @@ def register_user():
         except Exception as e:
             current_app.logger.error(f'Neočekivana greška u register_user: {str(e)}')
             flash('Došlo je do neočekivane greške. Molimo pokušajte ponovo.', 'danger')
-            return render_template('register_user.html', title='Registracija korisnika', form=form)
+            return render_template('users/register_user.html', title='Registracija korisnika', form=form)
 
     if request.method == 'GET':
-        return render_template('register_user.html',
+        return render_template('users/register_user.html',
                                 title='Registracija korisnika',
                                 form=form)
 
     flash(f'Došlo je do greške: {form.errors}. Molimo pokušajte ponovo.', 'danger')
-    return render_template('register_user.html',
+    return render_template('users/register_user.html',
                             title='Registracija korisnika',
                             form=form)
 
@@ -358,12 +358,12 @@ def login():
         if not user:
             app.logger.warning(f'Pokušaj prijave sa nepostojećim email-om: {email}')
             flash('Mejl ili lozinka nisu odgovarajući.', 'danger')
-            return render_template('login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
+            return render_template('users/login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
         
         if not bcrypt.check_password_hash(user.password, form.password.data):
             app.logger.warning(f'Pogrešna lozinka za korisnika: {email}')
             flash('Mejl ili lozinka nisu odgovarajući.', 'danger')
-            return render_template('login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
+            return render_template('users/login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
         
         # Provera verifikacije naloga
         unverified_types = {
@@ -398,7 +398,7 @@ def login():
             app.logger.error(f'Greška pri prijavi korisnika {email}: {str(e)}')
             flash('Došlo je do greške pri prijavi. Molimo pokušajte ponovo.', 'danger')
     
-    return render_template('login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
+    return render_template('users/login.html', title='Prijavljivanje', form=form, legend='Prijavljivanje')
 
 
 @users.route("/logout")
@@ -502,7 +502,7 @@ def reset_request():
         
         return redirect(url_for('users.login'))
     
-    return render_template('reset_request.html', 
+    return render_template('users/reset_request.html', 
                             title='Resetovanje lozinke', 
                             form=form, 
                             legend='Resetovanje lozinke',
@@ -566,7 +566,7 @@ def reset_token(token):
             app.logger.error(f'Greška pri ažuriranju lozinke za {user.email}: {str(e)}')
             flash('Došlo je do greške pri ažuriranju lozinke. Molimo pokušajte ponovo.', 'danger')
     
-    return render_template('reset_token.html', 
+    return render_template('users/reset_token.html', 
                             title='Resetovanje lozinke', 
                             form=form, 
                             legend='Resetovanje lozinke', 
@@ -618,19 +618,19 @@ def my_profile(user_id):
         if current_user.user_type == 'farm_inactive':
             app.logger.info(f'Pristup profilu neaktivne farme: {user.email}')
             flash('Vaše poljoprivredno gazdinstvo nije aktivno. Ukoliko ste potpisali ugovor, kontaktirajte administratora.', 'info')
-            return render_template('my_profile.html', title='Moj nalog', user=user)
+            return render_template('users/my_profile.html', title='Moj nalog', user=user)
             
         # Neverifikovan korisnik
         if current_user.user_type == 'user_unverified':
             app.logger.info(f'Pristup profilu neverifikovanog korisnika: {user.email}')
             flash('Vas email nije potvrđen. Molimo potvrdite email.', 'info')
-            return render_template('my_profile.html', title='Moj nalog', user=user)
+            return render_template('users/my_profile.html', title='Moj nalog', user=user)
             
         # Neverifikovana farma
         if current_user.user_type == 'farm_unverified':
             app.logger.info(f'Pristup profilu neverifikovane farme: {user.email}')
             flash('Vaše poljoprivredno gazdinstvo nije potvrđeno. Molimo potvrdite poljoprivredno gazdinstvo.', 'info')
-            return render_template('my_profile.html', title='Moj nalog', user=user)
+            return render_template('users/my_profile.html', title='Moj nalog', user=user)
             
     except Exception as e:
         app.logger.error(f'Greška pri pristupu profilu {user_id}: {str(e)}')
@@ -680,7 +680,7 @@ def handle_admin_profile(user, farm):
         form.account_number.data = farm.farm_account_number if farm else ''
         form.municipality.data = str(farm.farm_municipality_id) if farm else ''
         
-        return render_template('my_profile.html', title='Moj nalog', user=user, form=form)
+        return render_template('users/my_profile.html', title='Moj nalog', user=user, form=form)
         
     except Exception as e:
         app.logger.error(f'Greška pri obradi admin profila za {user.email}: {str(e)}')
@@ -703,7 +703,7 @@ def handle_user_profile(user):
                 app.logger.error(f'Greška pri ažuriranju adrese: {str(e)}')
                 flash('Došlo je do greške pri čuvanju adrese. Molimo pokušajte ponovo.', 'danger')
         
-        return render_template('my_profile.html', title='Moj nalog', user=user)
+        return render_template('users/my_profile.html', title='Moj nalog', user=user)
         
     except Exception as e:
         app.logger.error(f'Greška pri obradi korisničkog profila za {user.email}: {str(e)}')
@@ -737,7 +737,7 @@ def handle_active_farm_profile(user, farm):
         form.mb.data = user.MB
         form.account_number.data = farm.farm_account_number
 
-        return render_template('my_profile.html', 
+        return render_template('users/my_profile.html', 
                             title='Moj nalog',
                             user=user,
                             farm=farm,
@@ -805,7 +805,7 @@ def my_farm(farm_id):
             farm_profile_completed = False
             flash('Došlo je do greške pri proveri statusa profila.', 'warning')
         
-        return render_template('my_farm.html', 
+        return render_template('users/my_farm.html', 
                             title='Moj nalog',
                             user=current_user,
                             farm=farm,
@@ -940,7 +940,7 @@ def my_flock(farm_id):
                 app.logger.error(f'Greška pri dodavanju životinje: {str(e)}')
                 flash('Došlo je do greške pri dodavanju životinje. Molimo pokušajte ponovo.', 'danger')
         
-        return render_template('my_flock.html',
+        return render_template('users/my_flock.html',
                             title='Moje stado',
                             user=current_user,
                             animals=animals,
@@ -1300,7 +1300,7 @@ def my_market(farm_id):
                 
             return redirect(url_for('users.my_market', farm_id=farm_id))
             
-        return render_template('my_market.html',
+        return render_template('users/my_market.html',
                             title='Moja prodavnica',
                             user=current_user,
                             products=products,
@@ -1391,7 +1391,7 @@ def my_fattening(user_id):
             flash('Došlo je do greške pri učitavanju podataka. Molimo pokušajte ponovo.', 'warning')
             my_fattening_animals = []
             
-        return render_template('my_fattening.html',
+        return render_template('users/my_fattening.html',
                             title='Moje stado',
                             my_fattening_animals=my_fattening_animals,
                             user=user)
@@ -1450,7 +1450,7 @@ def my_shop(user_id):
             flash('Došlo je do greške pri učitavanju podataka. Molimo pokušajte ponovo.', 'warning')
             my_invoice_items = []
             
-        return render_template('my_shop.html',
+        return render_template('users/my_shop.html',
                             title='Moja prodavnica',
                             my_invoice_items=my_invoice_items,
                             user=user)
@@ -1547,7 +1547,7 @@ def settings():
             flash('Došlo je do greške pri učitavanju kategorija. Molimo pokušajte ponovo.', 'warning')
             categorization = []
             
-        return render_template('settings.html',
+        return render_template('users/settings.html',
                             title='Podešavanja',
                             categorization=categorization)
                             
@@ -1768,7 +1768,7 @@ def admin_view_farms():
             flash('Došlo je do greške pri učitavanju podataka. Molimo pokušajte ponovo.', 'warning')
             farms = []
             
-        return render_template('admin_view_farms.html',
+        return render_template('users/admin_view_farms.html',
                             title='Pregled poljoprivrednih gazdinstava',
                             farms=farms)
                             
@@ -1823,7 +1823,7 @@ def admin_view_users():
             flash('Došlo je do greške pri učitavanju podataka. Molimo pokušajte ponovo.', 'warning')
             users = []
             
-        return render_template('admin_view_users.html',
+        return render_template('users/admin_view_users.html',
                             title='Pregled korisnika',
                             users=users)
                             
@@ -1889,7 +1889,7 @@ def admin_view_purchases():
             flash('Došlo je do greške pri učitavanju podataka. Molimo pokušajte ponovo.', 'warning')
             invoice_items = []
             
-        return render_template('admin_view_purchases.html',
+        return render_template('users/admin_view_purchases.html',
                             title='Pregled kupovina',
                             invoice_items=invoice_items,
                             purchases=[])  # TODO: Ukloniti purchases ako se ne koristi
@@ -1967,7 +1967,7 @@ def admin_view_overview():
             flash('Došlo je do greške pri učitavanju podataka. Molimo pokušajte ponovo.', 'warning')
             users = []
             
-        return render_template('admin_view_overview.html',
+        return render_template('users/admin_view_overview.html',
                             title='Pregled finansijskog stanja',
                             users=users)
                             
@@ -2078,7 +2078,7 @@ def admin_view_overview_user(user_id):
                 app.logger.error(f'Greška pri računanju salda: {str(e)}')
                 total_saldo = 0
                 
-            return render_template('admin_view_overview_user.html',
+            return render_template('users/admin_view_overview_user.html',
                                 user=user,
                                 tovovi=tovovi,
                                 total_saldo=total_saldo,
@@ -2212,7 +2212,7 @@ def admin_view_slips():
             total_errors = sum(stmt.number_of_errors for stmt in payment_statements)
             app.logger.debug(f'Ukupan iznos svih uplata: {total_amount}, ukupno grešaka: {total_errors}')
             
-            return render_template('admin_view_slips.html',
+            return render_template('users/admin_view_slips.html',
                                 title='Pregled izvoda',
                                 payment_statements=payment_statements,
                                 total_amount=total_amount,
@@ -2261,7 +2261,7 @@ def admin_edit_profile(user_id):
     form.zip_code.data = user.zip_code
     form.city.data = user.city
     form.jmbg.data = user.JMBG
-    return render_template('admin_edit_profile.html',
+    return render_template('users/admin_edit_profile.html',
                             user=user,
                             title='Uredi profil',
                             form=form)

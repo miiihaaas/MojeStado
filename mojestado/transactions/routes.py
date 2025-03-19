@@ -87,7 +87,7 @@ def user_payment_form():
                 for field, errors in form.errors.items():
                     for error in errors:
                         flash(f'Greška u polju {field}: {error}', 'danger')
-                return render_template('user_payment_form.html', form=form)
+                return render_template('transactions/user_payment_form.html', form=form)
             
             # Pokušaj registracije gost korisnika
             try:
@@ -102,7 +102,7 @@ def user_payment_form():
             except Exception as e:
                 app.logger.error(f'Greška pri registraciji gost korisnika: {str(e)}')
                 flash('Došlo je do greške pri registraciji. Molimo pokušajte ponovo.', 'danger')
-                return render_template('user_payment_form.html', form=form)
+                return render_template('transactions/user_payment_form.html', form=form)
         
         # GET zahtev - priprema forme
         if current_user.is_authenticated:
@@ -115,7 +115,7 @@ def user_payment_form():
             form.city.data = current_user.city
             form.zip_code.data = current_user.zip_code
         
-        return render_template('user_payment_form.html', form=form)
+        return render_template('transactions/user_payment_form.html', form=form)
         
     except Exception as e:
         app.logger.error(f'Neočekivana greška u user_payment_form: {str(e)}')
@@ -223,7 +223,7 @@ def make_order():
             
             app.logger.debug('Uspešno pripremljeni podaci za plaćanje')
             
-            return render_template('make_order.html',
+            return render_template('transactions/make_order.html',
                                 animals=animals,
                                 products=products,
                                 fattening=fattening,
@@ -453,7 +453,7 @@ def process_payment_statment():
         file = request.files['fileUpload']
         if file.filename == '':
             flash('Nije izabran XML fajl.', 'danger')
-            return render_template('admin_view_slips.html', title='Izvodi')
+            return render_template('transactions/admin_view_slips.html', title='Izvodi')
             
         # Parsiranje XML fajla
         tree = ET.parse(file)
@@ -486,7 +486,7 @@ def process_payment_statment():
             stavke.append(podaci)
             
         flash('Uspešno učitan XML fajl.', 'success')
-        return render_template('admin_view_slips.html', 
+        return render_template('transactions/admin_view_slips.html', 
                             title='Izvodi',
                             broj_izvoda_element=broj_izvoda_element,
                             datum_izvoda_element=datum_izvoda_element,
@@ -577,10 +577,10 @@ def process_payment_statment():
         
         flash('Uspešno proknjižene uplate.', 'success')
         payment_statements = PaymentStatement.query.all()
-        return render_template('admin_view_slips.html', payment_statements=payment_statements)
+        return render_template('transactions/admin_view_slips.html', payment_statements=payment_statements)
 
     payment_statements = PaymentStatement.query.all()
-    return render_template('admin_view_slips.html', payment_statements=payment_statements)
+    return render_template('transactions/admin_view_slips.html', payment_statements=payment_statements)
 
 
 @transactions.route("/edit_payment_statement/<int:payment_statement_id>", methods=['GET', 'POST'])
@@ -645,7 +645,7 @@ def edit_payment_statement(payment_statement_id):
         })
         invoice_item_ids.append(invoice_item.id)
         
-    return render_template('edit_payment_statement.html', 
+    return render_template('transactions/edit_payment_statement.html', 
                             payment_statement=payment_statement,
                             payments=payments,
                             users=json.dumps(users_data),
