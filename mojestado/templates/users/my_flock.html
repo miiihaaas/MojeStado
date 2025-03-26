@@ -118,7 +118,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <button type="button" class="btn btn-primary edit-animal font-size-14 mb-5p" title="Uredi" data-bs-toggle="modal" data-bs-target="#editModal"
+                                <button type="button" class="btn-icon btn-primary edit-animal font-size-14 mb-5p" title="Uredi" data-bs-toggle="modal" data-bs-target="#editModal"
                                     data-animal-id="{{ animal.id }}"
                                     data-intended-for="{{ animal.intended_for }}"
                                     data-category="{{ animal.animal_category.animal_category_name }}"
@@ -135,7 +135,7 @@
                                 <form action="{{ url_for('users.remove_animal', animal_id=animal.id) }}" method="post">
                                     {{ form.hidden_tag() }}
                                     <input type="hidden" name="animal_id" value="{{ animal.animal_id }}">
-                                    <button class="btn btn-danger font-size-14" title="Ukloni"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="btn-icon btn-danger font-size-14" title="Ukloni"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

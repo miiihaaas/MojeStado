@@ -60,11 +60,11 @@
                     <td>data</td>
                     <td>
                         {% if farm.user_farm.user_type == 'farm_active' %}
-                        <a class="btn btn-primary font-size-14" href="{{ url_for('users.my_profile', user_id=farm.user_id ) }}"><i class="fa-solid fa-pen-to-square"></i></a>
-                        <a href="{{ url_for('users.deactivate_farm_user', user_id=farm.user_id ) }}" class="btn btn-danger font-size-14">Deaktiviraj PG</a>
+                        <a href="{{ url_for('users.my_profile', user_id=farm.user_id ) }}" class="btn-icon btn-primary font-size-14" title="Uredi PG"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <a href="{{ url_for('users.deactivate_farm_user', user_id=farm.user_id ) }}" class="btn-icon btn-danger font-size-14" title="Deaktiviraj PG"><i class="fa-solid fa-power-off"></i></a>
                         {% elif farm.user_farm.user_type == 'farm_inactive' %}
-                        <a href="{{ url_for('users.remove_farm_user', user_id=farm.user_id ) }}" class="btn btn-danger">Obriši PG</a>
-                        <a href="{{ url_for('users.activate_farm_user', user_id=farm.user_id ) }}" class="btn btn-success font-size-14">Aktiviraj PG</a>
+                        <a href="{{ url_for('users.remove_farm_user', user_id=farm.user_id ) }}" class="btn-icon btn-danger font-size-14" title="Obriši PG"><i class="fa-solid fa-trash"></i></a>
+                        <a href="{{ url_for('users.activate_farm_user', user_id=farm.user_id ) }}" class="btn-icon btn-success font-size-14" title="Aktiviraj PG"><i class="fa-solid fa-power-off"></i></a>
                         {% endif %}
                     </td>
                 </tr>

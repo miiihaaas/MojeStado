@@ -47,32 +47,45 @@
     <div class="container">
         <div class="row">
             <h2>Moji podaci - Korisnik</h2>
-            <div class="col">
-                <div class="form-group">
-                    <label for="name">Ime i prezime</label>
-                    <input class="form-control" type="text" name="name" id="name" value="{{ user.name }} {{ user.surname }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="name">Adresa</label>
-                    <input class="form-control" type="text" name="address" id="address" value="{{ user.address }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="name">Mesto</label>
-                    <input class="form-control" type="text" name="zip_code" id="zip_code" value="{{ user.zip_code }} {{ user.city }}" readonly>
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <label for="name">Telefon</label>
-                    <input class="form-control" type="text" name="phone" id="phone" value="{{ user.phone }}" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="name">email</label>
-                    <input class="form-control" type="text" name="email" id="email" value="{{ user.email }}" readonly>
+            <div class="col-md-12">
+                <div class="col-md-12 d-d-flex mb-20 flex-wrap">
+                    <div class="col-md-6 plr-10">
+                        <div class="form-group">
+                            <label for="name">Ime i prezime</label>
+                            <input class="form-control" type="text" name="name" id="name" value="{{ user.name }} {{ user.surname }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6 plr-10">
+                        <div class="form-group">
+                            <label for="name">Adresa</label>
+                            <input class="form-control" type="text" name="address" id="address" value="{{ user.address }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 d-d-flex">
+                        <div class="col-md-4 plr-10">
+                            <div class="form-group">
+                                <label for="name">Mesto</label>
+                                <input class="form-control" type="text" name="zip_code" id="zip_code" value="{{ user.zip_code }} {{ user.city }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-4 plr-10">
+                            <div class="form-group">
+                                <label for="name">Telefon</label>
+                                <input class="form-control" type="text" name="phone" id="phone" value="{{ user.phone }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-4 plr-10">
+                            <div class="form-group">
+                                <label for="name">email</label>
+                                <input class="form-control" type="text" name="email" id="email" value="{{ user.email }}" readonly>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        <button type="button" class="btn btn-primary mt-20" data-bs-toggle="modal" data-bs-target="#editProfileModal">
             Izmeni adresu
         </button>
         <!-- <a href="" class="btn btn-primary" target_="_blank">Pregled ugovora</a> -->
