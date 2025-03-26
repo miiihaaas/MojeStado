@@ -65,6 +65,8 @@
                         {% elif farm.user_farm.user_type == 'farm_inactive' %}
                         <a href="{{ url_for('users.remove_farm_user', user_id=farm.user_id ) }}" class="btn-icon btn-danger font-size-14" title="Obriši PG"><i class="fa-solid fa-trash"></i></a>
                         <a href="{{ url_for('users.activate_farm_user', user_id=farm.user_id ) }}" class="btn-icon btn-success font-size-14" title="Aktiviraj PG"><i class="fa-solid fa-power-off"></i></a>
+                        {% elif farm.user_farm.user_type == 'farm_unverified' %}
+                        <a href="{{ url_for('users.remove_farm_user', user_id=farm.user_id ) }}" class="btn-icon btn-danger font-size-14" title="Obriši PG"><i class="fa-solid fa-trash"></i></a>
                         {% endif %}
                     </td>
                 </tr>
