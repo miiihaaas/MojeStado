@@ -46,6 +46,8 @@ a:hover { color: #5e4432; }
 .btn-check:focus+.btn-alt, .btn-alt:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
 .btn-check:active+.btn-alt, .btn-check:checked+.btn-alt, .btn-alt.active, .btn-alt:active, .show>.btn-alt.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
 .btn-alt:hover { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-icon { display: inline-flex; justify-content: center; align-items: center; border: 0; width: 32px; margin: 1px;
+    height: 32px; border-radius: 5px; transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out; }
 .input-like { padding: 10px 15px !important; }
 .navbar-brand { font-size: inherit; }
 .m-left-auto { margin-left: auto; }
@@ -70,6 +72,7 @@ button.close:hover { background-color: #5e4432; }
 .font-size-14 { font-size: 14px; }
 
 nav.navbar-dark { background-color: rgba(255, 255, 255, 0.5); }
+nav.navbar { padding-top: 0; }
 .top-bar a { color: #e0bd5d !important; }
 .top-bar a:hover { color: #fff !important; }
 .most-head-logo {max-width: 200px;}
@@ -232,6 +235,8 @@ ul.pagination .page-link:focus { box-shadow: none; }
 .obrisi-sliku { margin-top: -61px; }
 .box-heading { text-align: center; background: #eee; padding: 10px; border-radius: 6px; margin-bottom: 20px; }
 .resetform { margin: auto; padding: 50px 0; display: flex; align-items: end; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.form-control { margin-bottom: 20px; }
+.samesize-button { min-width: 130px; }
 
 /*** Table   ***/
 table.table { font-size: 14px; }
@@ -256,6 +261,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .table>:not(.caption)>*>*:not(:last-child) { border-bottom-width: 1px; border-right-width: 1px; border-color: #ddd !important; }
     .resetform input[type="text"] { min-width: 450px; }
     .sameimage-wrapper { height: 150px; }
+    .d-d-flex { display: flex; }
 }
 @media (min-width: 1400px) {
     .container, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl { max-width: 1324px; }
