@@ -45,9 +45,16 @@
 <section class="register-page mb-5">
     <div class="container">
         <div class="row mb-5">
-            <h2 class="mb-5">Moja prodavnica</h2>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Moja prodavnica</h2>
+            </div>
             <div class="col-md-12 form-box">
-                <h3>Moji proizvodi</h3>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">Moji proizvodi</h3>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+                        <i class="fa-solid fa-plus mr-1"></i> Dodaj proizvod
+                    </button>
+                </div>
                 <div class="overflow-auto">
                     <table class="table table-striped">
                         <thead>
@@ -57,7 +64,7 @@
                                 <th>Naziv</th>
                                 <th>Jedinica mere</th>
                                 <th>Cena po jedinici mere</th>
-                                <th>raspoloživa količina</th>
+                                <th>Raspoloživa količina</th>
                                 <th>Opis</th>
                                 <th></th>
                             </tr>
@@ -73,14 +80,18 @@
                                 <td>{{ product.quantity }}</td>
                                 <td>{{ product.product_description }}</td>
                                 <td>
-                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id)}}" class="btn-icon btn-primary font-size-14" title="Uredi"><i class="fa-solid fa-pen-to-square"></i></a>
                                     {% if product.quantity | int > 0 %}
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id)}}" class="btn-icon btn-primary font-size-14" title="Uredi"><i class="fa-solid fa-pen-to-square"></i></a>
                                     <form action="{{ url_for('marketplace.deactivate_product', product_id=product.id)}}" method="post">
                                         <input type="text" name="product_id" value="{{ product.id }}" hidden>
                                         <button type="submit" class="btn-icon btn-danger font-size-14" title="Deaktiviraj">
                                             <i class="fa-solid fa-power-off"></i>
                                         </button>
                                     </form>
+                                    {% else %}
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id)}}" class="btn-icon btn-success font-size-14" title="Aktiviraj">
+                                        <i class="fa-solid fa-power-on"></i>
+                                    </a>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -88,65 +99,112 @@
                         </tbody>
                     </table>
                 </div>
-                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
             </div>
             <div class="row">
                 <div class="col-md-12">
                     <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
+                        <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="addModalLabel">Dodaj</h5>
-                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
+                                <div class="modal-header bg-mosta">
+                                    <h5 class="modal-title text-white" id="addModalLabel">Dodaj proizvod</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="modal-body smaller-form-mb">
+                                <div class="modal-body">
                                     <form action="" method="post">
-                                        <p>Izaberite podatke proizvoda</p>
+                                        <p class="mb-4">Izaberite podatke proizvoda</p>
                                         {{ form.hidden_tag() }}
-                                        <div class ="form-group">
-                                            {{ form.category.label }}
-                                            {{ form.category (class="form-select form-select-lg", id="category") }}
+                                        
+                                        <!-- Prva sekcija - Kategorije -->
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">Kategorija proizvoda</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="form-group mb-3">
+                                                            {{ form.category.label }}
+                                                            {{ form.category (class="form-select", id="category") }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group mb-3">
+                                                            {{ form.subcategory.label }}
+                                                            {{ form.subcategory (class="form-select", id="subcategory") }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group mb-3">
+                                                            {{ form.section.label }}
+                                                            {{ form.section (class="form-select", id="section") }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class ="form-group">
-                                            {{ form.subcategory.label }}
-                                            {{ form.subcategory (class="form-select form-select-lg", id="subcategory") }}
+                                        
+                                        <!-- Druga sekcija - Osnovni podaci -->
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">Osnovni podaci</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            {{ form.product_name.label }}
+                                                            {{ form.product_name (class="form-control", id="product_name") }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            {{ form.product_description.label }}
+                                                            {{ form.product_description (class="form-control", id="product_description") }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class ="form-group">
-                                            {{ form.section.label }}
-                                            {{ form.section (class="form-select form-select-lg", id="section") }}
+                                        
+                                        <!-- Treća sekcija - Cene i količine -->
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">Cene i količine</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <!-- Leva strana - jedinica mere, konverzija, cena -->
+                                                    <div class="col-md-6">
+                                                        <div class="form-group mb-3">
+                                                            {{ form.unit_of_measurement.label }}
+                                                            {{ form.unit_of_measurement (class="form-select", id="unit_of_measurement") }}
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                            {{ form.weight_conversion.label }} 
+                                                            {{ form.weight_conversion (class="form-control", id="weight_conversion", type="number", step="0.05", placeholder="0.00 (Težina izabrane jedinice mere u kg)") }}
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                            {{ form.product_price_per_unit.label }}
+                                                            {{ form.product_price_per_unit (class="form-control", id="product_price_per_unit", type="number", step="1.0") }}
+                                                        </div>
+                                                    </div>
+                                                    <!-- Desna strana - organska proizvodnja, količina -->
+                                                    <div class="col-md-6">
+                                                        <div class="form-check form-switch mb-4 mt-2">
+                                                            {{ form.organic_product (class="form-check-input", id="organic_product") }}
+                                                            {{ form.organic_product.label(class="form-check-label", for="organic_product") }}
+                                                        </div>
+                                                        <div class="form-group mb-3">
+                                                            {{ form.quantity.label }}
+                                                            {{ form.quantity (class="form-control", id="quantity", type="number", step="1.0") }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="form-group">
-                                            {{ form.product_name.label }}
-                                            {{ form.product_name (class="form-control form-control-lg", id="product_name") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.product_description.label }}
-                                            {{ form.product_description (class="form-control form-control-lg", id="product_name") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.unit_of_measurement.label }}
-                                            {{ form.unit_of_measurement (class="form-select form-select-lg", id="unit_of_measurement") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.weight_conversion.label }} 
-                                            {{ form.weight_conversion (class="form-control form-control-lg", id="product_price_per_unit", type="number", step="0.05", placeholder="0.00 (Unesite težinu jednog komada u kg)") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.product_price_per_unit.label }}
-                                            {{ form.product_price_per_unit (class="form-control form-control-lg", id="product_price_per_unit", type="number", step="1.0") }}
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            {{ form.organic_product (class="form-check-input", id="organic_product") }}
-                                            {{ form.organic_product.label(class="form-check-label", for="organic_product") }}
-                                        </div>
-                                        <div>
-                                            {{ form.quantity.label }}
-                                            {{ form.quantity (class="form-control form-control-lg", id="quantity", type="number", step="1.0") }}
-                                        </div>
-                                        <div>
-                                            {{ form.submit (class="btn btn-primary mt-4") }}
+                                        
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-primary px-5">Sačuvaj proizvod</button>
                                         </div>
                                     </form>
                                 </div>
@@ -155,44 +213,44 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12 form-box">
-                <h3>Moje prodaje</h3>
-                <div class="overflow-auto">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Kategorija proizvoda</th>
-                                <th>Podkategorija proizvoda</th>
-                                <th>Naziv</th>
-                                <th>Jedinica mere</th>
-                                <th>Cena po jedinici mere</th>
-                                <th>Datum prodaje</th>
-                                <th>Količina/masa</th>
-                                <th>Ukupna cena</th>
-                                <th>Kupac</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for invoice_item in invoice_items %}
-                            <tr>
-                                <td>{{ invoice_item.invoice_item_details["category"] }}</td>
-                                <td>{{ invoice_item.invoice_item_details["subcategory"] }}</td>
-                                <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
-                                <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
-                                <td>{{ invoice_item.invoice_item_details["product_price_per_unit_farmer"] }}</td>
-                                <td>{{ invoice_item.invoice.datetime }}</td>
-                                <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
-                                <td>{{ "{:.2f}".format(invoice_item.invoice_item_details["total_price"] / 1.38) }}</td>
-                                <td>{{ invoice_item.invoice.user_invoice.name }} {{ invoice_item.invoice.user_invoice.surname }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="row">
+                <div class="col-md-12 form-box">
+                    <h3>Moje prodaje</h3>
+                    <div class="overflow-auto">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Kategorija proizvoda</th>
+                                    <th>Podkategorija proizvoda</th>
+                                    <th>Naziv</th>
+                                    <th>Jedinica mere</th>
+                                    <th>Cena po jedinici mere</th>
+                                    <th>Datum prodaje</th>
+                                    <th>Količina/masa</th>
+                                    <th>Ukupna cena</th>
+                                    <th>Kupac</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice_item in invoice_items %}
+                                <tr>
+                                    <td>{{ invoice_item.invoice_item_details["category"] }}</td>
+                                    <td>{{ invoice_item.invoice_item_details["subcategory"] }}</td>
+                                    <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
+                                    <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
+                                    <td>{{ invoice_item.invoice_item_details["product_price_per_unit_farmer"] }}</td>
+                                    <td>{{ invoice_item.invoice.datetime }}</td>
+                                    <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
+                                    <td>{{ "{:.2f}".format(invoice_item.invoice_item_details["total_price"] / 1.38) }}</td>
+                                    <td>{{ invoice_item.invoice.user_invoice.name }} {{ invoice_item.invoice.user_invoice.surname }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+                Ukupno: {{ total_sales }}
             </div>
-            Ukupno: {{ total_sales }}
         </div>
     </div>
 </section>

@@ -2,7 +2,9 @@
 {% block content %}
 <section class="farm-page firstsection mb-5">
     <div class="container">
+        <!-- Prvi red - slajder i osnovni podaci o proizvodu -->
         <div class="row">
+            <!-- Slajder slika proizvoda -->
             <div id="myCarousel" class="carousel slide col-md-6" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     {% for product_image in product.product_image_collection %}
@@ -23,8 +25,9 @@
                 {% endif %}
             </div>
             
+            <!-- Osnovni podaci o proizvodu -->
             <div class="col-md-6">
-                <div class="col-md-12">
+                <div class="col-md-12 mb-4">
                     <h1>{{product.product_name}}</h1>
                     <p><a href="{{ url_for('marketplace.products_market', product_category_id=product.product_category_id) }}">{{ product.product_category.product_category_name }}</a> > {{ product.product_subcategory.product_subcategory_name }} > {{ product.product_section.product_section_name }}</p>
                     <p><strong>Opis: </strong>{{product.product_description}}</p>
@@ -42,158 +45,8 @@
                     {% endif %}
                 </div>
                 
-
-                {% if current_user.id == product.farm_product.user_farm.id %}
-
+                {% if current_user.id != product.farm_product.user_farm.id %}
                 <div class="col-md-12">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#descriptionModal">
-                        Izmena gotovog proizvoda
-                    </button>
-                    <!-- The modal -->
-                    <div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="descriptionModalLabel">Izmena gotovog proizvoda</h5>
-                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form action="{{ url_for('marketplace.edit_product', product_id=product.id) }}" method="POST">
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                                        <div class="row">
-                                            <div class="form-group mb-3">
-                                                <label for="product_name">Naziv proizvoda</label>
-                                                <input type="text" name="product_name" value="{{ product.product_name }}" class="form-control">
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="product_description">Opis proizvoda</label>
-                                                <input type="text" name="product_description" value="{{ product.product_description }}" class="form-control">
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="unit_of_measurement">Jedinica mere</label>
-                                                <select name="unit_of_measurement" class="form-select width-auto">
-                                                    <option value="{{ product.unit_of_measurement }}">{{ product.unit_of_measurement }}</option>
-                                                    <option value="kg">kg</option>
-                                                    <option value="kom">kom</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="weight_conversion">Konverzija</label>
-                                                <input type="number" step="0.1" name="weight_conversion" value="{{ product.weight_conversion }}" class="form-control width-auto">
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="product_price_per_unit">Cena po jedinici</label>
-                                                <input type="number" step="1" name="product_price_per_unit" value="{{ product.product_price_per_unit_farmer }}" class="form-control width-auto">
-                                            </div>
-                                            <div class="form-check form-switch mb-3 ml-2">
-                                                {% if product.organic_product %}
-                                                <input class="form-check-input" name="organic_product" type="checkbox" checked>
-                                                {% else %}
-                                                <input class="form-check-input" name="organic_product" type="checkbox">
-                                                {% endif %}
-                                                <label class="form-check-label" for="organic_product">Organska proizvodnja</label>
-                                            </div>
-                                            <div class="form-group  mb-3">
-                                                <label for="quantity">Količina</label>
-                                                <input type="number" name="quantity" value="{{ product.quantity }}" class="form-control width-auto">
-                                            </div>
-                                            <button type="submit" class="btn btn-primary narrow-center">Izmeni</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <p>U ovoj sekciji možete upravljati svojim slikama proizvoda. Možete dodati maksimalno 5 slika...</p>
-                    </div>
-                    <div class="form-group mb-4">
-                        <form action="{{ url_for('marketplace.upload_product_image', product_id=product.id) }}" method="POST" enctype="multipart/form-data" id="upload_form">
-                            <input type="hidden" name="product_id" value="product.id">
-                            <div class="form-group">
-                                <div class="mb-3">
-                                    <label for="picture" class="form-label">Izaberi sliku</label>
-                                    <input type="file" class="form-control" id="picture" name="picture" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Dodaj sliku proizvoda</button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="form-group mb-4">
-                        <p>U ovoj sekciji možete pregledati i obrisati slike proizvoda</p>
-                        <!-- Button to open the modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal">
-                            Pregled i brisanje slika
-                        </button>
-                        <!-- The modal -->
-                        <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="imageModalLabel">Pregled i brisanje slika</h5>
-                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form action="{{ url_for('marketplace.delete_product_image') }}" method="POST">
-                                            <input type="hidden" name="product_id" value="{{ product.id }}">
-                                            <div class="row">
-                                            {% for product_image in product.product_image_collection %}
-                                                <div class="col-md-3">
-                                                <img src="/static/product_image/{{ product_image }}" class="img-fluid rounded" alt="Slika Proizvoda {{ product.product_name }}">
-                                                <button type="submit" class="btn btn-danger" name="product_image" value="{{ product_image }}">Obriši</button>
-                                                </div>
-                                            {% endfor %}
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group mb-4">
-                        <p>U ovoj sekciji možete pregledati i postaviti naslovnu sliku</p>
-                        <!-- Button to open the modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#defaultImageModal">
-                            Podešavanje naslovne slike
-                        </button>
-
-                        <!-- The modal -->
-                        <div class="modal fade" id="defaultImageModal" tabindex="-1" role="dialog" aria-labelledby="defaultImageModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="defaultImageModalLabel">Podešavanje naslovne slike</h5>
-                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form action="{{ url_for('marketplace.default_product_image') }}" method="POST">
-                                            <input type="hidden" name="product_id" value="{{ product.id }}">
-                                            <div class="row">
-                                            {% for product_image in product.product_image_collection %}
-                                                <div class="col-md-3">
-                                                    <img src="/static/product_image/{{ product_image }}" class="img-fluid rounded" alt="Slika Farme {{ product.product_name }}">
-                                                    <button type="submit" class="btn btn-primary" name="product_image" value="{{ product_image }}">Postavi kao naslovnu sliku</button>
-                                                </div>
-                                            {% endfor %}
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {% else %}
-                <div class="col-md-12"></div>
                     <form action="{{ url_for('main.add_product_to_cart', product_id=product.id) }}" method="POST" class="addtocart">
                         <input type="hidden" name="product_id" value="{{ product.id }}">
                         <div class="form-group">
@@ -206,7 +59,205 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if current_user.id == product.farm_product.user_farm.id %}
+        <!-- Drugi red - izmena proizvoda i upravljanje slikama -->
+        <div class="row mt-4">
+            <!-- Leva kolona - Izmena gotovog proizvoda -->
+            <div class="col-md-6">
+                <!-- Sekcija za izmenu gotovog proizvoda -->
+                <div class="card p-4 h-100">
+                    <h4 class="mb-3">Izmena gotovog proizvoda</h4>
+                    <form action="{{ url_for('marketplace.edit_product', product_id=product.id) }}" method="POST">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <div class="row">
+                            <div class="form-group mb-3">
+                                <label for="product_name">Naziv proizvoda</label>
+                                <input type="text" name="product_name" value="{{ product.product_name }}" class="form-control">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="product_description">Opis proizvoda</label>
+                                <input type="text" name="product_description" value="{{ product.product_description }}" class="form-control">
+                            </div>
+                            
+                            <!-- Dve kolone za organizaciju polja -->
+                            <div class="row">
+                                <!-- Leva strana - jedinica mere, Težina jedinice mere u kg, cena -->
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="unit_of_measurement">Jedinica mere</label>
+                                        <select name="unit_of_measurement" id="unit_of_measurement" class="form-select width-auto">
+                                            <option value="kg" {% if product.unit_of_measurement == 'kg' %}selected{% endif %}>kg</option>
+                                            <option value="kom" {% if product.unit_of_measurement == 'kom' %}selected{% endif %}>kom</option>
+                                            <option value="l" {% if product.unit_of_measurement == 'l' %}selected{% endif %}>l</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group mb-3" id="conversion_field">
+                                        <label for="weight_conversion">Težina jedinice mere u kg</label>
+                                        <input type="number" step="0.05" name="weight_conversion" id="weight_conversion" value="{{ product.weight_conversion }}" class="form-control width-auto">
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="product_price_per_unit">Cena po jedinici mere</label>
+                                        <input type="number" step="1" name="product_price_per_unit" value="{{ product.product_price_per_unit_farmer }}" class="form-control width-auto">
+                                    </div>
+                                </div>
+                                
+                                <!-- Desna strana - organska proizvodnja, količina, dugme -->
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3 ml-2">
+                                        {% if product.organic_product %}
+                                        <input class="form-check-input" name="organic_product" type="checkbox" checked>
+                                        {% else %}
+                                        <input class="form-check-input" name="organic_product" type="checkbox">
+                                        {% endif %}
+                                        <label class="form-check-label" for="organic_product">Organska proizvodnja</label>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="quantity">Raspoloživa količina</label>
+                                        <input type="number" name="quantity" value="{{ product.quantity }}" class="form-control width-auto">
+                                    </div>
+                                    <div class="form-group mt-4">
+                                        <button type="submit" class="btn btn-primary">Sačuvaj</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Desna kolona - Upravljanje slikama -->
+            <div class="col-md-6">
+                <!-- Sekcija za dodavanje slika -->
+                <div class="card p-3 mb-3">
+                    <h4 class="mb-2">Dodavanje slike proizvoda</h4>
+                    <p class="small">Možete dodati maksimalno 5 slika.</p>
+                    <form action="{{ url_for('marketplace.upload_product_image', product_id=product.id) }}" method="POST" enctype="multipart/form-data" id="upload_form">
+                        <input type="hidden" name="product_id" value="product.id">
+                        <div class="form-group">
+                            <div class="mb-2">
+                                <label for="picture" class="form-label">Izaberi sliku</label>
+                                <input type="file" class="form-control" id="picture" name="picture" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Dodaj sliku proizvoda</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sekcija za pregled i brisanje slika -->
+                <div class="card p-3 mb-3">
+                    <h4 class="mb-2">Pregled i brisanje slika</h4>
+                    <p class="small">Ovde možete pregledati i obrisati slike proizvoda.</p>
+                    <!-- Button to open the modal -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal">
+                        Pregled i brisanje slika
+                    </button>
+                </div>
+
+                <!-- Sekcija za podešavanje naslovne slike -->
+                <div class="card p-3">
+                    <h4 class="mb-2">Podešavanje naslovne slike</h4>
+                    <p class="small">Ovde možete postaviti naslovnu sliku proizvoda.</p>
+                    <!-- Button to open the modal -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#defaultImageModal">
+                        Podešavanje naslovne slike
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modali ostaju nepromenjeni -->
+        <!-- Modal za pregled i brisanje slika -->
+        <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageModalLabel">Pregled i brisanje slika</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <form action="{{ url_for('marketplace.delete_product_image') }}" method="POST">
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <div class="row">
+                                {% for product_image in product.product_image_collection %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card">
+                                            <img src="/static/product_image/{{ product_image }}" class="img-fluid rounded" alt="Slika proizvoda {{ product.product_name }}">
+                                            <div class="card-body text-center">
+                                                <button type="submit" class="btn btn-danger" name="product_image" value="{{ product_image }}">Obriši sliku</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal za podešavanje naslovne slike -->
+        <div class="modal fade" id="defaultImageModal" tabindex="-1" role="dialog" aria-labelledby="defaultImageModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="defaultImageModalLabel">Podešavanje naslovne slike</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('marketplace.default_product_image') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <div class="row">
+                            {% for product_image in product.product_image_collection %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <img src="/static/product_image/{{ product_image }}" class="img-fluid rounded" alt="Slika proizvoda {{ product.product_name }}">
+                                        <div class="card-body text-center">
+                                            <button type="submit" class="btn btn-primary" name="product_image" value="{{ product_image }}">Postavi kao naslovnu sliku</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </section>
+
+<!-- JavaScript za zavisnost polja konverzije od jedinice mere -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const unitOfMeasurementSelect = document.getElementById('unit_of_measurement');
+        const conversionField = document.getElementById('conversion_field');
+        const weightConversionInput = document.getElementById('weight_conversion');
+        
+        // Inicijalno proveri vrednost
+        checkUnitOfMeasurement();
+        
+        // Dodaj event listener za promenu vrednosti
+        unitOfMeasurementSelect.addEventListener('change', checkUnitOfMeasurement);
+        
+        function checkUnitOfMeasurement() {
+            if (unitOfMeasurementSelect && conversionField && weightConversionInput) {
+                if (unitOfMeasurementSelect.value === 'kg') {
+                    // Umesto da sakrijemo polje, samo ga onemogućimo i postavimo vrednost na 1
+                    weightConversionInput.value = '1';
+                    weightConversionInput.readOnly = true;
+                    conversionField.classList.add('text-muted');
+                } else if (unitOfMeasurementSelect.value === 'kom' || unitOfMeasurementSelect.value === 'l') {
+                    // Za kom i l možemo da omogućimo polje Težina jedinice mere u kg
+                    weightConversionInput.readOnly = false;
+                    conversionField.classList.remove('text-muted');
+                }
+            }
+        }
+    });
+</script>
 
 {% endblock %}

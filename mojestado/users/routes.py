@@ -1255,10 +1255,10 @@ def my_market(farm_id):
                     try:
                         weight_conversion = float(form.weight_conversion.data)
                         if weight_conversion <= 0:
-                            raise ValueError('Konverzija težine mora biti pozitivan broj')
+                            raise ValueError('Težina jedinice mere u kg težine mora biti pozitivan broj')
                     except ValueError as e:
-                        app.logger.error(f'Nevažeća konverzija težine: {str(e)}')
-                        flash('Konverzija težine mora biti pozitivan broj.', 'danger')
+                        app.logger.error(f'Nevažeća Težina jedinice mere u kg težine: {str(e)}')
+                        flash('Težina jedinice mere u kg težine mora biti pozitivan broj.', 'danger')
                         return redirect(url_for('users.my_market', farm_id=farm_id))
                 
                 # Kreiranje novog proizvoda
@@ -2267,7 +2267,7 @@ def admin_edit_profile(user_id):
                             form=form)
 
 
-@users.route("/admin_remove_user/<int:user_id>", methods=['POST'])
+@users.route("/admin_remove_user/<int:user_id>", methods=['GET', 'POST'])
 def admin_remove_user(user_id):
     """
     Briše korisnika iz sistema. Ova operacija je nepovratna.
