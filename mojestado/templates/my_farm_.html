@@ -219,7 +219,13 @@
 <h3>Moji proizvodi</h3>
 <h3>Moje prodaje</h3>
 {% else %}
-neaktivni farmer {{ current_user.name }} {{ current_user.surname }}
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            Neaktivni farmer {{ current_user.name }} {{ current_user.surname }}
+        </div>
+    </div>
+</section>
 {% endif %}
 {% endblock content %}
 
