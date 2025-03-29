@@ -263,8 +263,14 @@
     </div>
 </section>
 {% elif user.user_type == 'farm_inactive' %}
-<h2>Moji podaci - Farmer</h2>
-<p>Još uvek nije aktiviran Vaš profil. Za bliže informacije kontakirajte administratora.</p>
+<section class="register-page firstsection mb-5">
+    <div class="container">
+        <div class="row">
+            <h2>Moji podaci - Farmer</h2>
+            <p>Još uvek nije aktiviran Vaš profil. Za bliže informacije kontakirajte administratora.</p>
+        </div>
+    </div>
+</section>
 {% endif %}
 
 {% endblock content%}

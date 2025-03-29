@@ -15,7 +15,7 @@
         </div>
     </div>
 </section>
-<section class="register-page firstsection mb-5">
+<section class="register-page firstsection mb-2">
     <div class="container">
         <div class="row">
             <nav class="navbar-expand-lg navbar-light my-navbar pb-10">
@@ -42,107 +42,109 @@
         </div>
     </div>
 </section>
-<section class="register-page firstsection mb-5">
+<section class="register-page mb-5">
     <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Moje stado</h2>
+        <div class="row mb-5">
+            <h2 class="mb-5">Moje stado</h2>
+            <div class="col-md-12 form-box">
                 <h3>U ponudi</h3>
-                <table class="table table-striped popupable" id="Data">
-                    <thead>
-                        <tr>
-                            <th>ID grla</th>
-                            <th>Kategorija</th>
-                            <th>Podkategorija</th>
-                            <th>Rasa</th>
-                            <th>Pol</th>
-                            <th>Trenutna masa</th>
-                            <th>Cena po kilogramu</th>
-                            <th>Ukupna cena</th>
-                            <th>Osigurano</th>
-                            <th>Organski uzgoj</th>
-                            <th>Usluge PG</th>
-                            <th>Karton</th>
-                            <th>Akcije</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for animal in animals %}
-                        <tr>
-                            <td>
-                                {% if animal.animal_id %}
-                                    <!--{{ animal.animal_id }}-->
-                                    <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
-                                    <div class="popup-id">{{ animal.animal_id }}</div>
-                                {% endif %}
-                            </td>
-                            <td>{{ animal.animal_category.animal_category_name }}</td>
-                            <td>{{ animal.animal_categorization.subcategory }}</td>
-                            <td>{{ animal.animal_race.animal_race_name }}</td>
-                            <td>{{ animal.animal_gender }}</td>
-                            <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
-                            <td>{{ "{:.2f}".format(animal.price_per_kg_farmer) }}</td>
-                            <td>{{ "{:.2f}".format(animal.total_price | float / 1.38) }}</td>
-                            <td>
-                                {% if animal.insured %}
-                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
-                                {% else %}
-                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if animal.organic_animal %}
-                                    <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
-                                {% else %}
-                                    <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% for service, category in farm.services.items() %}
-                                {% for category_id, price in category.items() %}
-                                {% if price | float > 0 and category_id | int == animal.animal_category.id %}
-                                {% if service == 'klanje' %}
-                                    <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" title="Usluga klanja" width="32" height="32">
-                                {% elif service == 'obrada' %}
-                                    <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" title="Usluga obrade" width="32" height="32">
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-                                {% endfor %}
-                            </td>
-                            <td>
-                                {% if animal.cardboard %}
-                                    <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                <button type="button" class="btn-icon btn-primary edit-animal font-size-14 mb-5p" title="Uredi" data-bs-toggle="modal" data-bs-target="#editModal"
-                                    data-animal-id="{{ animal.id }}"
-                                    data-intended-for="{{ animal.intended_for }}"
-                                    data-category="{{ animal.animal_category.animal_category_name }}"
-                                    data-subcategory="{{ animal.animal_categorization.subcategory }}"
-                                    data-race="{{ animal.animal_race.animal_race_name }}"
-                                    data-mindjusha="{{ animal.animal_id }}"
-                                    data-gender="{{ animal.animal_gender }}"
-                                    data-weight="{{ animal.current_weight }}"
-                                    data-price="{{ animal.price_per_kg_farmer }}"
-                                    data-insured="{{ animal.insured }}"
-                                    data-organic="{{ animal.organic_animal }}">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <form action="{{ url_for('users.remove_animal', animal_id=animal.id) }}" method="post">
-                                    {{ form.hidden_tag() }}
-                                    <input type="hidden" name="animal_id" value="{{ animal.animal_id }}">
-                                    <button class="btn-icon btn-danger font-size-14" title="Ukloni"><i class="fa-solid fa-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
+                <div class="overflow-auto">
+                    <table class="table table-striped popupable" id="Data">
+                        <thead>
+                            <tr>
+                                <th>ID grla</th>
+                                <th>Kategorija</th>
+                                <th>Podkategorija</th>
+                                <th>Rasa</th>
+                                <th>Pol</th>
+                                <th>Trenutna masa</th>
+                                <th>Cena po kilogramu</th>
+                                <th>Ukupna cena</th>
+                                <th>Osigurano</th>
+                                <th>Organski uzgoj</th>
+                                <th>Usluge PG</th>
+                                <th>Karton</th>
+                                <th>Akcije</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for animal in animals %}
+                            <tr>
+                                <td>
+                                    {% if animal.animal_id %}
+                                        <!--{{ animal.animal_id }}-->
+                                        <img src="{{ url_for('static', filename='images/id-icon.png') }}" title="{{ animal.animal_id }}" width="32" height="32" class="clickable-image">
+                                        <div class="popup-id">{{ animal.animal_id }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ animal.animal_category.animal_category_name }}</td>
+                                <td>{{ animal.animal_categorization.subcategory }}</td>
+                                <td>{{ animal.animal_race.animal_race_name }}</td>
+                                <td>{{ animal.animal_gender }}</td>
+                                <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
+                                <td>{{ "{:.2f}".format(animal.price_per_kg_farmer) }}</td>
+                                <td>{{ "{:.2f}".format(animal.total_price | float / 1.38) }}</td>
+                                <td>
+                                    {% if animal.insured %}
+                                        <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if animal.organic_animal %}
+                                        <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Organsko" width="32" height="32">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% for service, category in farm.services.items() %}
+                                    {% for category_id, price in category.items() %}
+                                    {% if price | float > 0 and category_id | int == animal.animal_category.id %}
+                                    {% if service == 'klanje' %}
+                                        <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" title="Usluga klanja" width="32" height="32">
+                                    {% elif service == 'obrada' %}
+                                        <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" title="Usluga obrade" width="32" height="32">
+                                    {% endif %}
+                                    {% endif %}
+                                    {% endfor %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if animal.cardboard %}
+                                        <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9"><i class="fa-regular fa-clipboard"></i></a>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn-icon btn-primary edit-animal font-size-14 mb-5p" title="Uredi" data-bs-toggle="modal" data-bs-target="#editModal"
+                                        data-animal-id="{{ animal.id }}"
+                                        data-intended-for="{{ animal.intended_for }}"
+                                        data-category="{{ animal.animal_category.animal_category_name }}"
+                                        data-subcategory="{{ animal.animal_categorization.subcategory }}"
+                                        data-race="{{ animal.animal_race.animal_race_name }}"
+                                        data-mindjusha="{{ animal.animal_id }}"
+                                        data-gender="{{ animal.animal_gender }}"
+                                        data-weight="{{ animal.current_weight }}"
+                                        data-price="{{ animal.price_per_kg_farmer }}"
+                                        data-insured="{{ animal.insured }}"
+                                        data-organic="{{ animal.organic_animal }}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <form action="{{ url_for('users.remove_animal', animal_id=animal.id) }}" method="post">
+                                        {{ form.hidden_tag() }}
+                                        <input type="hidden" name="animal_id" value="{{ animal.animal_id }}">
+                                        <button class="btn-icon btn-danger font-size-14" title="Ukloni"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
             </div>
         </div>
         <div class="row">
@@ -156,7 +158,7 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body smaller-form-mb">
                                 <form action="" method="post" enctype="multipart/form-data">
                                     <p>Izaberite podatke</p>
                                     {{ form.hidden_tag() }}
@@ -205,7 +207,7 @@
                                         {{ form.cardboard(class="form-control", id="cardboard", type="file", accept=".pdf") }}
                                     </div>
                                     <div class="form-group">
-                                        {{ form.submit(class="btn btn-primary") }}
+                                        {{ form.submit(class="btn btn-primary mt-4") }}
                                     </div>
                                 </form>
                             </div>
@@ -225,7 +227,7 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body  smaller-form-mb">
                                 <p>Podaci o životinji</p>
                                 <div class="form-group">
                                     <label for="intended_for">Namena</label>
@@ -273,7 +275,7 @@
                                         {{ form.cardboard.label(class="form-label") }} (ako treba da se reuploaduje)
                                         {{ form.cardboard(class="form-control", id="cardboard", type="file", accept=".pdf") }}
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group mt-4">
                                         <button type="submit" class="btn btn-primary" name="submit_edit" id="submit_edit">Izmeni</button>
                                     </div>
                                 </form>
@@ -284,50 +286,52 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12 form-box">
                 <h3>U tovu</h3>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID grla</th>
-                            <th>Kategorija</th>
-                            <th>Podkategorija</th>
-                            <th>Rasa</th>
-                            <th>Pol</th>
-                            <th>Trenutna masa grla</th>
-                            <th>Željena masa grla</th>
-                            <th>Projektovani datum završetka tova</th>
-                            <th>Osigurano</th>
-                            <th>Organski uzgoj</th>
-                            <th>Karton<br>grla</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for animal in fattening_animals %}
-                        <tr>
-                            <td>{{ animal.animal_id }}</td>
-                            <td>{{ animal.animal_category.animal_category_name }}</td>
-                            <td>{{ animal.animal_categorization.subcategory }}</td>
-                            <td>{{ animal.animal_race.animal_race_name }}</td>
-                            <td>{{ animal.animal_gender }}</td>
-                            <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
-                            <td>{{ "{:.2f}".format(animal.wanted_weight) }}</td>
-                            <td>{{ animal.fattening_finish_date }}</td>
-                            <td>{{ animal.insured }}</td>
-                            <td>{{ animal.organic_animal }}</td>
-                            <td>
-                                {% if animal.cardboard %}
-                                <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9 services-btn"><i class="fa-regular fa-clipboard"></i></a>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <button class="btn btn-danger unisize-btn">Završen tov</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="overflow-auto">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID grla</th>
+                                <th>Kategorija</th>
+                                <th>Podkategorija</th>
+                                <th>Rasa</th>
+                                <th>Pol</th>
+                                <th>Trenutna masa grla</th>
+                                <th>Željena masa grla</th>
+                                <th>Projektovani datum završetka tova</th>
+                                <th>Osigurano</th>
+                                <th>Organski uzgoj</th>
+                                <th>Karton<br>grla</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for animal in fattening_animals %}
+                            <tr>
+                                <td>{{ animal.animal_id }}</td>
+                                <td>{{ animal.animal_category.animal_category_name }}</td>
+                                <td>{{ animal.animal_categorization.subcategory }}</td>
+                                <td>{{ animal.animal_race.animal_race_name }}</td>
+                                <td>{{ animal.animal_gender }}</td>
+                                <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
+                                <td>{{ "{:.2f}".format(animal.wanted_weight) }}</td>
+                                <td>{{ animal.fattening_finish_date }}</td>
+                                <td>{{ animal.insured }}</td>
+                                <td>{{ animal.organic_animal }}</td>
+                                <td>
+                                    {% if animal.cardboard %}
+                                    <a href="{{ url_for('static', filename='cardboards/' + animal.cardboard) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary9 services-btn"><i class="fa-regular fa-clipboard"></i></a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger unisize-btn">Završen tov</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

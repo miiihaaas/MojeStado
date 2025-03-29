@@ -7,17 +7,15 @@
             <div class="col-md-6">
                 <h1 class="wht-text">Moj nalog</h1>
                 <div class="home-hero-txt mb-5">
-                    <!--
-                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
-                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat
-                    -->
+                    <!--Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+                    Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat-->
                 </div>
             </div>
             <div class="col-md-3"></div>
         </div>
     </div>
 </section>
-<section class="register-page firstsection mb-5">
+<section class="register-page firstsection mb-2">
     <div class="container">
         <div class="row">
             <nav class="navbar-expand-lg navbar-light my-navbar pb-10">
@@ -44,51 +42,53 @@
         </div>
     </div>
 </section>
-<section class="register-page firstsection mb-5">
+<section class="register-page mb-5">
     <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Moja prodavnica</h2>
+        <div class="row mb-5">
+            <h2 class="mb-5">Moja prodavnica</h2>
+            <div class="col-md-12 form-box">
                 <h3>Moji proizvodi</h3>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Kategorija proizvoda</th>
-                            <th>Podkategorija proizvoda</th>
-                            <th>Naziv</th>
-                            <th>Jedinica mere</th>
-                            <th>Cena po jedinici mere</th>
-                            <th>raspoloživa količina</th>
-                            <th>Opis</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in products %}
-                        <tr>
-                            <td>{{ product.product_category.product_category_name }}</td>
-                            <td>{{ product.product_subcategory.product_subcategory_name }}</td>
-                            <td>{{ product.product_name }}</td>
-                            <td>{{ product.unit_of_measurement }}</td>
-                            <td>{{ product.product_price_per_unit_farmer }}</td>
-                            <td>{{ product.quantity }}</td>
-                            <td>{{ product.product_description }}</td>
-                            <td>
-                                <a href="{{ url_for('marketplace.product_detail', product_id=product.id)}}" class="btn-icon btn-primary font-size-14" title="Uredi"><i class="fa-solid fa-pen-to-square"></i></a>
-                                {% if product.quantity | int > 0 %}
-                                <form action="{{ url_for('marketplace.deactivate_product', product_id=product.id)}}" method="post">
-                                    <input type="text" name="product_id" value="{{ product.id }}" hidden>
-                                    <button type="submit" class="btn-icon btn-danger font-size-14" title="Deaktiviraj">
-                                        <i class="fa-solid fa-power-off"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
+                <div class="overflow-auto">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Kategorija proizvoda</th>
+                                <th>Podkategorija proizvoda</th>
+                                <th>Naziv</th>
+                                <th>Jedinica mere</th>
+                                <th>Cena po jedinici mere</th>
+                                <th>raspoloživa količina</th>
+                                <th>Opis</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ product.product_category.product_category_name }}</td>
+                                <td>{{ product.product_subcategory.product_subcategory_name }}</td>
+                                <td>{{ product.product_name }}</td>
+                                <td>{{ product.unit_of_measurement }}</td>
+                                <td>{{ product.product_price_per_unit_farmer }}</td>
+                                <td>{{ product.quantity }}</td>
+                                <td>{{ product.product_description }}</td>
+                                <td>
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id)}}" class="btn-icon btn-primary font-size-14" title="Uredi"><i class="fa-solid fa-pen-to-square"></i></a>
+                                    {% if product.quantity | int > 0 %}
+                                    <form action="{{ url_for('marketplace.deactivate_product', product_id=product.id)}}" method="post">
+                                        <input type="text" name="product_id" value="{{ product.id }}" hidden>
+                                        <button type="submit" class="btn-icon btn-danger font-size-14" title="Deaktiviraj">
+                                            <i class="fa-solid fa-power-off"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
             </div>
             <div class="row">
                 <div class="col-md-12">
@@ -101,7 +101,7 @@
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
-                                <div class="modal-body">
+                                <div class="modal-body smaller-form-mb">
                                     <form action="" method="post">
                                         <p>Izaberite podatke proizvoda</p>
                                         {{ form.hidden_tag() }}
@@ -146,7 +146,7 @@
                                             {{ form.quantity (class="form-control form-control-lg", id="quantity", type="number", step="1.0") }}
                                         </div>
                                         <div>
-                                            {{ form.submit (class="btn btn-primary") }}
+                                            {{ form.submit (class="btn btn-primary mt-4") }}
                                         </div>
                                     </form>
                                 </div>
@@ -157,37 +157,41 @@
             </div>
         </div>
         <div class="row">
-            <h3>Moje prodaje</h3>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Kategorija proizvoda</th>
-                        <th>Podkategorija proizvoda</th>
-                        <th>Naziv</th>
-                        <th>Jedinica mere</th>
-                        <th>Cena po jedinici mere</th>
-                        <th>Datum prodaje</th>
-                        <th>Količina/masa</th>
-                        <th>Ukupna cena</th>
-                        <th>Kupac</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for invoice_item in invoice_items %}
-                    <tr>
-                        <td>{{ invoice_item.invoice_item_details["category"] }}</td>
-                        <td>{{ invoice_item.invoice_item_details["subcategory"] }}</td>
-                        <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
-                        <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
-                        <td>{{ invoice_item.invoice_item_details["product_price_per_unit_farmer"] }}</td>
-                        <td>{{ invoice_item.invoice.datetime }}</td>
-                        <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
-                        <td>{{ "{:.2f}".format(invoice_item.invoice_item_details["total_price"] / 1.38) }}</td>
-                        <td>{{ invoice_item.invoice.user_invoice.name }} {{ invoice_item.invoice.user_invoice.surname }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="col-md-12 form-box">
+                <h3>Moje prodaje</h3>
+                <div class="overflow-auto">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Kategorija proizvoda</th>
+                                <th>Podkategorija proizvoda</th>
+                                <th>Naziv</th>
+                                <th>Jedinica mere</th>
+                                <th>Cena po jedinici mere</th>
+                                <th>Datum prodaje</th>
+                                <th>Količina/masa</th>
+                                <th>Ukupna cena</th>
+                                <th>Kupac</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice_item in invoice_items %}
+                            <tr>
+                                <td>{{ invoice_item.invoice_item_details["category"] }}</td>
+                                <td>{{ invoice_item.invoice_item_details["subcategory"] }}</td>
+                                <td>{{ invoice_item.invoice_item_details["product_name"] }}</td>
+                                <td>{{ invoice_item.invoice_item_details["unit_of_measurement"] }}</td>
+                                <td>{{ invoice_item.invoice_item_details["product_price_per_unit_farmer"] }}</td>
+                                <td>{{ invoice_item.invoice.datetime }}</td>
+                                <td>{{ invoice_item.invoice_item_details["quantity"] }}</td>
+                                <td>{{ "{:.2f}".format(invoice_item.invoice_item_details["total_price"] / 1.38) }}</td>
+                                <td>{{ invoice_item.invoice.user_invoice.name }} {{ invoice_item.invoice.user_invoice.surname }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             Ukupno: {{ total_sales }}
         </div>
     </div>
