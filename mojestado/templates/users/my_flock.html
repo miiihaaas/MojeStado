@@ -47,7 +47,10 @@
         <div class="row mb-5">
             <h2 class="mb-5">Moje stado</h2>
             <div class="col-md-12 form-box">
-                <h3>U ponudi</h3>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>U ponudi</h3>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fa-solid fa-plus"></i> Dodaj životinju</button>
+                </div>
                 <div class="overflow-auto">
                     <table class="table table-striped popupable" id="Data">
                         <thead>
@@ -144,70 +147,134 @@
                         </tbody>
                     </table>
                 </div>
-                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addModal">Dodaj</button>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
+                    <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addModalLabel">Dodaj</h5>
-                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                            <div class="modal-header bg-mosta">
+                                <h5 class="modal-title text-white" id="addModalLabel">Dodaj životinju</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body smaller-form-mb">
+                            <div class="modal-body">
                                 <form action="" method="post" enctype="multipart/form-data">
-                                    <p>Izaberite podatke</p>
+                                    <p class="mb-4">Izaberite podatke životinje</p>
                                     {{ form.hidden_tag() }}
-                                    <div class ="form-group">
-                                        {{ form.intended_for.label }}
-                                        {{ form.intended_for (class="form-select form-select-lg", id="intended_for") }}
+                                    
+                                    <!-- Prva sekcija - Osnovne informacije -->
+                                    <div class="card mb-4">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0">Osnovne informacije</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3">
+                                                        {{ form.intended_for.label }}
+                                                        {{ form.intended_for (class="form-select", id="intended_for") }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3">
+                                                        {{ form.category.label }}
+                                                        {{ form.category (class="form-select", id="category") }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3" id="subcategory-group" style="display: none;">
+                                                        {{ form.subcategory.label }}
+                                                        {{ form.subcategory (class="form-select", id="subcategory") }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3">
+                                                        {{ form.race.label }}
+                                                        {{ form.race (class="form-select", id="race") }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class ="form-group">
-                                        {{ form.category.label }}
-                                        {{ form.category (class="form-select form-select-lg", id="category") }}
+                                    
+                                    <!-- Druga sekcija - Identifikacija -->
+                                    <div class="card mb-4">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0">Identifikacija</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3" id="animalIdGroup">
+                                                        {{ form.animal_id.label }}
+                                                        {{ form.animal_id(class="form-control", id="animal_id") }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3" id="animalGenderGroup">
+                                                        {{ form.animal_gender.label }}
+                                                        {{ form.animal_gender(class="form-select", id="animal_gender") }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class ="form-group" id="subcategory-group" style="display: none;">
-                                        {{ form.subcategory.label }}
-                                        {{ form.subcategory (class="form-select form-select-lg", id="subcategory") }}
+                                    
+                                    <!-- Treća sekcija - Cena i težina -->
+                                    <div class="card mb-4">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0">Cena i težina</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3">
+                                                        {{ form.weight.label }}
+                                                        {{ form.weight (class="form-control", id="weight", type="number", step="0.1") }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group mb-3">
+                                                        {{ form.price.label }}
+                                                        {{ form.price (class="form-control", id="price", type="number", step="0.1") }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class ="form-group">
-                                        {{ form.race.label }}
-                                        {{ form.race (class="form-select form-select-lg", id="race") }}
+                                    
+                                    <!-- Četvrta sekcija - Dodatne informacije -->
+                                    <div class="card mb-4">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0">Dodatne informacije</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-check form-switch mb-3">
+                                                        {{ form.insured (class="form-check-input", id="insured") }}
+                                                        {{ form.insured.label(class="form-check-label", for="insured") }}
+                                                    </div>
+                                                    <div class="form-check form-switch mb-3">
+                                                        {{ form.organic (class="form-check-input", id="organic") }}
+                                                        {{ form.organic.label(class="form-check-label", for="organic") }}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        {{ form.cardboard.label(class="form-label") }}
+                                                        {{ form.cardboard(class="form-control", id="cardboard", type="file", accept=".pdf") }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group" id="animalIdGroup">
-                                        {{ form.animal_id.label }}
-                                        {{ form.animal_id(class="form-control form-control-lg", id="animal_id") }}
-                                    </div>
-                                    <div class="form-group" id="animalGenderGroup">
-                                        {{ form.animal_gender.label }}
-                                        {{ form.animal_gender(class="form-select form-select-lg", id="animal_gender") }}
-                                    </div>
-                                    <div class ="form-group">
-                                        {{ form.weight.label }}
-                                        {{ form.weight (class="form-control form-control-lg", id="weight", type="number", step="0.1") }}
-                                    </div>
-                                    <div class ="form-group">
-                                        {{ form.price.label }}
-                                        {{ form.price (class="form-control form-control-lg", id="price", type="number", step="0.1") }}
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        {{ form.insured (class="form-check-input", id="insured") }}
-                                        {{ form.insured.label(class="form-check-label", for="insured") }}
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        {{ form.organic (class="form-check-input", id="insured") }}
-                                        {{ form.organic.label(class="form-check-label", for="organic") }}
-                                    </div>
-                                    <div class="form-group">
-                                        {{ form.cardboard.label(class="form-label") }}
-                                        {{ form.cardboard(class="form-control", id="cardboard", type="file", accept=".pdf") }}
-                                    </div>
-                                    <div class="form-group">
-                                        {{ form.submit(class="btn btn-primary mt-4") }}
+                                    
+                                    <div class="text-center">
+                                        {{ form.submit(class="btn btn-primary px-5") }}
                                     </div>
                                 </form>
                             </div>

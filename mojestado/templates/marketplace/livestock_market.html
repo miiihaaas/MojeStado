@@ -94,12 +94,16 @@
                             Masa
                         </div>
                         <div class="card-body">
-                            <div class="form-check form-switch">
-                                {% for mass_filter in mass_filters %}
+                            {% for mass_filter in mass_filters %}
+                            <div class="form-check form-switch mb-2">
+                                {% if active_mass_filters and mass_filter in active_mass_filters %}
+                                <input class="form-check-input" type="checkbox" id="subcategory_{{mass_filter}}" name="subcategory_{{mass_filter}}" checked>
+                                {% else %}
                                 <input class="form-check-input" type="checkbox" id="subcategory_{{mass_filter}}" name="subcategory_{{mass_filter}}">
+                                {% endif %}
                                 <label class="form-check-label" for="subcategory_{{mass_filter}}">{{mass_filter}}</label>
-                                {% endfor %}
                             </div>
+                            {% endfor %}
                         </div>
                     </div>
                     {% endif %}
@@ -224,15 +228,48 @@
                                         <button class="btn btn-primary services-btn" data-bs-toggle="modal" data-bs-target="#servicesModal"
                                                 data-animal-id="{{ animal.id }}"
                                                 data-klanje-value="{{ klanje_value }}"
-                                                data-obrada-value="{{ obrada_value }}">Kupi</button>
+                                                data-obrada-value="{{ obrada_value }}"
+                                                data-subcategory="{{ animal.animal_categorization.subcategory }}"
+                                                data-breed="{{ animal.animal_race.animal_race_name }}"
+                                                data-gender="{{ animal.animal_gender }}"
+                                                data-current-weight="{{ animal.current_weight }}"
+                                                data-price-per-kg="{{ animal.price_per_kg }}"
+                                                data-total-price="{{ animal.total_price }}"
+                                                data-insured="{{ 1 if animal.insured else 0 }}"
+                                                data-organic="{{ 1 if animal.organic_animal else 0 }}"
+                                                data-farm="{{ animal.farm_animal.farm_name }}">Kupi</button>
                                     {% else %}
                                         <a class="btn btn-primary services-btn" href="{{ url_for('main.add_animal_to_cart', animal_id=animal.id)}}">Kupi</a>
                                     {% endif %}
                                     {% if animal.intended_for == "tov" %}
                                         {% if services and services.get('klanje') and services['klanje'].get(animal_category_id|string) and services['klanje'][animal_category_id|string]|int > 0 %}
-                                            <button class="btn tov-btn" data-bs-toggle="modal" data-bs-target="#tovModal" data-animal-id="{{ animal.id }}" data-current-weight="{{ animal.current_weight }}">Tov</button>
+                                            <button class="btn tov-btn" data-bs-toggle="modal" data-bs-target="#tovModal" 
+                                                data-animal-id="{{ animal.id }}" 
+                                                data-current-weight="{{ animal.current_weight }}" 
+                                                data-subcategory="{{ animal.animal_categorization.subcategory }}" 
+                                                data-breed="{{ animal.animal_race.animal_race_name }}" 
+                                                data-gender="{{ animal.animal_gender }}" 
+                                                data-price-per-kg="{{ animal.price_per_kg }}" 
+                                                data-total-price="{{ animal.current_weight * animal.price_per_kg }}" 
+                                                data-insured="{{ animal.insured }}" 
+                                                data-organic="{{ animal.organic_animal }}" 
+                                                data-farm="{{ animal.farm_animal.farm_name }}">
+                                                Tov
+                                            </button>
                                         {% else %}
-                                            <button class="btn tov-btn" data-bs-toggle="modal" data-bs-target="#tovModal_" data-animal-id="{{ animal.id }}" data-current-weight="{{ animal.current_weight }}">Tov</button>
+                                            <button class="btn tov-btn" data-bs-toggle="modal" data-bs-target="#tovModal_" 
+                                                data-animal-id="{{ animal.id }}" 
+                                                data-current-weight="{{ animal.current_weight }}" 
+                                                data-subcategory="{{ animal.animal_categorization.subcategory }}" 
+                                                data-breed="{{ animal.animal_race.animal_race_name }}" 
+                                                data-gender="{{ animal.animal_gender }}" 
+                                                data-price-per-kg="{{ animal.price_per_kg }}" 
+                                                data-total-price="{{ animal.current_weight * animal.price_per_kg }}" 
+                                                data-insured="{{ animal.insured }}" 
+                                                data-organic="{{ animal.organic_animal }}" 
+                                                data-farm="{{ animal.farm_animal.farm_name }}">
+                                                Tov
+                                            </button>
                                         {% endif %}
                                     {% endif %}
                                 {% else %}
@@ -262,6 +299,26 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Detalji o životinji -->
+                        <div class="animal-details mb-3">
+                            <h6 class="border-bottom pb-2 mb-3">Detalji o životinji</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="mb-1"><strong>Potkategorija:</strong> <span id="animalSubcategoryTov"></span></div>
+                                    <div class="mb-1"><strong>Rasa:</strong> <span id="animalBreedTov"></span></div>
+                                    <div class="mb-1"><strong>Pol:</strong> <span id="animalGenderTov"></span></div>
+                                    <div class="mb-1"><strong>Trenutna masa:</strong> <span id="animalWeightTov"></span> kg</div>
+                                    <div class="mb-1"><strong>Cena po kg:</strong> <span id="animalPricePerKgTov"></span> rsd</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-1"><strong>Ukupna cena:</strong> <span id="animalTotalPriceTov"></span> rsd</div>
+                                    <div class="mb-1"><strong>Osigurano:</strong> <span id="animalInsuredTov"></span></div>
+                                    <div class="mb-1"><strong>Organsko:</strong> <span id="animalOrganicTov"></span></div>
+                                    <div class="mb-1"><strong>Farma:</strong> <span id="animalFarmTov"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <form id="tovForm" action="{{ url_for('main.add_fattening_to_chart') }}" method="POST">
                             <input type="hidden" id="animalId" name="animalId">
                             <div class="mb-3">
@@ -294,13 +351,13 @@
                             
                             <!-- Klanje usluga -->
                             <div class="mb-3 form-check" id="slaughterServiceWrapper">
-                                <input type="checkbox" class="form-check-input" id="slaughterService" name="slaughterService">
-                                <label class="form-check-label" for="slaughterService">Klanje</label>
+                                <input type="checkbox" class="form-check-input" id="tovSlaughterService" name="slaughterService">
+                                <label class="form-check-label" for="tovSlaughterService">Klanje</label>
                             </div>
                             <!-- Obrada usluga -->
                             <div class="mb-3 form-check" id="processingServiceWrapper">
-                                <input type="checkbox" class="form-check-input" id="processingService" name="processingService">
-                                <label class="form-check-label" for="processingService">
+                                <input type="checkbox" class="form-check-input" id="tovProcessingService" name="processingService">
+                                <label class="form-check-label" for="tovProcessingService">
                                     Obrada
                                 </label>
                                 <span class="info-box"><i class="fa-solid fa-info"></i>
@@ -331,6 +388,26 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Detalji o životinji -->
+                        <div class="animal-details mb-3">
+                            <h6 class="border-bottom pb-2 mb-3">Detalji o životinji</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="mb-1"><strong>Potkategorija:</strong> <span id="animalSubcategoryTov_"></span></div>
+                                    <div class="mb-1"><strong>Rasa:</strong> <span id="animalBreedTov_"></span></div>
+                                    <div class="mb-1"><strong>Pol:</strong> <span id="animalGenderTov_"></span></div>
+                                    <div class="mb-1"><strong>Trenutna masa:</strong> <span id="animalWeightTov_"></span> kg</div>
+                                    <div class="mb-1"><strong>Cena po kg:</strong> <span id="animalPricePerKgTov_"></span> rsd</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-1"><strong>Ukupna cena:</strong> <span id="animalTotalPriceTov_"></span> rsd</div>
+                                    <div class="mb-1"><strong>Osigurano:</strong> <span id="animalInsuredTov_"></span></div>
+                                    <div class="mb-1"><strong>Organsko:</strong> <span id="animalOrganicTov_"></span></div>
+                                    <div class="mb-1"><strong>Farma:</strong> <span id="animalFarmTov_"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <form id="tovForm_" action="{{ url_for('main.add_fattening_to_chart') }}" method="POST">
                             <input type="hidden" id="animalId_" name="animalId_">
                             <div class="mb-3">
@@ -371,10 +448,31 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="servicesModalLabel">Kupovina Usluga</h5>
+                        <h5 class="modal-title" id="servicesModalLabel">Kupovina usluga</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Detalji o životinji -->
+                        <div class="animal-details mb-3">
+                            <h6 class="border-bottom pb-2 mb-3">Detalji o životinji</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="mb-1"><strong>Potkategorija:</strong> <span id="animalSubcategory"></span></div>
+                                    <div class="mb-1"><strong>Rasa:</strong> <span id="animalBreed"></span></div>
+                                    <div class="mb-1"><strong>Pol:</strong> <span id="animalGender"></span></div>
+                                    <div class="mb-1"><strong>Trenutna masa:</strong> <span id="animalWeight"></span> kg</div>
+                                    <div class="mb-1"><strong>Cena po kg:</strong> <span id="animalPricePerKg"></span> rsd</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-1"><strong>Ukupna cena:</strong> <span id="animalTotalPrice"></span> rsd</div>
+                                    <div class="mb-1"><strong>Osigurano:</strong> <span id="animalInsured"></span></div>
+                                    <div class="mb-1"><strong>Organsko:</strong> <span id="animalOrganic"></span></div>
+                                    <div class="mb-1"><strong>Farma:</strong> <span id="animalFarm"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="border-bottom pb-2 mb-3">Dostupne usluge</h6>
                         <form id="servicesForm" action="{{ url_for('main.add_services_to_chart') }}" method="POST">
                             <input type="hidden" id="serviceAnimalId" name="animalId">
                             <p>Za ovu životinju poljoprivredno gazdinstvo pruža sledeće usluge:</p>
@@ -417,6 +515,7 @@
 {% endblock content %}
 {% block scripts %}
 <script>
+    // Inicijalizacija Select2 komponente za padajući meni lokacija i preselektovanje izabranih opcija
     $(document).ready(function() {
         $("#municipality").select2({
             multiple: true,
@@ -437,18 +536,21 @@
         $("#organic_filter").prop('checked', organic_filter);
         $("#insure_filter").prop('checked', insure_filter);
     });
+    // Automatsko slanje forme prilikom promene lokacije
     $(document).ready(function() {
         $('#municipality').change(function() {
             // post form
             $('#livestock').submit();
         });
     });
+    // Automatsko slanje forme prilikom promene filtera za organsku proizvodnju
     $(document).ready(function() {
         $('#organic_filter').change(function() {
             // post form
             $('#livestock').submit();
         });
     });
+    // Automatsko slanje forme prilikom promene filtera za osiguranje i potkategorije
     $(document).ready(function() {
         $('#insure_filter').change(function() {
             // post form
@@ -458,64 +560,73 @@
             $('#livestock').submit();
         });
     });
+    // Automatsko slanje forme prilikom promene filtera za masu
     $(document).ready(function() {
-        // Tov_ modal functionality - farma ne pruža usluge
-        $('.tov-btn_').click(function() {
-            var animalId = $(this).data('animal-id');
-            var currentWeight = $(this).data('current-weight');
-            
-            $('#animalId_').val(animalId);
-            $('#currentWeight_').val(currentWeight);
-
-            // Reset form
-            $('#tovForm_')[0].reset();
-            $('#currentWeight_').val(currentWeight);
-            $('#installmentOptionsDiv_').hide();
-            $('#installmentPayment_').prop('disabled', true);
-            // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
-            $('#tovForm_ button[type="submit"]').prop('disabled', true);
-            
-            // Resetujemo polja za izračunate vrednosti
-            $('#calculatedPrice_').val('');
-            $('#feedingDays_').val('');
-            $('#desiredWeight_').val('');
-        })
-
-        $('#desiredWeight_').on('input', function() {
-            calculateTovDetails_();
-            updateConfirmButton_();
+        // Dodajemo oslušničku za checkbox-ove za masu
+        $('input[id^="subcategory_"]').not('.subcategory-filter').change(function() {
+            // post form
+            $('#livestock').submit();
         });
+    });
+    // Funkcionalnost za tov modalne prozore i kalkulacije
+    $(document).ready(function() {
+    //     // Tov_ modal functionality - farma ne pruža usluge
+    //     $('.tov-btn[data-bs-target="#tovModal_"]').click(function() {
+    //         var animalId = $(this).data('animal-id');
+    //         var currentWeight = $(this).data('current-weight');
+            
+    //         $('#animalId_').val(animalId);
+    //         $('#currentWeight_').val(currentWeight);
 
-        $('#installmentPayment_').change(function() {
-            if ($(this).is(':checked')) {
-                $('#installmentOptionsDiv_').show();
-                populateInstallmentOptions_();
-            } else {
-                $('#installmentOptionsDiv_').hide();
-            }
-        });
+    //         // Reset form
+    //         $('#tovForm_')[0].reset();
+    //         $('#currentWeight_').val(currentWeight);
+    //         $('#installmentOptionsDiv_').hide();
+    //         $('#installmentPayment_').prop('disabled', true);
+    //         // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
+    //         $('#tovForm_ button[type="submit"]').prop('disabled', true);
+            
+    //         // Resetujemo polja za izračunate vrednosti
+    //         $('#calculatedPrice_').val('');
+    //         $('#feedingDays_').val('');
+    //         $('#desiredWeight_').val('');
+    //     })
 
-        // Tov modal functionality - farma pruža usluge
-        $('.tov-btn').click(function() {
-            var animalId = $(this).data('animal-id');
-            var currentWeight = $(this).data('current-weight');
+    //     $('#desiredWeight_').on('input', function() {
+    //         calculateTovDetails_();
+    //         updateConfirmButton_();
+    //     });
+
+    //     $('#installmentPayment_').change(function() {
+    //         if ($(this).is(':checked')) {
+    //             $('#installmentOptionsDiv_').show();
+    //             populateInstallmentOptions_();
+    //         } else {
+    //             $('#installmentOptionsDiv_').hide();
+    //         }
+    //     });
+
+    //     // Tov modal functionality - farma pruža usluge
+    //     $('.tov-btn[data-bs-target="#tovModal"]').click(function() {
+    //         var animalId = $(this).data('animal-id');
+    //         var currentWeight = $(this).data('current-weight');
             
-            $('#animalId').val(animalId);
-            $('#currentWeight').val(currentWeight);
+    //         $('#animalId').val(animalId);
+    //         $('#currentWeight').val(currentWeight);
             
-            // Reset form
-            $('#tovForm')[0].reset();
-            $('#currentWeight').val(currentWeight);
-            $('#installmentOptionsDiv').hide();
-            $('#installmentPayment').prop('disabled', true);
-            // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
-            $('#tovForm button[type="submit"]').prop('disabled', true);
+    //         // Reset form
+    //         $('#tovForm')[0].reset();
+    //         $('#currentWeight').val(currentWeight);
+    //         $('#installmentOptionsDiv').hide();
+    //         $('#installmentPayment').prop('disabled', true);
+    //         // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
+    //         $('#tovForm button[type="submit"]').prop('disabled', true);
             
-            // Resetujemo polja za izračunate vrednosti
-            $('#calculatedPrice').val('');
-            $('#feedingDays').val('');
-            $('#desiredWeight').val('');
-        });
+    //         // Resetujemo polja za izračunate vrednosti
+    //         $('#calculatedPrice').val('');
+    //         $('#feedingDays').val('');
+    //         $('#desiredWeight').val('');
+    //     });
 
         $('#desiredWeight').on('input', function() {
             calculateTovDetails();
@@ -687,12 +798,54 @@
         }
 
     });
+    // Funkcionalnost za modal kupovine usluga i manipulaciju podacima o životinji
     $(document).ready(function() {
         // Services modal functionality
         $('.services-btn').click(function() {
+            // Debug ispis svih data atributa
+            console.log('Svi data atributi:', $(this).data());
+            
             var animalId = $(this).data('animal-id');
             var klanjeValue = $(this).data('klanje-value');
             var obradaValue = $(this).data('obrada-value');
+            
+            // Podaci o životinji
+            var subcategory = $(this).data('subcategory');
+            var breed = $(this).data('breed');
+            var gender = $(this).data('gender');
+            var weight = $(this).data('current-weight');
+            var pricePerKg = parseFloat($(this).data('price-per-kg')) || 0;
+            var totalPrice = parseFloat($(this).data('total-price')) || 0;
+            var insured = parseInt($(this).data('insured')) || 0;
+            var organic = parseInt($(this).data('organic')) || 0;
+            var farm = $(this).data('farm') || '';
+            
+            // Provera i formatiranje vrednosti
+            insured = insured ? 'Da' : 'Ne';
+            organic = organic ? 'Da' : 'Ne';
+            
+            // Popunjavanje podataka o životinji - sa dodatnom proverom
+            $('#animalSubcategory').text(subcategory || 'Nije dostupno');
+            $('#animalBreed').text(breed || 'Nije dostupno');
+            $('#animalGender').text(gender || 'Nije dostupno');
+            $('#animalWeight').text(weight || '0');
+            $('#animalPricePerKg').text(pricePerKg.toFixed(2));
+            $('#animalTotalPrice').text(totalPrice.toFixed(2));
+            $('#animalInsured').text(insured);
+            $('#animalOrganic').text(organic);
+            $('#animalFarm').text(farm || 'Nije dostupno');
+            
+            console.log('Obrađeni podaci o životinji:', {
+                subcategory: subcategory,
+                breed: breed,
+                gender: gender,
+                weight: weight,
+                pricePerKg: pricePerKg,
+                totalPrice: totalPrice,
+                insured: insured,
+                organic: organic,
+                farm: farm
+            });
             
             // Set animalId in the hidden input
             $('#serviceAnimalId').val(animalId);
@@ -712,40 +865,151 @@
         });
 
         // Handling the relationship between the checkboxes - animal
+        // Funkcionalnost za checkboxove u sva tri modala
+        
+        // 1. services Modal
         $('#processingService').change(function() {
-            console.log('processingService promenjen');
             if (this.checked) {
-                console.log('processingService čekiran');
                 // If "Obrada" is checked, ensure "Klanje" is also checked
                 $('#slaughterService').prop('checked', true);
             }
         });
     
         $('#slaughterService').change(function() {
-            console.log('slaughterService promenjen');
             if (!this.checked) {
-                console.log('slaughterService dečekiran');
                 // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
                 $('#processingService').prop('checked', false);
             }
         });
-        // Handling the relationship between the checkboxes - fattening
-        $('#processingService_').change(function() {
-            console.log('processingService_____ promenjen');
+        
+        // 2. Tov Modal
+        $('#tovProcessingService').change(function() {
             if (this.checked) {
-                console.log('processingService_____ čekiran');
+                // If "Obrada" is checked, ensure "Klanje" is also checked
+                $('#tovSlaughterService').prop('checked', true);
+            }
+        });
+    
+        $('#tovSlaughterService').change(function() {
+            if (!this.checked) {
+                // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
+                $('#tovProcessingService').prop('checked', false);
+            }
+        });
+        
+        // 3. Tov_ Modal
+        $('#processingService_').change(function() {
+            if (this.checked) {
                 // If "Obrada" is checked, ensure "Klanje" is also checked
                 $('#slaughterService_').prop('checked', true);
             }
         });
     
         $('#slaughterService_').change(function() {
-            console.log('slaughterService_____ promenjen');
             if (!this.checked) {
-                console.log('slaughterService_____ dečekiran');
                 // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
                 $('#processingService_').prop('checked', false);
             }
+        });
+    });
+    // Funkcionalnost za tov modal kada farma pruža usluge
+    $(document).ready(function() {
+        // Tov modal functionality - farma pruža usluge
+        $('.tov-btn[data-bs-target="#tovModal"]').click(function() {
+            var animalId = $(this).data('animal-id');
+            var currentWeight = $(this).data('current-weight');
+            
+            // Podaci o životinji
+            var subcategory = $(this).data('subcategory');
+            var breed = $(this).data('breed');
+            var gender = $(this).data('gender');
+            var weight = $(this).data('current-weight');
+            var pricePerKg = parseFloat($(this).data('price-per-kg')) || 0;
+            var totalPrice = parseFloat($(this).data('total-price')) || 0;
+            var insured = parseInt($(this).data('insured')) || 0;
+            var organic = parseInt($(this).data('organic')) || 0;
+            var farm = $(this).data('farm') || '';
+            
+            // Provera i formatiranje vrednosti
+            insured = insured ? 'Da' : 'Ne';
+            organic = organic ? 'Da' : 'Ne';
+            
+            // Popunjavanje podataka o životinji u tovModal
+            $('#animalSubcategoryTov').text(subcategory || 'Nije dostupno');
+            $('#animalBreedTov').text(breed || 'Nije dostupno');
+            $('#animalGenderTov').text(gender || 'Nije dostupno');
+            $('#animalWeightTov').text(weight || '0');
+            $('#animalPricePerKgTov').text(pricePerKg.toFixed(2));
+            $('#animalTotalPriceTov').text(totalPrice.toFixed(2));
+            $('#animalInsuredTov').text(insured);
+            $('#animalOrganicTov').text(organic);
+            $('#animalFarmTov').text(farm || 'Nije dostupno');
+            
+            // Popunjavanje podataka za formular
+            $('#animalId').val(animalId);
+            $('#currentWeight').val(currentWeight);
+            
+            // Reset form
+            $('#tovForm')[0].reset();
+            $('#currentWeight').val(currentWeight);
+            $('#installmentOptionsDiv').hide();
+            $('#installmentPayment').prop('disabled', true);
+            // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
+            $('#tovForm button[type="submit"]').prop('disabled', true);
+            
+            // Resetujemo polja za izračunate vrednosti
+            $('#calculatedPrice').val('');
+            $('#feedingDays').val('');
+            $('#desiredWeight').val('');
+        });
+
+        // Tov_ modal functionality - farma ne pruža usluge
+        $('.tov-btn[data-bs-target="#tovModal_"]').click(function() {
+            var animalId = $(this).data('animal-id');
+            var currentWeight = $(this).data('current-weight');
+            
+            // Podaci o životinji
+            var subcategory = $(this).data('subcategory');
+            var breed = $(this).data('breed');
+            var gender = $(this).data('gender');
+            var weight = $(this).data('current-weight');
+            var pricePerKg = parseFloat($(this).data('price-per-kg')) || 0;
+            var totalPrice = parseFloat($(this).data('total-price')) || 0;
+            var insured = parseInt($(this).data('insured')) || 0;
+            var organic = parseInt($(this).data('organic')) || 0;
+            var farm = $(this).data('farm') || '';
+            
+            // Provera i formatiranje vrednosti
+            insured = insured ? 'Da' : 'Ne';
+            organic = organic ? 'Da' : 'Ne';
+            
+            // Popunjavanje podataka o životinji u tovModal_
+            $('#animalSubcategoryTov_').text(subcategory || 'Nije dostupno');
+            $('#animalBreedTov_').text(breed || 'Nije dostupno');
+            $('#animalGenderTov_').text(gender || 'Nije dostupno');
+            $('#animalWeightTov_').text(weight || '0');
+            $('#animalPricePerKgTov_').text(pricePerKg.toFixed(2));
+            $('#animalTotalPriceTov_').text(totalPrice.toFixed(2));
+            $('#animalInsuredTov_').text(insured);
+            $('#animalOrganicTov_').text(organic);
+            $('#animalFarmTov_').text(farm || 'Nije dostupno');
+            
+            // Popunjavanje podataka za formular
+            $('#animalId_').val(animalId);
+            $('#currentWeight_').val(currentWeight);
+            
+            // Reset form
+            $('#tovForm_')[0].reset();
+            $('#currentWeight_').val(currentWeight);
+            $('#installmentOptionsDiv_').hide();
+            $('#installmentPayment_').prop('disabled', true);
+            // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
+            $('#tovForm_ button[type="submit"]').prop('disabled', true);
+            
+            // Resetujemo polja za izračunate vrednosti
+            $('#calculatedPrice_').val('');
+            $('#feedingDays_').val('');
+            $('#desiredWeight_').val('');
         });
     });
 </script>

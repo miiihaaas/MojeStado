@@ -65,7 +65,6 @@ def register_farm():
                         zip_code=municipality.municipality_zip_code,
                         phone=form.phone.data,
                         BPG=form.bpg.data,
-                        JMBG=form.jmbg.data,
                         MB=form.mb.data,
                         user_type='farm_unverified',
                         registration_date=datetime.date.today()
@@ -128,7 +127,6 @@ def register_farm():
                         user.zip_code = municipality.municipality_zip_code
                         user.phone = form.phone.data
                         user.BPG = form.bpg.data
-                        user.JMBG = form.jmbg.data
                         user.MB = form.mb.data
                         user.registration_date = datetime.date.today()
                         db.session.commit()
@@ -651,7 +649,7 @@ def handle_admin_profile(user, farm):
                 user.surname = request.form.get('surname')
                 user.address = request.form.get('address')
                 user.city = request.form.get('city')
-                user.JMBG = request.form.get('jmbg')
+                # user.JMBG = request.form.get('jmbg')
                 user.BPG = request.form.get('bpg')
                 user.MB = request.form.get('mb')
                 user.phone = request.form.get('phone')
@@ -674,7 +672,6 @@ def handle_admin_profile(user, farm):
             flash(f'{form.errors}', 'danger')
         
         # Popunjavanje forme postojećim podacima
-        form.jmbg.data = user.JMBG
         form.bpg.data = user.BPG
         form.mb.data = user.MB
         form.account_number.data = farm.farm_account_number if farm else ''
@@ -732,7 +729,6 @@ def handle_active_farm_profile(user, farm):
         form.city.data = user.city
         form.phone.data = user.phone
         form.municipality.data = str(farm.farm_municipality_id)
-        form.jmbg.data = user.JMBG
         form.bpg.data = user.BPG
         form.mb.data = user.MB
         form.account_number.data = farm.farm_account_number
@@ -2249,7 +2245,7 @@ def admin_edit_profile(user_id):
         user.address = form.address.data
         user.zip_code = form.zip_code.data
         user.city = form.city.data
-        user.jmbg = form.jmbg.data
+        # user.jmbg = form.jmbg.data
         db.session.commit()
         flash('Uspešno ste sačuvali izmene na profilu.', 'success')
         return redirect(url_for('users.admin_view_users', user_id=user.id))
@@ -2260,7 +2256,7 @@ def admin_edit_profile(user_id):
     form.address.data = user.address
     form.zip_code.data = user.zip_code
     form.city.data = user.city
-    form.jmbg.data = user.JMBG
+    # form.jmbg.data = user.JMBG
     return render_template('users/admin_edit_profile.html',
                             user=user,
                             title='Uredi profil',

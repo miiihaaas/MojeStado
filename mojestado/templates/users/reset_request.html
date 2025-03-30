@@ -17,30 +17,37 @@
 </section>
 <section class="login-page firstsection mb-5">
     <div class="container">
-        <div class="row">
-            <div class="col-md-12"> 
-                <p class="center-text">Uneste Vašu mejl adresu na koju ćemo Vam poslati link za izmenu lozike.</p>
-                <form method="POST" action="" class="resetform">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.email.label(class="form-control-label") }}
+        <div class="row justify-content-center">
+            <div class="col-md-6"> 
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <div class="card-body">
+                        <p class="text-center mb-4">Unesite Vašu mejl adresu na koju ćemo Vam poslati link za izmenu lozinke.</p>
+                        <form method="POST" action="" class="resetform">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-4">
+                                {{ form.email.label(class="form-label") }}
 
-                        {% if form.email.errors %}
-                            {{ form.email(class="form-control form-control-lg is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.email.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
+                                {% if form.email.errors %}
+                                    {{ form.email(class="form-control form-control-lg is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.email.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.email(class="form-control form-control-lg") }}
+                                {% endif %}
+
                             </div>
-                        {% else %}
-                            {{ form.email(class="form-control form-control-lg") }}
-                        {% endif %}
-
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary input-like") }}
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('users.login') }}" class="text-decoration-none">Povratak na prijavu</a>
+                            </div>
+                        </form>
                     </div>
-                    <div class="mb-3">
-                        {{ form.submit(class="btn btn-primary input-like") }}
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>

@@ -222,10 +222,6 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-3">
-                            {{ form.jmbg.label(class="form-label") }}
-                            {{ form.jmbg(class="form-control", readonly=(current_user.user_type != 'admin')) }}
-                        </div>
-                        <div class="col-md-3">
                             {{ form.bpg.label(class="form-label") }}
                             {{ form.bpg(class="form-control", readonly=(current_user.user_type != 'admin')) }}
                         </div>
