@@ -27,6 +27,7 @@ def livestock_market(animal_category_id):
         - Organskoj proizvodnji
         - Osiguranju
         - Potkategorijama životinja
+        - Masama
     """
     try:
         app.logger.debug(f'Pristup pijaci stoke za kategoriju: {animal_category_id}')
@@ -89,7 +90,7 @@ def livestock_market(animal_category_id):
             # Obrada filtera za potkategorije
             active_subcategories = [int(key.split('_')[1]) 
                                     for key, value in request.form.items() 
-                                    if key.startswith('subcategory_') and value == 'on']
+                                    if key.startswith('subcategory_') and value == 'on' and key.split('_')[1].isdigit()]
             
             # Primena filtera na životinje
             if organic_filter == 'on':
@@ -99,33 +100,106 @@ def livestock_market(animal_category_id):
             if active_subcategories:
                 animals = [animal for animal in animals if animal.animal_categorization_id in active_subcategories]
                 
+            # Obrada filtera za masu
+            active_mass_filters = [key.split('_')[1] 
+                                  for key, value in request.form.items() 
+                                  if key.startswith('subcategory_') and value == 'on' and key.split('_')[1] in mass_filters]
+            
+            # Primena filtera za masu
+            if active_mass_filters and mass_filters:
+                filtered_animals = []
+                for animal in animals:
+                    for mass_range in active_mass_filters:
+                        # Parsiranje stringa opsega mase
+                        if mass_range == '0-15kg':
+                            min_mass = 0
+                            max_mass = 15
+                        elif mass_range == '15kg-30kg':
+                            min_mass = 15
+                            max_mass = 30
+                        elif mass_range == '30kg-80kg':
+                            min_mass = 30
+                            max_mass = 80
+                        elif mass_range == '80kg-120kg':
+                            min_mass = 80
+                            max_mass = 120
+                        elif mass_range == '120kg-200kg':
+                            min_mass = 120
+                            max_mass = 200
+                        elif mass_range == '200kg+':
+                            min_mass = 200
+                            max_mass = float('inf')
+                        else:
+                            # Pokušaj da parsira string u formatu 'min-max' ili 'min+'
+                            try:
+                                if '-' in mass_range:
+                                    # Format: 'min-max'
+                                    parts = mass_range.replace('kg', '').split('-')
+                                    min_mass = float(parts[0])
+                                    max_mass = float(parts[1])
+                                elif '+' in mass_range:
+                                    # Format: 'min+'
+                                    min_mass = float(mass_range.replace('kg+', ''))
+                                    max_mass = float('inf')
+                                else:
+                                    # Nepoznat format, preskači
+                                    continue
+                            except (ValueError, IndexError):
+                                # Ako ne možemo da parsiramo, preskači ovaj filter
+                                app.logger.warning(f'Nije moguće parsirati opseg mase: {mass_range}')
+                                continue
+                        
+                        # Provera da li je masa životinje u izabranom opsegu
+                        if min_mass <= animal.current_weight <= max_mass:
+                            filtered_animals.append(animal)
+                            break  # Dodajemo životinju samo jednom ako odgovara bilo kom filteru
+                
+                animals = filtered_animals
+                app.logger.debug(f'Filtrirano po masi: {len(animals)} životinja')
+            
             # Filtriranje po opštinama
             if selected_municipality:
                 farm_list = Farm.query.filter(Farm.farm_municipality_id.in_(selected_municipality)).all()
                 animals = [animal for animal in animals if animal.farm_id in [farm.id for farm in farm_list]]
                 app.logger.debug(f'Filtrirano po opštinama: {len(animals)} životinja')
-                
-        # Filtriranje aktivnih farmi
-        farm_list = Farm.query.join(User).filter(User.user_type == 'farm_active').all()
-        
-        app.logger.info(f'Prikazujem {len(animals)} životinja za kategoriju {animal_category.animal_category_name}')
-        
-        return render_template('marketplace/livestock_market.html',
-                            title=animal_category.animal_category_name,
-                            route_name=route_name,
-                            municipality_filter_list=municipality_filter_list,
-                            selected_municipality=json.dumps(selected_municipality),
-                            organic_filter=json.dumps(organic_filter),
-                            insure_filter=json.dumps(insure_filter),
-                            animal_category_id=animal_category_id,
-                            animal_categories=animal_categories,
-                            animal_category=animal_category,
-                            animal_subcategories=animal_subcategories,
-                            mass_filters=mass_filters,
-                            animals=animals,
-                            active_subcategories=active_subcategories,
-                            weight_filter=weight_filter)
+            else:
+                farm_list = Farm.query.join(User).filter(User.user_type == 'farm_active').all()
+            
+            app.logger.info(f'Prikazujem {len(animals)} životinja za kategoriju {animal_category.animal_category_name}')
+            
+            return render_template('marketplace/livestock_market.html',
+                                title=animal_category.animal_category_name,
+                                route_name=route_name,
+                                municipality_filter_list=municipality_filter_list,
+                                selected_municipality=json.dumps(selected_municipality),
+                                organic_filter=json.dumps(organic_filter),
+                                insure_filter=json.dumps(insure_filter),
+                                animal_category_id=animal_category_id,
+                                animal_categories=animal_categories,
+                                animal_category=animal_category,
+                                animal_subcategories=animal_subcategories,
+                                mass_filters=mass_filters,
+                                animals=animals,
+                                active_subcategories=active_subcategories,
+                                active_mass_filters=active_mass_filters,
+                                weight_filter=weight_filter)
                             
+        # GET zahtev
+        return render_template('marketplace/livestock_market.html',
+                                title=animal_category.animal_category_name,
+                                route_name=route_name,
+                                municipality_filter_list=municipality_filter_list,
+                                selected_municipality=json.dumps(selected_municipality),
+                                animal_category_id=animal_category_id,
+                                animal_categories=animal_categories,
+                                animal_category=animal_category,
+                                animal_subcategories=animal_subcategories,
+                                mass_filters=mass_filters,
+                                animals=animals,
+                                active_subcategories=[],
+                                active_mass_filters=[],
+                                weight_filter=weight_filter)
+                                
     except Exception as e:
         app.logger.error(f'Neočekivana greška u pijaci stoke: {str(e)}', exc_info=True)
         flash('Došlo je do greške pri učitavanju pijace.', 'danger')
@@ -294,10 +368,16 @@ def product_detail(product_id):
         
         # Učitavanje proizvoda
         product = Product.query.get_or_404(product_id)
+        user = current_user
+        farm = Farm.query.get_or_404(product.farm_id)
+        farm_profile_completed = True if user.user_type == 'farm_active' else False
         app.logger.info(f'Prikazujem detalje za proizvod: {product.product_name}')
         
         return render_template('marketplace/product_detail.html',
-                                product=product)
+                                product=product,
+                                user=user,
+                                farm=farm,
+                                farm_profile_completed=farm_profile_completed)
                                 
     except Exception as e:
         app.logger.error(f'Greška pri učitavanju proizvoda {product_id}: {str(e)}')

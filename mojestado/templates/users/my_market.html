@@ -259,6 +259,25 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
+        // Inicijalizacija DataTables za tabelu proizvoda
+        $('.table').DataTable({
+            "language": {
+                "lengthMenu": "Prikaži _MENU_ zapisa po stranici",
+                "zeroRecords": "Ništa nije pronađeno",
+                "info": "Prikazana _PAGE_. stranica od _PAGES_",
+                "infoEmpty": "Nema dostupnih zapisa",
+                "infoFiltered": "(filtrirano od ukupno _MAX_ zapisa)",
+                "search": "Pretraga:",
+                "paginate": {
+                    "first": "Prva",
+                    "last": "Poslednja",
+                    "next": "Sledeća",
+                    "previous": "Prethodna"
+                }
+            },
+            "responsive": true
+        });
+
         function loadSubcategories(category) {
             $.ajax({
                 url: '/get_product_subcategories',
