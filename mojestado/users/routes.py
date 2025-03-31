@@ -901,7 +901,7 @@ def my_flock(farm_id):
                     current_weight=form.weight.data,
                     price_per_kg_farmer=form.price.data,
                     price_per_kg=form.price.data * 1.38,  # 1.2 * 1.15 = 1.38
-                    total_price=form.price.data * form.weight.data,
+                    total_price=form.price.data * form.weight.data * 1.38,
                     insured=form.insured.data,
                     organic_animal=form.organic.data,
                     cardboard=None,
@@ -1025,6 +1025,17 @@ def edit_animal(animal_id):
                 animal.animal_gender = request.form.get('animal_gender')
                 animal.current_weight = request.form.get('weight')
                 
+                if animal.intended_for == 'tov':
+                    print(f'izmena životinje koja je u tovu: {animal}')
+                    # ako je životinja namenjena za tov, onda ponovo treba da preračuna kojoj potkategoriji pripada na osnovu izmenjene mase
+                    category_id = get_animal_categorization(
+                        animal.animal_category_id,
+                        animal.intended_for,
+                        float(animal.current_weight),
+                        subcategory=None
+                    )
+                    print(f'nova podkategorija: {category_id=}')
+                    animal.animal_categorization_id = category_id
                 # Ažuriranje cena
                 try:
                     price = float(request.form.get('price', 0))

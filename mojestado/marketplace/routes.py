@@ -368,9 +368,16 @@ def product_detail(product_id):
         
         # Učitavanje proizvoda
         product = Product.query.get_or_404(product_id)
-        user = current_user
         farm = Farm.query.get_or_404(product.farm_id)
-        farm_profile_completed = True if user.user_type == 'farm_active' else False
+        
+        # Provera da li je korisnik ulogovan
+        if current_user.is_authenticated:
+            user = current_user
+            farm_profile_completed = True if user.user_type == 'farm_active' else False
+        else:
+            user = None
+            farm_profile_completed = False
+            
         app.logger.info(f'Prikazujem detalje za proizvod: {product.product_name}')
         
         return render_template('marketplace/product_detail.html',

@@ -68,7 +68,6 @@
             <div class="col-md-12">
                 <div class="card-body">
                     <form id="filter_form" action="{{ url_for('farms.farm_detail', farm_id=farm.id) }}" method="post">
-                        
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="organic_filter", name="organic_filter">
                             <label class="form-check-label" for="organic_filter">Organski</label>
@@ -192,7 +191,7 @@
                     {% else %}
                     <div class="col-12 text-center my-5">
                         <div class="alert alert-info">
-                            <h4>Ovo poljoprivredno gazdinstvo trenutno nema u ponudi životinje na prodaju.</h4>
+                            <h4>Ovo poljoprivredno gazdinstvo trenutno nema u ponudi životinje po zadatim kriterijumima.</h4>
                         </div>
                     </div>
                     {% endif %}
@@ -220,7 +219,7 @@
                     {% else %}
                     <div class="col-12 text-center my-5">
                         <div class="alert alert-info">
-                            <h4>Ovo poljoprivredno gazdinstvo trenutno nema u ponudi gotove proizvode.</h4>
+                            <h4>Ovo poljoprivredno gazdinstvo trenutno nema u ponudi gotove proizvode po zadatim kriterijumima.</h4>
                         </div>
                     </div>
                     {% endif %}
@@ -381,7 +380,7 @@
         $("#organic_filter").prop('checked', organic_filter);
         $('#organic_filter').change(function() {
             // post form
-            $('#livestock').submit();
+            $('#filter_form').submit();
         });
 
         // Services modal functionality
