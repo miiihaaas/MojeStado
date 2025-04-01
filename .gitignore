@@ -16,6 +16,7 @@ mojestado/static/contracts/
 mojestado/static/inventory_lists/
 mojestado/static/invoices/
 mojestado/static/payment_slips/
+mojestado/static/product_image/
 mojestado/static/reverses/
 mojestado/static/reports/
 __pycache__/
