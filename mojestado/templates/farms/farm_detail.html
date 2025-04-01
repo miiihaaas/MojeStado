@@ -38,7 +38,7 @@
         <div class="row">
             <div class="col-md-3">
                 <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
+                    <div class="my-carousel-inner">
                         {% for farm_image in farm.farm_image_collection %}
                             <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
                                 <img src="/static/farm_image/{{ farm_image }}" class="d-block w-100" alt="Slika Farme {{ farm.farm_name }}">

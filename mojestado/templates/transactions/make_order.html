@@ -3,8 +3,16 @@
 <section>
   <div class="container">
     <div class="row">
-        <div class="col-8">
-            <h1>Pregled korpe</h1>
+        <h1 class="plai-main-title">Pregled korpe</h1>
+        <div class="col-12 mb-5">
+            <h3>Info o kupcu</h3>
+            <p>
+                {{ user.name }} {{ user.surname }}<br>
+                {{ user.email }}<br>
+                {{ user.address }}, {{ user.city }}
+            </p>
+        </div>
+        <div class="col-12 mb-5"> 
             {% if products %}
             <h3>Gotovi proizvodi</h3>
             <div class="table-overflow">
@@ -271,19 +279,14 @@
             <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
             {% endif %}
         </div>
-        <div class="col-4">
-            <h1>Info o kupcu</h1>
-            <p>{{ user.name }}</p>
-            <p>{{ user.surname }}</p>
-            <p>{{ user.email }}</p>
-            <p>{{ user.address }}</p>
-            <p>{{ user.city }}</p>
-        </div>
     </div>
     <div>
         {% if merchant_order_amount %}
         <legend>Ukupno za uplatu: </legend> 
-        <input type="text" class="form-control" value="{{ merchant_order_amount }} rsd" disabled>
+        <!--<input type="text" class="not-like-input" value="{{ merchant_order_amount }} rsd" disabled>-->
+        <div class="mb-3">
+            <span class="text-primary">{{ merchant_order_amount }}</span> rsd
+        </div>
         {% endif %}
         {% if session.get('delivery')['delivery_status'] %}
         <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
@@ -320,7 +323,7 @@
         </form>
     </div>
     <!-- Druga forma za slanje POST zahteva -->
-    <form method="post" action="{{ url_for('transactions.callback_local_test') }}">
+    <form method="post" action="{{ url_for('transactions.callback_local_test') }}" class="mb-5">
         <input type="hidden" name="merchantOrderID" value="{{ merchant_order_id }}" />
         <input type="hidden" name="merchantOrderAmount" value="{{ merchant_order_amount }}" />
         <button class="btn btn-danger" type="submit">callback_local_test</button>
