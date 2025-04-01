@@ -50,21 +50,18 @@
                 </form>
             </div>
             <div class="col-md-9">
-                <div class="row row-cols-1 row-cols-md-4 g-4">
+                <div class="row row-cols-1 row-cols-md-3 g-4 mygridboxes">
                     {% if farm_list %}
                     {% for farm in farm_list %}
                     <div class="col">
-                        <div class="card h-100">
-                            <div class="sameimage-wrapper">
-                                <img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}">
-                            </div>
-                            <div class="card-body">
-                            <h5 class="card-title">{{ farm.farm_name }}</h5>
-                            <p class="card-text">Lokacija: {{ farm.farm_city }}</p>
-                            <p class="card-text">Opština: {{ farm.municipality_farm.municipality_name }}</p>
-                            <br>
-                            <a href="{{url_for('farms.farm_detail', farm_id=farm.id)}}" class="btn btn-primary font-size-14">Detaljnije</a>
-                            </div>
+                        <div class="sameimage-wrapper">
+                            <a href="{{url_for('farms.farm_detail', farm_id=farm.id)}}" class=""><img src="static/farm_image/{{ farm.farm_image }}" class="card-img-top" alt="Slika Farme {{ farm.farm_name }}"></a>
+                        </div>
+                        <div class="card-body-mine">
+                            <h5 class="card-title"><a href="{{url_for('farms.farm_detail', farm_id=farm.id)}}" class="invert-link">{{ farm.farm_name }}</a></h5>
+                            <p class="card-text mb-0">Lokacija: {{ farm.farm_city }}</p>
+                            <p class="card-text mb-3">Opština: {{ farm.municipality_farm.municipality_name }}</p>
+                            <a href="{{url_for('farms.farm_detail', farm_id=farm.id)}}" class="btn btn-secondary font-size-14 center-button">Detaljnije</a>
                         </div>
                     </div>
                     {% endfor%}

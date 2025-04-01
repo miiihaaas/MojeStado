@@ -19,6 +19,7 @@ mojestado/static/payment_slips/
 mojestado/static/product_image/
 mojestado/static/reverses/
 mojestado/static/reports/
+mojestado/static/product_image/
 __pycache__/
 venv/
 venvMojeStado/

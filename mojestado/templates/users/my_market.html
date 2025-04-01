@@ -150,16 +150,17 @@
                                             </div>
                                             <div class="card-body">
                                                 <div class="row">
-                                                    <div class="col-md-6">
+                                                    <div class="col-md-12">
                                                         <div class="form-group mb-3">
                                                             {{ form.product_name.label }}
                                                             {{ form.product_name (class="form-control", id="product_name") }}
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-6">
+                                                    <div class="col-md-12">
                                                         <div class="form-group mb-3">
                                                             {{ form.product_description.label }}
-                                                            {{ form.product_description (class="form-control", id="product_description") }}
+                                                            <div id="char-count">0/500</div>
+                                                            {{ form.product_description (class="form-control big-textarea", id="product_description") }}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -329,5 +330,29 @@
         }
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Pronalaženje textarea polja
+        var textarea = document.getElementById("product_description");
+        var countDisplay = document.getElementById("char-count");
+        var maxLength = 500;
+    
+        function updateCharCount() {
+            var currentLength = textarea.value.length;
+            countDisplay.textContent = currentLength + "/" + maxLength;
+        }
+    
+        // Pokretanje brojača kada korisnik kuca
+        textarea.addEventListener("input", updateCharCount);
+    
+        // Ako se modal otvara dinamički, dodaj event listener za otvaranje modala
+        var modal = document.getElementById("yourModalID"); // Zameni sa pravim ID-em modala
+        if (modal) {
+            modal.addEventListener("shown.bs.modal", function () {
+                updateCharCount(); // Resetuje brojač kada se modal otvori
+            });
+        }
+    });
+    </script>
 
 {% endblock scripts %}

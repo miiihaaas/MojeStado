@@ -49,7 +49,7 @@
 <section class="register-page firstsection mb-5">
     <div class="container">
         <div class="row mb-50">
-            <h2>Moja farma</h2>
+            <h2 class="content-title">Moja farma</h2>
             <div class="col-md-3">
                 <div id="myCarousel-" class="carousel slide" data-bs-ride="carousel-">
                     <div class="carousel-inner">
@@ -74,7 +74,7 @@
                 <h4>{{farm.farm_city}}</h4>
                 <p>{{farm.farm_description}}</p>
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#descriptionModal">
-                    Izmena opisa poljoprivednog gastinstva
+                    Izmena opisa poljoprivednog gazdinstva
                 </button>
                 <!-- The modal -->
                 <div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel" aria-hidden="true">
@@ -91,7 +91,7 @@
                                     <input type="hidden" name="farm_id" value="{{ farm.id }}">
                                     <div class="row">
                                         <div class="form-group mb-3">
-                                            <label for="farm_name">Naziv poljoprivednog gastinstva</label>
+                                            <label for="farm_name">Naziv poljoprivednog gazdinstva</label>
                                             <input type="text" name="farm_name" value="{{ farm.farm_name }}" class="form-control">
                                         </div>
                                         <div class="form-group mb-3">
