@@ -13,6 +13,7 @@ mojestado/main/__pycache__/
 mojestado/users/__pycache__/
 mojestado/static/cardboards/
 mojestado/static/contracts/
+mojestado/static/farm_image/
 mojestado/static/inventory_lists/
 mojestado/static/invoices/
 mojestado/static/payment_slips/
