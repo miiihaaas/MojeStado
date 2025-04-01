@@ -292,7 +292,7 @@
         </div>
         <!-- Tov Modal -->
         <div class="modal fade" id="tovModal" tabindex="-1" aria-labelledby="tovModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="tovModalLabel">Detalji tova</h5>
@@ -321,31 +321,37 @@
                         
                         <form id="tovForm" action="{{ url_for('main.add_fattening_to_chart') }}" method="POST">
                             <input type="hidden" id="animalId" name="animalId">
-                            <div class="mb-3">
-                                <label for="currentWeight" class="form-label">Trenutna masa (kg)</label>
-                                <input type="number" class="form-control" id="currentWeight" name="currentWeight" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="desiredWeight" class="form-label">Željena masa (kg)</label>
-                                <input type="number" class="form-control" id="desiredWeight" name="desiredWeight" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="calculatedPrice" class="form-label">Preračunata cena tova (RSD)</label>
-                                <input type="number" class="form-control" id="calculatedPrice" name="calculatedPrice" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="feedingDays" class="form-label">Preračunat broj hranidbenih dana</label>
-                                <input type="number" class="form-control" id="feedingDays" name="feedingDays" readonly>
-                            </div>
-                            <div class="mb-3 form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="installmentPayment" name="installmentPayment">
-                                <label class="form-check-label" for="installmentPayment">Plaćanje na rate</label>
-                            </div>
-                            <div class="mb-3" id="installmentOptionsDiv" style="display: none;">
-                                <label for="installmentOptions" class="form-label">Broj rata</label>
-                                <select class="form-select" id="installmentOptions" name="installmentOptions">
-                                    <!-- Options will be dynamically populated -->
-                                </select>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="currentWeight" class="form-label">Trenutna masa (kg)</label>
+                                        <input type="number" class="form-control" id="currentWeight" name="currentWeight" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="desiredWeight" class="form-label">Željena masa (kg)</label>
+                                        <input type="number" class="form-control" id="desiredWeight" name="desiredWeight" required min="0">
+                                    </div>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="installmentPayment" name="installmentPayment">
+                                        <label class="form-check-label" for="installmentPayment">Plaćanje na rate</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="calculatedPrice" class="form-label">Preračunata cena tova (RSD)</label>
+                                        <input type="number" class="form-control" id="calculatedPrice" name="calculatedPrice" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="feedingDays" class="form-label">Preračunat broj hranidbenih dana</label>
+                                        <input type="number" class="form-control" id="feedingDays" name="feedingDays" readonly>
+                                    </div>
+                                    <div class="mb-3" id="installmentOptionsDiv" style="display: none;">
+                                        <label for="installmentOptions" class="form-label">Broj rata</label>
+                                        <select class="form-select" id="installmentOptions" name="installmentOptions">
+                                            <!-- Options will be dynamically populated -->
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <p>Za ovu životinju poljoprivredno gazdinstvo pruža sledeće usluge:</p>
                             
@@ -381,7 +387,7 @@
         </div>
         <!-- Tov_ Modal -->
         <div class="modal fade" id="tovModal_" tabindex="-1" aria-labelledby="tovModalLabel_" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="tovModalLabel_">Detalji tova</h5>
@@ -410,31 +416,37 @@
                         
                         <form id="tovForm_" action="{{ url_for('main.add_fattening_to_chart') }}" method="POST">
                             <input type="hidden" id="animalId_" name="animalId_">
-                            <div class="mb-3">
-                                <label for="currentWeight_" class="form-label">Trenutna masa (kg)</label>
-                                <input type="number" class="form-control" id="currentWeight_" name="currentWeight_" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="desiredWeight_" class="form-label">Željena masa (kg)</label>
-                                <input type="number" class="form-control" id="desiredWeight_" name="desiredWeight_" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="calculatedPrice_" class="form-label">Preračunata cena tova (RSD)</label>
-                                <input type="number" class="form-control" id="calculatedPrice_" name="calculatedPrice_" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="feedingDays_" class="form-label">Preračunat broj hranidbenih dana</label>
-                                <input type="number" class="form-control" id="feedingDays_" name="feedingDays_" readonly>
-                            </div>
-                            <div class="mb-3 form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="installmentPayment_" name="installmentPayment_">
-                                <label class="form-check-label" for="installmentPayment_">Plaćanje na rate</label>
-                            </div>
-                            <div class="mb-3" id="installmentOptionsDiv_" style="display: none;">
-                                <label for="installmentOptions_" class="form-label">Broj rata</label>
-                                <select class="form-select" id="installmentOptions_" name="installmentOptions_">
-                                    <!-- Options will be dynamically populated -->
-                                </select>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="currentWeight_" class="form-label">Trenutna masa (kg)</label>
+                                        <input type="number" class="form-control" id="currentWeight_" name="currentWeight_" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="desiredWeight_" class="form-label">Željena masa (kg)</label>
+                                        <input type="number" class="form-control" id="desiredWeight_" name="desiredWeight_" required min="0">
+                                    </div>
+                                    <div class="mb-3 form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="installmentPayment_" name="installmentPayment_">
+                                        <label class="form-check-label" for="installmentPayment_">Plaćanje na rate</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="calculatedPrice_" class="form-label">Preračunata cena tova (RSD)</label>
+                                        <input type="number" class="form-control" id="calculatedPrice_" name="calculatedPrice_" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="feedingDays_" class="form-label">Preračunat broj hranidbenih dana</label>
+                                        <input type="number" class="form-control" id="feedingDays_" name="feedingDays_" readonly>
+                                    </div>
+                                    <div class="mb-3" id="installmentOptionsDiv_" style="display: none;">
+                                        <label for="installmentOptions_" class="form-label">Broj rata</label>
+                                        <select class="form-select" id="installmentOptions_" name="installmentOptions_">
+                                            <!-- Options will be dynamically populated -->
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-primary">Potvrdi tov</button>
                         </form>
@@ -442,10 +454,9 @@
                 </div>
             </div>
         </div>
-
         <!-- Services Modal -->
         <div class="modal fade" id="servicesModal" tabindex="-1" aria-labelledby="servicesModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="servicesModalLabel">Kupovina usluga</h5>
