@@ -115,8 +115,13 @@
                                         {% endif %}
                                         <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/kg</span></p>
                                     </div>
-                                    <p><span class="smaller-text">dostupna količina:</span> {{ product.quantity }} <span class="smaller-text">{{ product.unit_of_measurement }}</span></p>
-
+                                    <p><span class="smaller-text">dostupna količina:</span>
+                                        {% if product.unit_of_measurement == "kom" %}
+                                            {{ product.quantity | int }} <span class="smaller-text">{{ product.unit_of_measurement }}</span>
+                                        {% else %}
+                                            {{ product.quantity | round(2) }} <span class="smaller-text">{{ product.unit_of_measurement }}</span>
+                                        {% endif %}
+                                    </p>
                                     {% if current_user.is_authenticated %}
                                         {% if current_user.farms and current_user.farms[0].id == product.farm_id %}
                                         <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary font-size-14 center-button"><i class="fa-solid fa-pen-to-square"></i> &nbsp;&nbsp;Uredi</a>

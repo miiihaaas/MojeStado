@@ -18,6 +18,7 @@ a:hover { color: #e0bd5d; }
 .mr-3 { margin-right: 2em; }
 .mr-4 { margin-right: 3em; }
 .mr-5 { margin-right: 4em; }
+.mb--1 { margin-bottom: -1px !important; }
 .mb-2 { margin-bottom: 1em; }
 .mb-5p { margin-bottom: 5px; }
 .mb-10 { margin-bottom: 10px !important; }
@@ -188,6 +189,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 
 .page-hero { padding-bottom: 100px; margin-top: -191px; padding-top: 200px; }
 .page-hero-blanc { padding-bottom: 100px; margin-top: -175px; padding-top: 75px; }
+.page-hero-cart { padding-bottom: 100px; margin-top: -175px; padding-top: 30px !important; }
 .page-hero-txt { color:#fff; font-weight: 600; }
 .aboutpage { background: url(../images/hero-1.jpg) no-repeat center center; background-size: cover; /*padding-bottom: 50px;*/ }
 .livestock-0 { background: url(../images/hero-2.jpg) no-repeat center center; background-size: cover; }
@@ -280,6 +282,8 @@ table.table { font-size: 14px; }
 table.popupable td { position: relative; }
 .popup-id { display: none; position: absolute; bottom: 52%; left: 135%; transform: translateX(-50%); background-color: #5e4432; color: white; padding: 5px 10px; border-radius: 5px; white-space: nowrap; z-index: 1; }
 .clickable-image { cursor: pointer }
+.table-responsive-2 { border-radius: 5px; overflow: hidden; border: 1px solid #ddd; }
+.cart-notice { font-style: italic; font-size: 12px; }
 
 /***  Footer   ***/
 footer.footer { padding: 30px 0; color: #ddd4cb; }
