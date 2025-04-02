@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<section class="page-hero cartpage py-4 bg-primary text-white">
+<section class="page-hero-cart cartpage py-4 bg-primary text-white">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
@@ -24,13 +24,13 @@
         {% else %}
             <!-- Products Section -->
             {% if products %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
+            <div class="mb-4">
+                <div class="pb-10">
                     <h3 class="mb-0">Gotovi proizvodi</h3>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0" id="productsTable">
+                    <div class="table-responsive-2">
+                        <table class="table table-striped table-hover mb--1" id="productsTable">
                             <thead class="thead-light">
                                 <tr>
                                     <th>Kategorija</th>
@@ -40,7 +40,7 @@
                                     <th>Količina</th>
                                     <th>Jed. mere</th>
                                     <th>Cena/jed.</th>
-                                    <th>Cena/kg</th>
+                                    <!--<th>Cena/kg</th>-->
                                     <th>Ukupno</th>
                                     <th>PG</th>
                                     <th>Lokacija</th>
@@ -56,9 +56,9 @@
                                     <td>{{ product.product_name }}</td>
                                     <td>{{ product.quantity }}</td>
                                     <td>{{ product.unit_of_measurement }}</td>
-                                    <td>{{ product.product_price_per_unit }}</td>
-                                    <td>{{ product.product_price_per_kg }}</td>
-                                    <td><strong>{{ product.total_price }}</strong></td>
+                                    <td>{{ "%.2f"|format(product.product_price_per_unit) }}</td>
+                                    <!--<td>{{ product.product_price_per_kg }}</td>-->
+                                    <td><strong>{{ "%.2f"|format(product.total_price) }}</strong></td>
                                     <td>
                                         <a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm }}</a>
                                     </td>
@@ -73,6 +73,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="cart-notice mb-4">*Sve cene su prikazane u dinarima (RSD).</div>
                 </div>
             </div>
             <input type="hidden" name="product_count" value="{{ products|length }}">
@@ -80,13 +81,13 @@
 
             <!-- Animals Section -->
             {% if animals %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
+            <div class="mb-4">
+                <div class="mb-10">
                     <h3 class="mb-0">Živa vaga</h3>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 popupable" id="animalsTable">
+                    <div class="table-responsive-2">
+                        <table class="table table-striped table-hover mb--1 popupable" id="animalsTable">
                             <thead class="thead-light">
                                 <tr>
                                     <th>ID životinje</th>
@@ -162,6 +163,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="cart-notice mb-4">*Sve cene su prikazane u dinarima (RSD).</div>
                 </div>
             </div>
             <input type="hidden" name="animal_count" value="{{ animals|length }}">
@@ -169,13 +171,13 @@
             
             <!-- Services Section -->
             {% if services %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
+            <div class="mb-4">
+                <div class="pb-10">
                     <h3 class="mb-0">Usluge</h3>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 popupable" id="servicesTable">
+                    <div class="table-responsive-2">
+                        <table class="table table-striped table-hover mb--1 popupable" id="servicesTable">
                             <thead class="thead-light">
                                 <tr>
                                     <th>ID životinje</th>
@@ -207,13 +209,13 @@
                                     <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
                                     <td class="text-center">
                                         {% if animal.slaughterService %}
-                                            <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" width="32" height="32">
+                                            <img src="{{ url_for('static', filename='images/klanje-icon.png') }}" alt="Usluga klanja" title="Usluga klanja" width="32" height="32">
                                         {% endif %}
                                         {% if animal.processingService %}
-                                            <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" width="32" height="32">
+                                            <img src="{{ url_for('static', filename='images/obrada-icon.png') }}" alt="Usluga obrade" title="Usluga obrade" width="32" height="32">
                                         {% endif %}
                                     </td>
-                                    <td><strong>{{ animal.slaughterPrice + animal.processingPrice }}</strong></td>
+                                    <td><strong>{{ "%.2f"|format(animal.slaughterPrice + animal.processingPrice) }}</strong></td>
                                     <td class="text-center">
                                         <a href="{{ url_for('main.remove_service_from_cart', service_id=animal.id)}}" class="btn btn-sm btn-danger" title="Ukloni iz korpe">
                                             <i class="fa-solid fa-trash"></i>
@@ -224,6 +226,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="cart-notice mb-4">*Sve cene su prikazane u dinarima (RSD).</div>
                 </div>
             </div>
             <input type="hidden" name="service_count" value="{{ services|length }}">
@@ -231,13 +234,13 @@
 
             <!-- Fattening Section -->
             {% if fattening %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
+            <div class="mb-4">
+                <div class="pb-10">
                     <h3 class="mb-0">Tov</h3>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 popupable" id="fatteningTable">
+                    <div class="table-responsive-2">
+                        <table class="table table-striped table-hover mb--1 popupable" id="fatteningTable">
                             <thead class="thead-light">
                                 <tr>
                                     <th>ID životinje</th>
@@ -283,6 +286,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="cart-notice mb-4">*Sve cene su prikazane u dinarima (RSD).</div>
                 </div>
             </div>
             <input type="hidden" name="fattening_count" value="{{ fattening|length }}">
@@ -304,7 +308,7 @@
                             {% else %}
                                 <div class="form-group mb-3">
                                     <label class="form-label">Cena dostave sadržaja korpe</label>
-                                    <input type="text" class="form-control" value="{{ delivery_total }} rsd" id="delivery_total_" name="delivery_total_" disabled>
+                                    <input type="text" class="form-control" value="{{ delivery_total }}.00 rsd" id="delivery_total_" name="delivery_total_" disabled>
                                 </div>
                             {% endif %}
                             <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
