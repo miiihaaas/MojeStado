@@ -81,19 +81,49 @@
                     <!-- Glavne informacije o proizvodu -->
                     <div class="border-tb ptb-20  mb-3">
                         <!-- Jedinica mere -->
-                        <p class="mb-2"><strong>Jedinica mere: </strong>{{product.unit_of_measurement}}</p>
+                        {% if product.unit_of_measurement in ['kom (kg)', 'kom (l)'] %}
+                            <p class="mb-2"><strong>Jedinica mere: </strong>kom</p>
+                        {% else %}
+                            <p class="mb-2"><strong>Jedinica mere: </strong>{{product.unit_of_measurement}}</p>
+                        {% endif %}
                         
                         <!-- Cene -->
                         {% if current_user.id == product.farm_product.user_farm.id %}
-                        <p class="mb-2"><strong>Cena po jedinici mere: </strong><span class="text-primary">{{"{:.2f}".format(product.product_price_per_unit_farmer)}}</span> rsd/{{product.unit_of_measurement}}</p>
-                        <p class="mb-2"><strong>Cena po kg: </strong>{{"{:.2f}".format(product.product_price_per_kg / 1.38)}} rsd/kg</p>
+                            {% if product.unit_of_measurement in ['kom (kg)', 'kom (l)'] %}
+                                <p class="mb-2"><strong>Cena po jedinici mere: </strong><span class="text-primary">{{"{:.2f}".format(product.product_price_per_unit_farmer)}}</span> rsd/kom</p>
+                            {% else %}
+                                <p class="mb-2"><strong>Cena po {{product.unit_of_measurement}}: </strong><span class="text-primary">{{"{:.2f}".format(product.product_price_per_unit_farmer)}}</span> rsd/{{product.unit_of_measurement}}</p>
+                            {% endif %}
+                            
+                            {% if product.unit_of_measurement == 'kom (kg)' %}
+                                <p class="mb-2"><strong>Cena po kg: </strong>{{"{:.2f}".format(product.product_price_per_kg / 1.38)}} rsd/kg</p>
+                            {% elif product.unit_of_measurement == 'kom (l)' %}
+                                <p class="mb-2"><strong>Cena po l: </strong>{{"{:.2f}".format(product.product_price_per_kg / 1.38)}} rsd/l</p>
+                            {% else %}
+                                <p class="mb-2"><strong>Cena po {{product.unit_of_measurement}}: </strong>{{"{:.2f}".format(product.product_price_per_kg / 1.38)}} rsd/{{product.unit_of_measurement}}</p>
+                            {% endif %}
                         {% else %}
-                        <p class="mb-2"><strong>Cena po jedinici mere: </strong><span class="text-primary">{{"{:.2f}".format(product.product_price_per_unit)}}</span> rsd/{{product.unit_of_measurement}}</p>
-                        <p class="mb-2"><strong>Cena po kg: </strong>{{"{:.2f}".format(product.product_price_per_kg)}} rsd/kg</p>
+                                {% if product.unit_of_measurement in ['kom (kg)', 'kom (l)'] %}
+                                <p class="mb-2"><strong>Cena po jedinici mere: </strong><span class="text-primary">{{"{:.2f}".format(product.product_price_per_unit)}}</span> rsd/kom</p>
+                            {% else %}
+                                <p class="mb-2"><strong>Cena po {{product.unit_of_measurement}}: </strong><span class="text-primary">{{"{:.2f}".format(product.product_price_per_unit)}}</span> rsd/{{product.unit_of_measurement}}</p>
+                            {% endif %}
+
+                            {% if product.unit_of_measurement == 'kom (kg)' %}
+                                <p class="mb-2"><strong>Cena po kg: </strong>{{"{:.2f}".format(product.product_price_per_kg)}} rsd/kg</p>
+                            {% elif product.unit_of_measurement == 'kom (l)' %}
+                                <p class="mb-2"><strong>Cena po l: </strong>{{"{:.2f}".format(product.product_price_per_kg)}} rsd/l</p>
+                            {% else %}
+                                <p class="mb-2"><strong>Cena po {{product.unit_of_measurement}}: </strong>{{"{:.2f}".format(product.product_price_per_kg)}} rsd/{{product.unit_of_measurement}}</p>
+                            {% endif %}
                         {% endif %}
                         
                         <!-- Raspoloživa količina -->
-                        <p class="mb-2"><strong>Raspoloživa količina: </strong>{{product.quantity}} {{product.unit_of_measurement}}</p>
+                        {% if product.unit_of_measurement in ['kom (kg)', 'kom (l)'] %}
+                            <p class="mb-2"><strong>Raspoloživa količina: </strong>{{product.quantity}} kom</p>
+                        {% else %}
+                            <p class="mb-2"><strong>Raspoloživa količina: </strong>{{product.quantity}} {{product.unit_of_measurement}}</p>
+                        {% endif %}
                         
                         <!-- Organska proizvodnja -->
                         {% if product.organic_product %}
@@ -190,18 +220,19 @@
                             
                             <!-- Dve kolone za organizaciju polja -->
                             <div class="row">
-                                <!-- Leva strana - jedinica mere, Težina jedinice mere u kg, cena -->
+                                <!-- Leva strana - jedinica mere, Vrednost jedinice mere u kg, cena -->
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
                                         <label for="unit_of_measurement">Jedinica mere</label>
                                         <select name="unit_of_measurement" id="unit_of_measurement" class="form-select width-auto">
                                             <option value="kg" {% if product.unit_of_measurement == 'kg' %}selected{% endif %}>kg</option>
-                                            <option value="kom" {% if product.unit_of_measurement == 'kom' %}selected{% endif %}>kom</option>
+                                            <option value="kom (kg)" {% if product.unit_of_measurement == 'kom (kg)' %}selected{% endif %}>kom (kg)</option>
+                                            <option value="kom (l)" {% if product.unit_of_measurement == 'kom (l)' %}selected{% endif %}>kom (l)</option>
                                             <option value="l" {% if product.unit_of_measurement == 'l' %}selected{% endif %}>l</option>
                                         </select>
                                     </div>
                                     <div class="form-group mb-3" id="conversion_field">
-                                        <label for="weight_conversion">Težina jedinice mere u kg</label>
+                                        <label for="weight_conversion">Vrednost jedinice mere u kg</label>
                                         <input type="number" step="0.05" name="weight_conversion" id="weight_conversion" value="{{ product.weight_conversion }}" class="form-control width-auto">
                                     </div>
                                     <div class="form-group mb-3">
@@ -244,6 +275,7 @@
         const unitOfMeasurementSelect = document.getElementById('unit_of_measurement');
         const conversionField = document.getElementById('conversion_field');
         const weightConversionInput = document.getElementById('weight_conversion');
+        const weightLabel = conversionField.querySelector('label');
         
         // Inicijalno proveri vrednost
         checkUnitOfMeasurement();
@@ -253,15 +285,43 @@
         
         function checkUnitOfMeasurement() {
             if (unitOfMeasurementSelect && conversionField && weightConversionInput) {
-                if (unitOfMeasurementSelect.value === 'kg') {
-                    // Umesto da sakrijemo polje, samo ga onemogućimo i postavimo vrednost na 1
+                const selectedValue = unitOfMeasurementSelect.value;
+                
+                // Postavi početnu vrednost na 1 za sve slučajeve
+                if (selectedValue === 'kg') {
+                    // Za kg, postavi vrednost na 1, readonly i promeni label
                     weightConversionInput.value = '1';
                     weightConversionInput.readOnly = true;
+                    weightLabel.textContent = 'Vrednost jedinice mere u kg';
                     conversionField.classList.add('text-muted');
-                } else if (unitOfMeasurementSelect.value === 'kom' || unitOfMeasurementSelect.value === 'l') {
-                    // Za kom i l možemo da omogućimo polje Težina jedinice mere u kg
+                } else if (selectedValue === 'l') {
+                    // Za l, postavi vrednost na 1, readonly i promeni label
+                    weightConversionInput.value = '1';
+                    weightConversionInput.readOnly = true;
+                    weightLabel.textContent = 'Vrednost jedinice mere u l';
+                    conversionField.classList.add('text-muted');
+                } else if (selectedValue === 'kom (kg)') {
+                    // Za kom (kg), omogući editovanje, postavi validaciju i promeni label
                     weightConversionInput.readOnly = false;
+                    weightConversionInput.min = '0.01';
+                    weightLabel.textContent = 'Vrednost jedinice mere u kg';
                     conversionField.classList.remove('text-muted');
+                    
+                    // Proveri da li je vrednost 0 ili negativna i postavi na 0.01 ako jeste
+                    if (parseFloat(weightConversionInput.value) <= 0) {
+                        weightConversionInput.value = '0.01';
+                    }
+                } else if (selectedValue === 'kom (l)') {
+                    // Za kom (l), omogući editovanje, postavi validaciju i promeni label
+                    weightConversionInput.readOnly = false;
+                    weightConversionInput.min = '0.01';
+                    weightLabel.textContent = 'Vrednost jedinice mere u l';
+                    conversionField.classList.remove('text-muted');
+                    
+                    // Proveri da li je vrednost 0 ili negativna i postavi na 0.01 ako jeste
+                    if (parseFloat(weightConversionInput.value) <= 0) {
+                        weightConversionInput.value = '0.01';
+                    }
                 }
             }
         }
