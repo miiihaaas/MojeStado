@@ -535,120 +535,263 @@
 {% endblock content %}
 {% block scripts %}
 <script>
-    // Inicijalizacija Select2 komponente za padajući meni lokacija i preselektovanje izabranih opcija
+$(document).ready(function() {
+    // Inicijalizacija DataTables za tabelu sa životinjama
+    $('.table.table-striped.mobtable.popupable').DataTable({
+        "language": {
+            "search": "Pretraga:",
+            "lengthMenu": "Prikaži _MENU_ zapisa po stranici",
+            "zeroRecords": "Ništa nije pronađeno",
+            "info": "Prikaz _START_ do _END_ od _TOTAL_ zapisa",
+            "infoEmpty": "Prikaz 0 do 0 od 0 zapisa",
+            "infoFiltered": "(filtrirano od ukupno _MAX_ zapisa)",
+            "paginate": {
+                "first": "Prva",
+                "last": "Poslednja",
+                "next": "Sledeća",
+                "previous": "Prethodna"
+            }
+        },
+        "pageLength": 10,
+        "responsive": true,
+        "columnDefs": [
+            { "orderable": false, "targets": [9, 10, 13] } // Kolone koje ne mogu da se sortiraju
+        ]
+    });
+});
+</script>
+<script>
+    // Funkcije za drugi modalni prozor (tovModal_)
+    function calculateTovDetails_() {
+        var animalId = $('#animalId_').val();
+        var currentWeight = parseFloat($('#currentWeight_').val());
+        var desiredWeight = parseFloat($('#desiredWeight_').val());
+        
+        if (desiredWeight > currentWeight) {
+            // AJAX poziv ka backend-u
+            $.ajax({
+                url: "{{ url_for('animals.calculate_fattening_details') }}",
+                method: "POST",
+                data: {
+                    animalId: animalId,
+                    currentWeight: currentWeight,
+                    desiredWeight: desiredWeight
+                },
+                success: function(response) {
+                    $('#calculatedPrice_').val(response.fattening_price.toFixed(2));
+                    $('#feedingDays_').val(response.number_of_fattening_days);
+                    
+                    // Omoguu0107i/onemoguu0107i switch za plau0107anje na rate na osnovu broja dana hranjenja
+                    var feedingDays = parseInt(response.number_of_fattening_days);
+                    if (feedingDays >= 60) {
+                        $('#installmentPayment_').prop('disabled', false);
+                    } else {
+                        disableInstallmentPayment_();
+                    }
+                    
+                    populateInstallmentOptions_();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Greu0161ka pri izrau010dunavanju detalja tova:", error);
+                    resetTovDetails_();
+                }
+            });
+        } else {
+            resetTovDetails_();
+        }
+        updateConfirmButton_();
+    }
+
+    function disableInstallmentPayment_() {
+        $('#installmentPayment_').prop('checked', false);
+        $('#installmentPayment_').prop('disabled', true);
+        $('#installmentOptionsDiv_').hide();
+    }
+
+    function resetTovDetails_() {
+        $('#calculatedPrice_').val('');
+        $('#feedingDays_').val('');
+        $('#installmentPayment_').prop('disabled', true);
+    }
+
+    function updateConfirmButton_() {
+        var desiredWeight = parseFloat($('#desiredWeight_').val());
+        var currentWeight = parseFloat($('#currentWeight_').val());
+        var calculatedPrice = $('#calculatedPrice_').val();
+        var feedingDays = $('#feedingDays_').val();
+        
+        var isValid = desiredWeight > currentWeight && calculatedPrice && feedingDays;
+        $('#tovForm_ button[type="submit"]').prop('disabled', !isValid);
+    }
+
+    function populateInstallmentOptions_() {
+        var feedingDays = parseInt($('#feedingDays_').val()) || 0;
+        var calculatedPrice = parseFloat($('#calculatedPrice_').val()) || 0;
+        
+        // Izrau010dunaj broj moguu0107ih rata na osnovu dana hranjenja i cene
+        var maxInstallments = Math.min(Math.floor(feedingDays / 30), 6);
+        var minInstallmentValue = 1000; // Minimalna vrednost rate u RSD
+        maxInstallments = Math.min(maxInstallments, Math.floor(calculatedPrice / minInstallmentValue));
+        
+        // Popuni padajuu0107i meni sa opcijama za rate
+        var select = $('#installmentOptions_');
+        select.empty();
+        
+        for (var i = 2; i <= maxInstallments; i++) {
+            select.append($('<option>', {
+                value: i,
+                text: i + ' rata'
+            }));
+        }
+    }
+
+    function calculateTovDetails() {
+        var animalId = $('#animalId').val();
+        var currentWeight = parseFloat($('#currentWeight').val());
+        var desiredWeight = parseFloat($('#desiredWeight').val());
+        
+        if (desiredWeight > currentWeight) {
+            // AJAX poziv ka backend-u
+            $.ajax({
+                url: "{{ url_for('animals.calculate_fattening_details') }}",
+                method: "POST",
+                data: {
+                    animalId: animalId,
+                    currentWeight: currentWeight,
+                    desiredWeight: desiredWeight
+                },
+                success: function(response) {
+                    $('#calculatedPrice').val(response.fattening_price.toFixed(2));
+                    $('#feedingDays').val(response.number_of_fattening_days);
+                    
+                    // Omoguu0107i/onemoguu0107i switch za plau0107anje na rate na osnovu broja dana hranjenja
+                    var feedingDays = parseInt(response.number_of_fattening_days);
+                    if (feedingDays >= 60) {
+                        $('#installmentPayment').prop('disabled', false);
+                    } else {
+                        disableInstallmentPayment();
+                    }
+                    
+                    populateInstallmentOptions();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Greu0161ka pri izrau010dunavanju detalja tova:", error);
+                    resetTovDetails();
+                }
+            });
+        } else {
+            resetTovDetails();
+        }
+        updateConfirmButton();
+    }
+
+    function disableInstallmentPayment() {
+        $('#installmentPayment').prop('checked', false);
+        $('#installmentPayment').prop('disabled', true);
+        $('#installmentOptionsDiv').hide();
+    }
+
+    function resetTovDetails() {
+        $('#calculatedPrice').val('');
+        $('#feedingDays').val('');
+        $('#installmentPayment').prop('disabled', true);
+    }
+
+    function updateConfirmButton() {
+        var desiredWeight = parseFloat($('#desiredWeight').val());
+        var currentWeight = parseFloat($('#currentWeight').val());
+        var calculatedPrice = $('#calculatedPrice').val();
+        var feedingDays = $('#feedingDays').val();
+        
+        var isValid = desiredWeight > currentWeight && calculatedPrice && feedingDays;
+        $('#tovForm button[type="submit"]').prop('disabled', !isValid);
+    }
+
+    function populateInstallmentOptions() {
+        var feedingDays = parseInt($('#feedingDays').val()) || 0;
+        var calculatedPrice = parseFloat($('#calculatedPrice').val()) || 0;
+        
+        // Izrau010dunaj broj moguu0107ih rata na osnovu dana hranjenja i cene
+        var maxInstallments = Math.min(Math.floor(feedingDays / 30), 6);
+        var minInstallmentValue = 1000; // Minimalna vrednost rate u RSD
+        maxInstallments = Math.min(maxInstallments, Math.floor(calculatedPrice / minInstallmentValue));
+        
+        // Popuni padajuu0107i meni sa opcijama za rate
+        var select = $('#installmentOptions');
+        select.empty();
+        
+        for (var i = 2; i <= maxInstallments; i++) {
+            select.append($('<option>', {
+                value: i,
+                text: i + ' rata'
+            }));
+        }
+    }
+</script>
+<script>
+    // Funkcionalnost za drugi modalni prozor (tovModal_)
     $(document).ready(function() {
-        $("#municipality").select2({
-            multiple: true,
-            closeOnSelect: false,
-            placeholder: "Pretraži lokacije",
-            allowClear: true,
-            dropdownAutoWidth: true,
-            width: '100%',
-            theme: "classic"
+        // Tov_ modal functionality - farma ne pruža usluge
+        $('.tov-btn[data-bs-target="#tovModal_"]').click(function() {
+            var animalId = $(this).data('animal-id');
+            var currentWeight = $(this).data('current-weight');
+            
+            $('#animalId_').val(animalId);
+            $('#currentWeight_').val(currentWeight);
+
+            // Reset form
+            $('#tovForm_')[0].reset();
+            $('#currentWeight_').val(currentWeight);
+            $('#installmentOptionsDiv_').hide();
+            $('#installmentPayment_').prop('disabled', true);
+            // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
+            $('#tovForm_ button[type="submit"]').prop('disabled', true);
+            
+            // Resetujemo polja za izračunate vrednosti
+            $('#calculatedPrice_').val('');
+            $('#feedingDays_').val('');
+            $('#desiredWeight_').val('');
+        })
+
+        $('#desiredWeight_').on('input', function() {
+            console.log('desiredWeight_ input event triggered');
+            calculateTovDetails_();
+            updateConfirmButton_();
         });
 
-        // Preselektuj izabrane opcije
-        var selectedValues = JSON.parse('{{ selected_municipality | safe }}');
-        var organic_filter = JSON.parse('{{ organic_filter | safe }}');
-        var insure_filter = JSON.parse('{{ insure_filter | safe }}');
-        console.log(selectedValues);
-        $("#municipality").val(selectedValues).trigger('change');
-        $("#organic_filter").prop('checked', organic_filter);
-        $("#insure_filter").prop('checked', insure_filter);
-    });
-    // Automatsko slanje forme prilikom promene lokacije
-    $(document).ready(function() {
-        $('#municipality').change(function() {
-            // post form
-            $('#livestock').submit();
+        $('#installmentPayment_').change(function() {
+            if ($(this).is(':checked')) {
+                $('#installmentOptionsDiv_').show();
+                populateInstallmentOptions_();
+            } else {
+                $('#installmentOptionsDiv_').hide();
+            }
         });
-    });
-    // Automatsko slanje forme prilikom promene filtera za organsku proizvodnju
-    $(document).ready(function() {
-        $('#organic_filter').change(function() {
-            // post form
-            $('#livestock').submit();
-        });
-    });
-    // Automatsko slanje forme prilikom promene filtera za osiguranje i potkategorije
-    $(document).ready(function() {
-        $('#insure_filter').change(function() {
-            // post form
-            $('#livestock').submit();
-        });
-        $('.subcategory-filter').change(function() {
-            $('#livestock').submit();
-        });
-    });
-    // Automatsko slanje forme prilikom promene filtera za masu
-    $(document).ready(function() {
-        // Dodajemo oslušničku za checkbox-ove za masu
-        $('input[id^="subcategory_"]').not('.subcategory-filter').change(function() {
-            // post form
-            $('#livestock').submit();
-        });
-    });
-    // Funkcionalnost za tov modalne prozore i kalkulacije
-    $(document).ready(function() {
-    //     // Tov_ modal functionality - farma ne pruža usluge
-    //     $('.tov-btn[data-bs-target="#tovModal_"]').click(function() {
-    //         var animalId = $(this).data('animal-id');
-    //         var currentWeight = $(this).data('current-weight');
-            
-    //         $('#animalId_').val(animalId);
-    //         $('#currentWeight_').val(currentWeight);
 
-    //         // Reset form
-    //         $('#tovForm_')[0].reset();
-    //         $('#currentWeight_').val(currentWeight);
-    //         $('#installmentOptionsDiv_').hide();
-    //         $('#installmentPayment_').prop('disabled', true);
-    //         // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
-    //         $('#tovForm_ button[type="submit"]').prop('disabled', true);
+        // Tov modal functionality - farma pruža usluge
+        $('.tov-btn[data-bs-target="#tovModal"]').click(function() {
+            var animalId = $(this).data('animal-id');
+            var currentWeight = $(this).data('current-weight');
             
-    //         // Resetujemo polja za izračunate vrednosti
-    //         $('#calculatedPrice_').val('');
-    //         $('#feedingDays_').val('');
-    //         $('#desiredWeight_').val('');
-    //     })
-
-    //     $('#desiredWeight_').on('input', function() {
-    //         calculateTovDetails_();
-    //         updateConfirmButton_();
-    //     });
-
-    //     $('#installmentPayment_').change(function() {
-    //         if ($(this).is(':checked')) {
-    //             $('#installmentOptionsDiv_').show();
-    //             populateInstallmentOptions_();
-    //         } else {
-    //             $('#installmentOptionsDiv_').hide();
-    //         }
-    //     });
-
-    //     // Tov modal functionality - farma pruža usluge
-    //     $('.tov-btn[data-bs-target="#tovModal"]').click(function() {
-    //         var animalId = $(this).data('animal-id');
-    //         var currentWeight = $(this).data('current-weight');
+            $('#animalId').val(animalId);
+            $('#currentWeight').val(currentWeight);
             
-    //         $('#animalId').val(animalId);
-    //         $('#currentWeight').val(currentWeight);
+            // Reset form
+            $('#tovForm')[0].reset();
+            $('#currentWeight').val(currentWeight);
+            $('#installmentOptionsDiv').hide();
+            $('#installmentPayment').prop('disabled', true);
+            // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
+            $('#tovForm button[type="submit"]').prop('disabled', true);
             
-    //         // Reset form
-    //         $('#tovForm')[0].reset();
-    //         $('#currentWeight').val(currentWeight);
-    //         $('#installmentOptionsDiv').hide();
-    //         $('#installmentPayment').prop('disabled', true);
-    //         // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri otvaranju modala
-    //         $('#tovForm button[type="submit"]').prop('disabled', true);
-            
-    //         // Resetujemo polja za izračunate vrednosti
-    //         $('#calculatedPrice').val('');
-    //         $('#feedingDays').val('');
-    //         $('#desiredWeight').val('');
-    //     });
+            // Resetujemo polja za izračunate vrednosti
+            $('#calculatedPrice').val('');
+            $('#feedingDays').val('');
+            $('#desiredWeight').val('');
+        });
 
         $('#desiredWeight').on('input', function() {
+            console.log('desiredWeight input event triggered');
             calculateTovDetails();
             updateConfirmButton();
         });
@@ -662,274 +805,119 @@
             }
         });
 
-        function calculateTovDetails_() {
-            var animalId = $('#animalId_').val();
-            var currentWeight = parseFloat($('#currentWeight_').val());
-            var desiredWeight = parseFloat($('#desiredWeight_').val());
-            
-            if (desiredWeight > currentWeight) {
-                // AJAX poziv ka backend-u
-                $.ajax({
-                    url: "{{ url_for('animals.calculate_fattening_details') }}",
-                    method: "POST",
-                    data: {
-                        animalId: animalId,
-                        currentWeight: currentWeight,
-                        desiredWeight: desiredWeight
-                    },
-                    success: function(response) {
-                        $('#calculatedPrice_').val(response.fattening_price.toFixed(2));
-                        $('#feedingDays_').val(response.number_of_fattening_days);
-                        
-                        // Omogući/onemogući switch za plaćanje na rate na osnovu broja dana hranjenja
-                        var feedingDays = parseInt(response.number_of_fattening_days);
-                        if (feedingDays >= 60) {
-                            $('#installmentPayment_').prop('disabled', false);
-                        } else {
-                            disableInstallmentPayment_();
-                        }
-                        
-                        populateInstallmentOptions_();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Greška pri izračunavanju detalja tova:", error);
-                        resetTovDetails_();
-                    }
+        // Funkcionalnost za modal kupovine usluga i manipulaciju podacima o životinji
+        $(document).ready(function() {
+            // Services modal functionality
+            $('.services-btn').click(function() {
+                // Debug ispis svih data atributa
+                console.log('Svi data atributi:', $(this).data());
+                
+                var animalId = $(this).data('animal-id');
+                var klanjeValue = $(this).data('klanje-value');
+                var obradaValue = $(this).data('obrada-value');
+                
+                // Podaci o životinji
+                var subcategory = $(this).data('subcategory');
+                var breed = $(this).data('breed');
+                var gender = $(this).data('gender');
+                var weight = $(this).data('current-weight');
+                var pricePerKg = parseFloat($(this).data('price-per-kg')) || 0;
+                var totalPrice = parseFloat($(this).data('total-price')) || 0;
+                var insured = parseInt($(this).data('insured')) || 0;
+                var organic = parseInt($(this).data('organic')) || 0;
+                var farm = $(this).data('farm') || '';
+                
+                // Provera i formatiranje vrednosti
+                insured = insured ? 'Da' : 'Ne';
+                organic = organic ? 'Da' : 'Ne';
+                
+                // Popunjavanje podataka o životinji - sa dodatnom proverom
+                $('#animalSubcategory').text(subcategory || 'Nije dostupno');
+                $('#animalBreed').text(breed || 'Nije dostupno');
+                $('#animalGender').text(gender || 'Nije dostupno');
+                $('#animalWeight').text(weight || '0');
+                $('#animalPricePerKg').text(pricePerKg.toFixed(2));
+                $('#animalTotalPrice').text(totalPrice.toFixed(2));
+                $('#animalInsured').text(insured);
+                $('#animalOrganic').text(organic);
+                $('#animalFarm').text(farm || 'Nije dostupno');
+                
+                console.log('Obrađeni podaci o životinji:', {
+                    subcategory: subcategory,
+                    breed: breed,
+                    gender: gender,
+                    weight: weight,
+                    pricePerKg: pricePerKg,
+                    totalPrice: totalPrice,
+                    insured: insured,
+                    organic: organic,
+                    farm: farm
                 });
-            } else {
-                resetTovDetails_();
-            }
-            updateConfirmButton_();
-        }
-        function calculateTovDetails() {
-            var animalId = $('#animalId').val();
-            var currentWeight = parseFloat($('#currentWeight').val());
-            var desiredWeight = parseFloat($('#desiredWeight').val());
-            
-            if (desiredWeight > currentWeight) {
-                // AJAX poziv ka backend-u
-                $.ajax({
-                    url: "{{ url_for('animals.calculate_fattening_details') }}",
-                    method: "POST",
-                    data: {
-                        animalId: animalId,
-                        currentWeight: currentWeight,
-                        desiredWeight: desiredWeight
-                    },
-                    success: function(response) {
-                        $('#calculatedPrice').val(response.fattening_price.toFixed(2));
-                        $('#feedingDays').val(response.number_of_fattening_days);
-                        
-                        // Omogući/onemogući switch za plaćanje na rate na osnovu broja dana hranjenja
-                        var feedingDays = parseInt(response.number_of_fattening_days);
-                        if (feedingDays >= 60) {
-                            $('#installmentPayment').prop('disabled', false);
-                        } else {
-                            disableInstallmentPayment();
-                        }
-                        
-                        populateInstallmentOptions();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Greška pri izračunavanju detalja tova:", error);
-                        resetTovDetails();
-                    }
-                });
-            } else {
-                resetTovDetails();
-            }
-            updateConfirmButton();
-        }
+                
+                // Set animalId in the hidden input
+                $('#serviceAnimalId').val(animalId);
+                
+                // Reset form and hide all options initially
+                $('#servicesForm')[0].reset();
+                $('#slaughterServiceWrapper').hide();
+                $('#processingServiceWrapper').hide();
 
-        function disableInstallmentPayment_() {
-            $('#installmentPayment_').prop('disabled', true);
-            $('#installmentPayment_').prop('checked', false);
-            $('#installmentOptionsDiv_').hide();
-        }
-        function disableInstallmentPayment() {
-            $('#installmentPayment').prop('disabled', true);
-            $('#installmentPayment').prop('checked', false);
-            $('#installmentOptionsDiv').hide();
-        }
+                // Show options based on values
+                if (klanjeValue > 0) {
+                    $('#slaughterServiceWrapper').show();
+                }
+                if (obradaValue > 0) {
+                    $('#processingServiceWrapper').show();
+                }
+            });
 
-        function resetTovDetails_() {
-            $('#calculatedPrice_').val('');
-            $('#feedingDays_').val('');
-            $('#installmentOptions_').empty();
-            disableInstallmentPayment_();
-        }
-        function resetTovDetails() {
-            $('#calculatedPrice').val('');
-            $('#feedingDays').val('');
-            $('#installmentOptions').empty();
-            disableInstallmentPayment();
-        }
-        function updateConfirmButton_() {
-            var currentWeight = parseFloat($('#currentWeight_').val());
-            var desiredWeight = parseFloat($('#desiredWeight_').val());
-            var confirmButton = $('#tovForm_ button[type="submit"]');
-
-            if (isNaN(desiredWeight) || desiredWeight <= currentWeight) {
-                confirmButton.prop('disabled', true);
-            } else {
-                confirmButton.prop('disabled', false);
-            }
-        }
-        function updateConfirmButton() {
-            var currentWeight = parseFloat($('#currentWeight').val());
-            var desiredWeight = parseFloat($('#desiredWeight').val());
-            var confirmButton = $('#tovForm button[type="submit"]');
-
-            if (isNaN(desiredWeight) || desiredWeight <= currentWeight) {
-                confirmButton.prop('disabled', true);
-            } else {
-                confirmButton.prop('disabled', false);
-            }
-        }
-        // Dodajemo ovu liniju da onemogućimo dugme "Potvrdi tov" pri učitavanju stranice
-        $('#tovForm_ button[type="submit"]').prop('disabled', true);
-        $('#tovForm button[type="submit"]').prop('disabled', true);
-
-        // Inicijalno onemogući dugme Potvrdi
-        updateConfirmButton();
-        updateConfirmButton_();
-
-        function populateInstallmentOptions_() {
-            var feedingDays = parseInt($('#feedingDays_').val());
-            var maxInstallments = Math.floor(feedingDays / 30);
-            var $select = $('#installmentOptions_');
+            // Handling the relationship between the checkboxes - animal
+            // Funkcionalnost za checkboxove u sva tri modala
             
-            $select.empty();
-            
-            for (var i = 2; i <= maxInstallments; i++) {
-                $select.append($('<option></option>').val(i).text(i));
-            }
-        }
-        function populateInstallmentOptions() {
-            var feedingDays = parseInt($('#feedingDays').val());
-            var maxInstallments = Math.floor(feedingDays / 30);
-            var $select = $('#installmentOptions');
-            
-            $select.empty();
-            
-            for (var i = 2; i <= maxInstallments; i++) {
-                $select.append($('<option></option>').val(i).text(i));
-            }
-        }
-
-    });
-    // Funkcionalnost za modal kupovine usluga i manipulaciju podacima o životinji
-    $(document).ready(function() {
-        // Services modal functionality
-        $('.services-btn').click(function() {
-            // Debug ispis svih data atributa
-            console.log('Svi data atributi:', $(this).data());
-            
-            var animalId = $(this).data('animal-id');
-            var klanjeValue = $(this).data('klanje-value');
-            var obradaValue = $(this).data('obrada-value');
-            
-            // Podaci o životinji
-            var subcategory = $(this).data('subcategory');
-            var breed = $(this).data('breed');
-            var gender = $(this).data('gender');
-            var weight = $(this).data('current-weight');
-            var pricePerKg = parseFloat($(this).data('price-per-kg')) || 0;
-            var totalPrice = parseFloat($(this).data('total-price')) || 0;
-            var insured = parseInt($(this).data('insured')) || 0;
-            var organic = parseInt($(this).data('organic')) || 0;
-            var farm = $(this).data('farm') || '';
-            
-            // Provera i formatiranje vrednosti
-            insured = insured ? 'Da' : 'Ne';
-            organic = organic ? 'Da' : 'Ne';
-            
-            // Popunjavanje podataka o životinji - sa dodatnom proverom
-            $('#animalSubcategory').text(subcategory || 'Nije dostupno');
-            $('#animalBreed').text(breed || 'Nije dostupno');
-            $('#animalGender').text(gender || 'Nije dostupno');
-            $('#animalWeight').text(weight || '0');
-            $('#animalPricePerKg').text(pricePerKg.toFixed(2));
-            $('#animalTotalPrice').text(totalPrice.toFixed(2));
-            $('#animalInsured').text(insured);
-            $('#animalOrganic').text(organic);
-            $('#animalFarm').text(farm || 'Nije dostupno');
-            
-            console.log('Obrađeni podaci o životinji:', {
-                subcategory: subcategory,
-                breed: breed,
-                gender: gender,
-                weight: weight,
-                pricePerKg: pricePerKg,
-                totalPrice: totalPrice,
-                insured: insured,
-                organic: organic,
-                farm: farm
+            // 1. services Modal
+            $('#processingService').change(function() {
+                if (this.checked) {
+                    // If "Obrada" is checked, ensure "Klanje" is also checked
+                    $('#slaughterService').prop('checked', true);
+                }
+            });
+        
+            $('#slaughterService').change(function() {
+                if (!this.checked) {
+                    // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
+                    $('#processingService').prop('checked', false);
+                }
             });
             
-            // Set animalId in the hidden input
-            $('#serviceAnimalId').val(animalId);
+            // 2. Tov Modal
+            $('#tovProcessingService').change(function() {
+                if (this.checked) {
+                    // If "Obrada" is checked, ensure "Klanje" is also checked
+                    $('#tovSlaughterService').prop('checked', true);
+                }
+            });
+        
+            $('#tovSlaughterService').change(function() {
+                if (!this.checked) {
+                    // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
+                    $('#tovProcessingService').prop('checked', false);
+                }
+            });
             
-            // Reset form and hide all options initially
-            $('#servicesForm')[0].reset();
-            $('#slaughterServiceWrapper').hide();
-            $('#processingServiceWrapper').hide();
-
-            // Show options based on values
-            if (klanjeValue > 0) {
-                $('#slaughterServiceWrapper').show();
-            }
-            if (obradaValue > 0) {
-                $('#processingServiceWrapper').show();
-            }
-        });
-
-        // Handling the relationship between the checkboxes - animal
-        // Funkcionalnost za checkboxove u sva tri modala
+            // 3. Tov_ Modal
+            $('#processingService_').change(function() {
+                if (this.checked) {
+                    // If "Obrada" is checked, ensure "Klanje" is also checked
+                    $('#slaughterService_').prop('checked', true);
+                }
+            });
         
-        // 1. services Modal
-        $('#processingService').change(function() {
-            if (this.checked) {
-                // If "Obrada" is checked, ensure "Klanje" is also checked
-                $('#slaughterService').prop('checked', true);
-            }
-        });
-    
-        $('#slaughterService').change(function() {
-            if (!this.checked) {
-                // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
-                $('#processingService').prop('checked', false);
-            }
-        });
-        
-        // 2. Tov Modal
-        $('#tovProcessingService').change(function() {
-            if (this.checked) {
-                // If "Obrada" is checked, ensure "Klanje" is also checked
-                $('#tovSlaughterService').prop('checked', true);
-            }
-        });
-    
-        $('#tovSlaughterService').change(function() {
-            if (!this.checked) {
-                // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
-                $('#tovProcessingService').prop('checked', false);
-            }
-        });
-        
-        // 3. Tov_ Modal
-        $('#processingService_').change(function() {
-            if (this.checked) {
-                // If "Obrada" is checked, ensure "Klanje" is also checked
-                $('#slaughterService_').prop('checked', true);
-            }
-        });
-    
-        $('#slaughterService_').change(function() {
-            if (!this.checked) {
-                // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
-                $('#processingService_').prop('checked', false);
-            }
+            $('#slaughterService_').change(function() {
+                if (!this.checked) {
+                    // If "Klanje" is unchecked, ensure "Obrada" is also unchecked
+                    $('#processingService_').prop('checked', false);
+                }
+            });
         });
     });
     // Funkcionalnost za tov modal kada farma pruža usluge
@@ -1030,6 +1018,21 @@
             $('#calculatedPrice_').val('');
             $('#feedingDays_').val('');
             $('#desiredWeight_').val('');
+        });
+
+        $('#desiredWeight_').on('input', function() {
+            console.log('desiredWeight_ input event triggered');
+            calculateTovDetails_();
+            updateConfirmButton_();
+        });
+
+        $('#installmentPayment_').change(function() {
+            if ($(this).is(':checked')) {
+                $('#installmentOptionsDiv_').show();
+                populateInstallmentOptions_();
+            } else {
+                $('#installmentOptionsDiv_').hide();
+            }
         });
     });
 </script>

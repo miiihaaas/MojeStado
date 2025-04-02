@@ -98,10 +98,10 @@
             <div class="col-md-10">
                 <h2 class="content-title">{{ product_category.product_category_name }}</h2>
                 <ul class="pl-0">
-                    <div class="row row-cols-1 row-cols-md-3 g-4 mb-3 mygridboxes">
+                    <div id="products-container" class="row row-cols-1 row-cols-md-3 g-4 mb-3 mygridboxes">
                         {% if products %}
                         {% for product in products %}
-                        <div class="col">
+                        <div class="product-item col">
                             <div class="card h-100 noborder">
                                 <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="image-wrapper square-prod-box">
                                     <img src="{{ url_for('static', filename='product_image/' + product.product_image) }}" class="card-img-top" alt="Slika proizvoda">
@@ -143,6 +143,14 @@
                         </div>
                         {% endif %}
                     </div>
+                    <!-- Paginacija za proizvode -->
+                    {% if products %}
+                    <div class="d-flex justify-content-center mt-3">
+                        <nav aria-label="Navigacija kroz proizvode">
+                            <ul id="pagination" class="pagination"></ul>
+                        </nav>
+                    </div>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -186,6 +194,73 @@
         });
         $('.section-filter').change(function() {
             $('form').submit();
+        });
+        
+        // Paginacija za proizvode
+        var productsContainer = $('#products-container');
+        var productsPerPage = 6; // Broj proizvoda po stranici
+        var currentPage = 1; // Trenutna stranica
+        
+        // Funkcija za prikazivanje stranice
+        function showPage(page) {
+            var start = (page - 1) * productsPerPage;
+            var end = start + productsPerPage;
+            
+            productsContainer.find('.product-item').hide();
+            productsContainer.find('.product-item').slice(start, end).show();
+        }
+        
+        // Funkcija za prikazivanje broja stranica
+        function showPagination() {
+            var totalProducts = productsContainer.find('.product-item').length;
+            var totalPages = Math.ceil(totalProducts / productsPerPage);
+            
+            // Ako ima samo jedna stranica, ne prikazujemo paginaciju
+            if (totalPages <= 1) {
+                $('#pagination').parent().parent().hide();
+                return;
+            }
+            
+            var paginationHtml = '';
+            
+            // Dodajemo dugme "Prethodna"
+            paginationHtml += '<li class="page-item' + (currentPage === 1 ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="prev">Prethodna</a></li>';
+            
+            // Dodajemo brojeve stranica
+            for (var i = 1; i <= totalPages; i++) {
+                paginationHtml += '<li class="page-item' + (i === currentPage ? ' active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
+            }
+            
+            // Dodajemo dugme "Sledeća"
+            paginationHtml += '<li class="page-item' + (currentPage === totalPages ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="next">Sledeća</a></li>';
+            
+            $('#pagination').html(paginationHtml);
+        }
+        
+        // Inicijalizacija paginacije
+        showPage(currentPage);
+        showPagination();
+        
+        // Event listener za promenu stranice
+        $(document).on('click', '.page-link', function(e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            
+            if (page === 'prev') {
+                if (currentPage > 1) {
+                    currentPage--;
+                }
+            } else if (page === 'next') {
+                var totalPages = Math.ceil(productsContainer.find('.product-item').length / productsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                }
+            } else {
+                currentPage = parseInt(page);
+            }
+            
+            showPage(currentPage);
+            showPagination();
         });
     });
 </script>
