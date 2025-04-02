@@ -1262,10 +1262,10 @@ def my_market(farm_id):
                     try:
                         weight_conversion = float(form.weight_conversion.data)
                         if weight_conversion <= 0:
-                            raise ValueError('Težina jedinice mere u kg težine mora biti pozitivan broj')
+                            raise ValueError('Vrednost jedinice mere u kg težine mora biti pozitivan broj')
                     except ValueError as e:
-                        app.logger.error(f'Nevažeća Težina jedinice mere u kg težine: {str(e)}')
-                        flash('Težina jedinice mere u kg težine mora biti pozitivan broj.', 'danger')
+                        app.logger.error(f'Nevažeća Vrednost jedinice mere u kg težine: {str(e)}')
+                        flash('Vrednost jedinice mere u kg težine mora biti pozitivan broj.', 'danger')
                         return redirect(url_for('users.my_market', farm_id=farm_id))
                 
                 # Kreiranje novog proizvoda

@@ -238,7 +238,19 @@
                                 <div class="card-body">
                                     <h5 class="card-title">{{ product.product_name }}</h5>
                                     <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
-                                    <p class="card-text"><strong>{{ product.product_price_per_unit }} rsd/{{product.unit_of_measurement}}</strong></p>
+                                    {% if product.unit_of_measurement in ["kom (kg)", "kom (l)"] %}
+                                        <p class="list-price halfbreed"><strong>{{ product.product_price_per_unit }} rsd/kom</strong></p>
+                                    {% else %}
+                                        <p class="list-price halfbreed"><strong>{{ product.product_price_per_unit }} rsd/{{product.unit_of_measurement}}</strong></p>
+                                    {% endif %}
+                                    {% if product.unit_of_measurement == 'kom (kg)' %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/kg</span></p>
+                                    {% elif product.unit_of_measurement == 'kom (l)' %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/l</span></p>
+                                    {% else %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/{{ product.unit_of_measurement }}</span></p>
+                                    {% endif %}
+
                                     <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary font-size-14"><i class="fa-solid fa-basket-shopping"></i></a>
                                 </div>
                             </div>

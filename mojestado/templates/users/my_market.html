@@ -328,6 +328,59 @@
         if ($('#category').val()) {
             loadSubcategories($('#category').val());
         }
+        
+        // Funkcija za prilagođavanje polja težine jedinice mere
+        function checkUnitOfMeasurement() {
+            const unitOfMeasurementSelect = document.getElementById('unit_of_measurement');
+            const weightConversionInput = document.getElementById('weight_conversion');
+            const weightLabel = document.querySelector('label[for="weight_conversion"]');
+            
+            if (unitOfMeasurementSelect && weightConversionInput && weightLabel) {
+                const selectedValue = unitOfMeasurementSelect.value;
+                
+                if (selectedValue === 'kg') {
+                    // Za kg, postavi vrednost na 1, readonly i promeni label
+                    weightConversionInput.value = '1';
+                    weightConversionInput.readOnly = true;
+                    weightLabel.textContent = 'Vrednost jedinice mere u kg';
+                    $(weightConversionInput).addClass('text-muted');
+                } else if (selectedValue === 'l') {
+                    // Za l, postavi vrednost na 1, readonly i promeni label
+                    weightConversionInput.value = '1';
+                    weightConversionInput.readOnly = true;
+                    weightLabel.textContent = 'Vrednost jedinice mere u l';
+                    $(weightConversionInput).addClass('text-muted');
+                } else if (selectedValue === 'kom (kg)') {
+                    // Za kom (kg), omogući editovanje, postavi validaciju i promeni label
+                    weightConversionInput.readOnly = false;
+                    weightConversionInput.min = '0.01';
+                    weightLabel.textContent = 'Vrednost jedinice mere u kg';
+                    $(weightConversionInput).removeClass('text-muted');
+                    
+                    // Proveri da li je vrednost 0 ili negativna i postavi na 0.01 ako jeste
+                    if (parseFloat(weightConversionInput.value) <= 0) {
+                        weightConversionInput.value = '0.01';
+                    }
+                } else if (selectedValue === 'kom (l)') {
+                    // Za kom (l), omogući editovanje, postavi validaciju i promeni label
+                    weightConversionInput.readOnly = false;
+                    weightConversionInput.min = '0.01';
+                    weightLabel.textContent = 'Vrednost jedinice mere u l';
+                    $(weightConversionInput).removeClass('text-muted');
+                    
+                    // Proveri da li je vrednost 0 ili negativna i postavi na 0.01 ako jeste
+                    if (parseFloat(weightConversionInput.value) <= 0) {
+                        weightConversionInput.value = '0.01';
+                    }
+                }
+            }
+        }
+        
+        // Inicijalno proveri vrednost
+        checkUnitOfMeasurement();
+        
+        // Dodaj event listener za promenu vrednosti
+        $('#unit_of_measurement').change(checkUnitOfMeasurement);
     });
 </script>
 <script>
