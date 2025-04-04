@@ -45,7 +45,7 @@
                     <h3>{{ category.animal_category.animal_category_name }}</h3>
                 {% endif %}
                 <label for="{{ category.id }}">{{ category.subcategory }}</label>
-                <input type="text" class="form-control" id="{{ category.id }}" name="{{ category.id }}" value="{{ category.fattening_price }}">
+                <input type="text" class="form-control" id="{{ category.id }}" name="{{ category.id }}" value="{{ "{:.2f}".format(category.fattening_price) }}">
             </div>
             {% endfor %}
             <input type="submit" class="btn btn-primary mt-20" value="Sačuvaj izmene">

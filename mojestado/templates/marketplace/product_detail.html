@@ -120,9 +120,9 @@
                         
                         <!-- Raspoloživa količina -->
                         {% if product.unit_of_measurement in ['kom (kg)', 'kom (l)'] %}
-                            <p class="mb-2"><strong>Raspoloživa količina: </strong>{{product.quantity}} kom</p>
+                            <p class="mb-2"><strong>Raspoloživa količina: </strong>{{product.quantity | int}} kom</p>
                         {% else %}
-                            <p class="mb-2"><strong>Raspoloživa količina: </strong>{{product.quantity}} {{product.unit_of_measurement}}</p>
+                            <p class="mb-2"><strong>Raspoloživa količina: </strong>{{product.quantity | round(2)}} {{product.unit_of_measurement}}</p>
                         {% endif %}
                         
                         <!-- Organska proizvodnja -->
