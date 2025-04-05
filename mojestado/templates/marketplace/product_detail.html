@@ -268,6 +268,71 @@
         {% endif %}
     </div>
 </section>
+{% if user.user_type != 'farm_active' %}
+<!-- Slični proizvodi iste kategorije -->
+<section class="similar-products mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mb-4">Slični proizvodi</h3>
+                <div id="products-container" class="row row-cols-1 row-cols-md-3 g-4 mb-3 mygridboxes">
+                    {% if similar_products %}
+                    {% for product in similar_products %}
+                    <div class="product-item col">
+                        <div class="card h-100 noborder">
+                            <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="image-wrapper square-prod-box">
+                                <img src="{{ url_for('static', filename='product_image/' + product.product_image) }}" class="card-img-top" alt="Slika proizvoda">
+                            </a>
+                            <div class="card-body-mine">
+                                <h5 class="card-title"><a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}">{{ product.product_name }}</a></h5>
+                                <p class="card-text smaller-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
+                                <div class="d-flex justify-content-between border-tb">
+                                    {% if product.unit_of_measurement in ["kom (kg)", "kom (l)"] %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_unit) }}</span></strong> <span class="smaller-text darktext">rsd/kom</span></p>
+                                    {% else %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_unit) }}</span></strong> <span class="smaller-text darktext">rsd/{{ product.unit_of_measurement }}</span></p>
+                                    {% endif %}
+                                    {% if product.unit_of_measurement == 'kom (kg)' %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/kg</span></p>
+                                    {% elif product.unit_of_measurement == 'kom (l)' %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/l</span></p>
+                                    {% else %}
+                                        <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/{{ product.unit_of_measurement }}</span></p>
+                                    {% endif %}
+                                </div>
+                                <p><span class="smaller-text">Dostupna količina:</span>
+                                    {% if product.unit_of_measurement in ["kom (kg)", "kom (l)"] %}
+                                        {{ product.quantity | int }} <span class="smaller-text">kom</span>
+                                    {% else %}
+                                        {{ product.quantity | round(2) }} <span class="smaller-text">{{ product.unit_of_measurement }}</span>
+                                    {% endif %}
+                                </p>
+                                {% if current_user.is_authenticated %}
+                                    {% if current_user.farms and current_user.farms[0].id == product.farm_id %}
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary font-size-14 center-button"><i class="fa-solid fa-pen-to-square"></i> &nbsp;&nbsp;Uredi</a>
+                                    {% else %}
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary font-size-14 center-button"><i class="fa-solid fa-basket-shopping"></i> &nbsp;&nbsp;Kupi</a>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary font-size-14 center-button"><i class="fa-solid fa-basket-shopping"></i> &nbsp;&nbsp;Kupi</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="col-12 text-center my-5">
+                        <div class="alert alert-info">
+                            <h4>Nema sličnih proizvoda u ovoj kategoriji.</h4>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- JavaScript za zavisnost polja konverzije od jedinice mere -->
 <script>

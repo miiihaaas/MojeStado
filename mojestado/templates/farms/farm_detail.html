@@ -240,9 +240,9 @@
                                     <p class="card-text smaller-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}</p>
                                     <div class="d-flex justify-content-between border-tb">
                                         {% if product.unit_of_measurement in ["kom (kg)", "kom (l)"] %}
-                                            <p class="list-price halfbreed"><strong><span>{{ product.product_price_per_unit }}</span></strong><span class="smaller-text darktext">rsd/kom</span>></p>
+                                            <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_unit) }}</span></strong> <span class="smaller-text darktext">rsd/kom</span></p>
                                         {% else %}
-                                            <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_unit) }}</span></strong><span class="smaller-text darktext">{{ product.product_price_per_unit }} rsd/{{product.unit_of_measurement}}</span></strong></p>
+                                            <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_unit) }}</span></strong> <span class="smaller-text darktext">rsd/{{ product.unit_of_measurement }}</span></p>
                                         {% endif %}
                                         {% if product.unit_of_measurement == 'kom (kg)' %}
                                             <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/kg</span></p>
@@ -252,6 +252,13 @@
                                             <p class="list-price halfbreed"><strong><span>{{ "{:.2f}".format(product.product_price_per_kg) }}</span></strong> <span class="smaller-text darktext">rsd/{{ product.unit_of_measurement }}</span></p>
                                         {% endif %}
                                     </div>
+                                    <p><span class="smaller-text">Dostupna količina:</span>
+                                        {% if product.unit_of_measurement in ["kom (kg)", "kom (l)"] %}
+                                            {{ product.quantity | int }} <span class="smaller-text">kom</span>
+                                        {% else %}
+                                            {{ product.quantity | round(2) }} <span class="smaller-text">{{ product.unit_of_measurement }}</span>
+                                        {% endif %}
+                                    </p>
                                     <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary font-size-14 center-button"><i class="fa-solid fa-basket-shopping"></i> &nbsp;&nbsp;Kupi</a>
                                 </div>
                             </div>

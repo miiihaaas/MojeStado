@@ -5,6 +5,7 @@ from flask import  render_template, flash, redirect, url_for
 from flask_login import current_user, login_required
 from mojestado import app, db
 from mojestado.models import Animal, AnimalCategorization, AnimalCategory, Farm, Municipality, Product, ProductCategory, ProductSection, ProductSubcategory, User
+from sqlalchemy import func
 
 
 marketplace = Blueprint('marketplace', __name__)
@@ -377,14 +378,21 @@ def product_detail(product_id):
         else:
             user = None
             farm_profile_completed = False
-            
+        
+        # Dobijanje 6 nasumično izabranih proizvoda iste kategorije
+        similar_products = Product.query.filter(
+            Product.product_category_id == product.product_category_id,
+            Product.id != product.id
+        ).order_by(func.random()).limit(6).all()
+        
         app.logger.info(f'Prikazujem detalje za proizvod: {product.product_name}')
         
         return render_template('marketplace/product_detail.html',
                                 product=product,
                                 user=user,
                                 farm=farm,
-                                farm_profile_completed=farm_profile_completed)
+                                farm_profile_completed=farm_profile_completed,
+                                similar_products=similar_products)
                                 
     except Exception as e:
         app.logger.error(f'Greška pri učitavanju proizvoda {product_id}: {str(e)}')
