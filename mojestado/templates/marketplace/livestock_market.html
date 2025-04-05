@@ -638,9 +638,11 @@ $(document).ready(function() {
         select.empty();
         
         for (var i = 2; i <= maxInstallments; i++) {
+            // Determine correct suffix based on the number
+            var suffix = (i >= 2 && i <= 4) ? ' rate' : ' rata';
             select.append($('<option>', {
                 value: i,
-                text: i + ' rata'
+                text: i + suffix
             }));
         }
     }
@@ -721,9 +723,10 @@ $(document).ready(function() {
         select.empty();
         
         for (var i = 2; i <= maxInstallments; i++) {
+            var suffix = (i >= 2 && i <= 4) ? ' rate' : ' rata';
             select.append($('<option>', {
                 value: i,
-                text: i + ' rata'
+                text: i + suffix
             }));
         }
     }
