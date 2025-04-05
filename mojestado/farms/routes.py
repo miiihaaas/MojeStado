@@ -145,7 +145,7 @@ def farm_list():
 def farm_detail(farm_id):
     route_name = request.endpoint
     farm = Farm.query.get_or_404(farm_id)
-    animals = Animal.query.filter_by(farm_id=farm_id).all()
+    animals = Animal.query.filter_by(farm_id=farm_id, active=True).all()
     #! samo životinje koje nisu u tovu
     animals = [animal for animal in animals if animal.fattening == False]
     products = Product.query.filter_by(farm_id=farm_id).all()
