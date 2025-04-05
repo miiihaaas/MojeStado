@@ -209,56 +209,117 @@
                     <form action="{{ url_for('marketplace.edit_product', product_id=product.id) }}" method="POST">
                         <input type="hidden" name="product_id" value="{{ product.id }}">
                         <div class="row">
-                            <div class="form-group mb-3">
-                                <label for="product_name">Naziv proizvoda</label>
-                                <input type="text" name="product_name" value="{{ product.product_name }}" class="form-control">
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="product_description">Opis proizvoda</label>
-                                <input type="text" name="product_description" value="{{ product.product_description }}" class="form-control">
+                            <!-- Nova sekcija za kategorije -->                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Kategorija proizvoda</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group mb-3">
+                                                <label for="category">Kategorija</label>
+                                                <select name="category" id="category" class="form-select">
+                                                    {% for category in product_categories %}
+                                                        <option value="{{ category.id }}" {% if category.id == product.product_category_id %}selected{% endif %}>{{ category.product_category_name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group mb-3">
+                                                <label for="subcategory">Potkategorija</label>
+                                                <select name="subcategory" id="subcategory" class="form-select">
+                                                    <!-- Opcije će biti učitane putem JavaScript-a -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group mb-3">
+                                                <label for="section">Sekcija</label>
+                                                <select name="section" id="section" class="form-select">
+                                                    <!-- Opcije će biti učitane putem JavaScript-a -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <!-- Dve kolone za organizaciju polja -->
-                            <div class="row">
-                                <!-- Leva strana - jedinica mere, Vrednost jedinice mere u kg, cena -->
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="unit_of_measurement">Jedinica mere</label>
-                                        <select name="unit_of_measurement" id="unit_of_measurement" class="form-select width-auto">
-                                            <option value="kg" {% if product.unit_of_measurement == 'kg' %}selected{% endif %}>kg</option>
-                                            <option value="kom (kg)" {% if product.unit_of_measurement == 'kom (kg)' %}selected{% endif %}>kom (kg)</option>
-                                            <option value="kom (l)" {% if product.unit_of_measurement == 'kom (l)' %}selected{% endif %}>kom (l)</option>
-                                            <option value="l" {% if product.unit_of_measurement == 'l' %}selected{% endif %}>l</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group mb-3" id="conversion_field">
-                                        <label for="weight_conversion">Vrednost jedinice mere u kg</label>
-                                        <input type="number" step="0.05" name="weight_conversion" id="weight_conversion" value="{{ product.weight_conversion }}" class="form-control width-auto">
-                                    </div>
-                                    <div class="form-group mb-3">
-                                        <label for="product_price_per_unit">Cena po jedinici mere</label>
-                                        <input type="number" step="1" name="product_price_per_unit" value="{{ product.product_price_per_unit_farmer }}" class="form-control width-auto">
+                            <!-- Druga sekcija - Osnovni podaci -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Osnovni podaci</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group mb-3">
+                                                <label for="product_name">Naziv proizvoda</label>
+                                                <input type="text" name="product_name" value="{{ product.product_name }}" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group mb-3">
+                                                <label for="product_description">Opis proizvoda</label>
+                                                <div id="char-count">0/500</div>
+                                                <textarea name="product_description" id="product_description" class="form-control big-textarea">{{ product.product_description }}</textarea>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Desna strana - organska proizvodnja, količina, dugme -->
-                                <div class="col-md-6">
-                                    <div class="form-check form-switch mb-3 ml-2">
-                                        {% if product.organic_product %}
-                                        <input class="form-check-input" name="organic_product" type="checkbox" checked>
-                                        {% else %}
-                                        <input class="form-check-input" name="organic_product" type="checkbox">
-                                        {% endif %}
-                                        <label class="form-check-label" for="organic_product">Organska proizvodnja</label>
-                                    </div>
-                                    <div class="form-group mb-3">
-                                        <label for="quantity">Raspoloživa količina</label>
-                                        <input type="number" name="quantity" value="{{ product.quantity }}" class="form-control width-auto">
-                                    </div>
-                                    <div class="form-group mt-4">
-                                        <button type="submit" class="btn btn-primary">Sačuvaj</button>
+                            </div>
+                            
+                            <!-- Treća sekcija - Cene i količine -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Cene i količine</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Leva strana - jedinica mere, konverzija, cena -->
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="unit_of_measurement">Jedinica mere</label>
+                                                <select name="unit_of_measurement" id="unit_of_measurement" class="form-select width-auto">
+                                                    <option value="kg" {% if product.unit_of_measurement == 'kg' %}selected{% endif %}>kg</option>
+                                                    <option value="kom (kg)" {% if product.unit_of_measurement == 'kom (kg)' %}selected{% endif %}>kom (kg)</option>
+                                                    <option value="kom (l)" {% if product.unit_of_measurement == 'kom (l)' %}selected{% endif %}>kom (l)</option>
+                                                    <option value="l" {% if product.unit_of_measurement == 'l' %}selected{% endif %}>l</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group mb-3" id="conversion_field">
+                                                <label for="weight_conversion">Vrednost jedinice mere u kg</label>
+                                                <input type="number" step="0.01" name="weight_conversion" id="weight_conversion" value="{{ product.weight_conversion }}" class="form-control width-auto">
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="product_price_per_unit">Cena po jedinici mere</label>
+                                                <input type="number" step="1" name="product_price_per_unit" value="{{ product.product_price_per_unit_farmer }}" class="form-control width-auto">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Desna strana - organska proizvodnja, količina -->
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch mb-3 ml-2">
+                                                {% if product.organic_product %}
+                                                <input class="form-check-input" name="organic_product" type="checkbox" checked>
+                                                {% else %}
+                                                <input class="form-check-input" name="organic_product" type="checkbox">
+                                                {% endif %}
+                                                <label class="form-check-label" for="organic_product">Organska proizvodnja</label>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="quantity">Raspoloživa količina</label>
+                                                <input type="number" name="quantity" value="{{ product.quantity }}" class="form-control width-auto">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Dugme za snimanje -->
+                            <div class="form-group text-center mt-4">
+                                <button type="submit" class="btn btn-primary">Sačuvaj proizvod</button>
                             </div>
                         </div>
                     </form>
@@ -390,6 +451,97 @@
                 }
             }
         }
+    });
+</script>
+
+<!-- JavaScript za učitavanje potkategorija i sekcija -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadSubcategories(category) {
+            $.ajax({
+                url: '/get_product_subcategories',
+                type: 'GET',
+                data: { category: category },
+                success: function(subcategories_options) {
+                    $('#subcategory').empty();
+                    subcategories_options.forEach(function(subcategory) {
+                        $('#subcategory').append($('<option>', {
+                            value: subcategory.value,
+                            text: subcategory.text
+                        }));
+                    });
+                    
+                    // Automatski pokreni promenu za potkategoriju da bi se ažurirale sekcije
+                    $('#subcategory').change();
+                    
+                    // Ako postoji prethodno izabrana potkategorija, selektuj je
+                    if (initialSubcategoryId) {
+                        $('#subcategory').val(initialSubcategoryId);
+                        initialSubcategoryId = null; // Resetuj nakon prvog učitavanja
+                    }
+                }
+            });
+        }
+        
+        function loadSections(category, subcategory) {
+            $.ajax({
+                url: '/get_product_sections',
+                type: 'GET',
+                data: { category: category, subcategory: subcategory },
+                success: function(sections_options) {
+                    $('#section').empty();
+                    sections_options.forEach(function(section) {
+                        $('#section').append($('<option>', {
+                            value: section.value,
+                            text: section.text
+                        }));
+                    });
+                    
+                    // Ako postoji prethodno izabrana sekcija, selektuj je
+                    if (initialSectionId) {
+                        $('#section').val(initialSectionId);
+                        initialSectionId = null; // Resetuj nakon prvog učitavanja
+                    }
+                }
+            });
+        }
+        
+        // Sačuvaj inicijalne vrednosti za potkategoriju i sekciju
+        var initialSubcategoryId = "{{ product.product_subcategory_id }}";
+        var initialSectionId = "{{ product.product_section_id }}";
+        
+        $('#category').change(function() {
+            loadSubcategories($(this).val());
+        });
+        
+        $('#subcategory').change(function() {
+            loadSections($('#category').val(), $(this).val());
+        });
+        
+        // Inicijalizuj sa trenutnim vrednostima
+        if ($('#category').val()) {
+            loadSubcategories($('#category').val());
+        }
+    });
+</script>
+
+<!-- JavaScript za brojau010d karaktera za opis proizvoda -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var textarea = document.getElementById('product_description');
+        var countDisplay = document.getElementById('char-count');
+        var maxLength = 500;
+        
+        function updateCharCount() {
+            var currentLength = textarea.value.length;
+            countDisplay.textContent = currentLength + "/" + maxLength;
+        }
+        
+        // Pokretanje brojau010da kada korisnik kuca
+        textarea.addEventListener("input", updateCharCount);
+        
+        // Inicijalno pokretanje brojau010da
+        updateCharCount();
     });
 </script>
 

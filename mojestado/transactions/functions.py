@@ -60,7 +60,7 @@ def generate_payment_slips_attach(invoice_item):
             'primalac': 'Naša imperija doo',
             'sifra_placanja': '189',
             'valuta': 'RSD',
-            'iznos': iznos_rate,
+            'iznos': round(iznos_rate, 2),
             'racun_primaoca': '265178031000308698',
             'model': '00', #! ili 97?
             'poziv_na_broj': poziv_na_broj,
@@ -76,7 +76,7 @@ def generate_payment_slips_attach(invoice_item):
             "C": "1",
             "R": "265178031000308698",
             "N": "Naša imperija doo", #! da li treba adresa? Kneza Grbovića 10 || 14242 Mionica
-            "I": f'RSD{str(round(iznos_rate, 2)).replace(".", ",")}',
+            "I": f'RSD{str(f"{round(iznos_rate, 2):.2f}").replace(".", ",")}',
             "P": uplatilac,
             "SF": sifra_placanja,
             "S": svrha_uplate if len(svrha_uplate) < 36 else svrha_uplate[:35], #! za generisanje QR koda maksimalno može da bude 35 karaktera
@@ -166,7 +166,7 @@ def generate_payment_slips_attach(invoice_item):
         pdf.multi_cell(7,6, f"", new_y='LAST', align='L', border=0)
         pdf.multi_cell(13,6, f"RSD", new_y='LAST', align='L', border=1)
         pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
-        pdf.multi_cell(22,6, f"{uplatnica['iznos']}", new_y='NEXT', align='L', border=1)
+        pdf.multi_cell(22,6, f"{uplatnica['iznos']:.2f}", new_y='NEXT', align='L', border=1)
         pdf.set_x(73)
         pdf.set_font('DejaVuSansCondensed', '', 8)
         pdf.multi_cell(65,5, f"Račun primaoca", new_y='NEXT', align='L', border=0)
@@ -195,7 +195,7 @@ def generate_payment_slips_attach(invoice_item):
         pdf.multi_cell(7,6, f"", new_y='LAST', align='L', border=0)
         pdf.multi_cell(13,6, f"RSD", new_y='LAST', align='L', border=1)
         pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
-        pdf.multi_cell(22,6, f"{uplatnica['iznos']}", new_y='NEXT', align='L', border=1)
+        pdf.multi_cell(22,6, f"{uplatnica['iznos']:.2f}", new_y='NEXT', align='L', border=1)
         pdf.set_x(141)
         pdf.set_font('DejaVuSansCondensed', '', 8)
         pdf.multi_cell(65,5, f"Račun primaoca", new_y='NEXT', align='L', border=0)
@@ -209,7 +209,7 @@ def generate_payment_slips_attach(invoice_item):
         pdf.set_font('DejaVuSansCondensed', '', 10)
         pdf.multi_cell(10,6, f"{uplatnica['model']}", new_y='LAST', align='L', border=1)
         pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
-        pdf.multi_cell(45,6, f"{uplatnica['poziv_na_broj']}", new_y='NEXT', align='L', border=1)
+        pdf.multi_cell(45,6, f"{uplatnica['poziv_na_broj']}", new_y='LAST', align='L', border=1)
         pdf.set_x(141)
         pdf.set_font('DejaVuSansCondensed', '', 10)
         pdf.cell(63,4, f"Uplatilac", new_y='NEXT', align='L', border=0)
@@ -307,9 +307,9 @@ def generate_invoice_attach(invoice_id):
             pdf.cell(30, 10, f'{product["product_name"]}', new_y='LAST', align='L', border=1)
             pdf.cell(15, 10, f'{product["quantity"]}', new_y='LAST', align='L', border=1)
             pdf.cell(20, 10, f'{product["unit_of_measurement"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{product["product_price_per_unit"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{product["product_price_per_kg"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{product["total_price"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(30, 10, f'{float(product["product_price_per_unit"]):.2f}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{float(product["product_price_per_kg"]):.2f}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{float(product["total_price"]):.2f}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{product["farm"]}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{product["location"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
         pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
@@ -337,9 +337,9 @@ def generate_invoice_attach(invoice_id):
             pdf.cell(30, 10, f'{animal["subcategory"]}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{animal["race"]}', new_y='LAST', align='L', border=1)
             pdf.cell(10, 10, f'{animal["animal_gender"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{animal["current_weight"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{animal["price_per_kg"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{animal["total_price"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{float(animal["current_weight"]):.2f}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{float(animal["price_per_kg"]):.2f}', new_y='LAST', align='L', border=1)
+            pdf.cell(20, 10, f'{float(animal["total_price"]):.2f}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{animal["insured"]}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{animal["organic_animal"]}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{animal["farm"]}', new_y='LAST', align='L', border=1)
@@ -363,13 +363,13 @@ def generate_invoice_attach(invoice_id):
             pdf.cell(30, 10, f'{service["subcategory"]}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{service["race"]}', new_y='LAST', align='L', border=1)
             pdf.cell(10, 10, f'{service["animal_gender"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{service["current_weight"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{float(service["current_weight"]):.2f}', new_y='LAST', align='L', border=1)
             if service['slaughterService'] == True and service['processingPrice'] > 0:
                 pdf.cell(30, 10, f'Klanje i obrada', new_y='LAST', align='L', border=1)
-                pdf.cell(30, 10, f'{service["slaughterPrice"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+                pdf.cell(30, 10, f'{float(service["slaughterPrice"]):.2f}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
             elif service['slaughterService']:
                 pdf.cell(30, 10, f'Klanje', new_y='LAST', align='L', border=1)
-                pdf.cell(30, 10, f'{service["slaughterPrice"] + service["processingPrice"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+                pdf.cell(30, 10, f'{float(service["slaughterPrice"] + service["processingPrice"]):.2f}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
         pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
     
     #! tov (samo koji NIJE na rate?)
@@ -391,8 +391,8 @@ def generate_invoice_attach(invoice_id):
             pdf.cell(30, 10, f'{fattening_item["subcategory"]}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{fattening_item["race"]}', new_y='LAST', align='L', border=1)
             pdf.cell(10, 10, f'{fattening_item["animal_gender"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{fattening_item["desired_weight"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{fattening_item["fattening_price"]}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{float(fattening_item["desired_weight"]):.2f}', new_y='LAST', align='L', border=1)
+            pdf.cell(15, 10, f'{float(fattening_item["fattening_price"]):.2f}', new_y='LAST', align='L', border=1)
             pdf.cell(15, 10, f'{fattening_item["feeding_days"]}', new_y='LAST', align='L', border=1)
             pdf.cell(30, 10, f'{fattening_item["installment_options"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
     
