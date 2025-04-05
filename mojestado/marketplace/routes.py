@@ -371,6 +371,9 @@ def product_detail(product_id):
         product = Product.query.get_or_404(product_id)
         farm = Farm.query.get_or_404(product.farm_id)
         
+        # Učitavanje kategorija proizvoda za formular za izmenu
+        product_categories = ProductCategory.query.all()
+        
         # Provera da li je korisnik ulogovan
         if current_user.is_authenticated:
             user = current_user
@@ -392,7 +395,8 @@ def product_detail(product_id):
                                 user=user,
                                 farm=farm,
                                 farm_profile_completed=farm_profile_completed,
-                                similar_products=similar_products)
+                                similar_products=similar_products,
+                                product_categories=product_categories)
                                 
     except Exception as e:
         app.logger.error(f'Greška pri učitavanju proizvoda {product_id}: {str(e)}')
@@ -704,7 +708,7 @@ def edit_product(product_id):
             
         # Validacija obaveznih polja
         required_fields = ['product_name', 'product_description', 'unit_of_measurement', 
-                            'product_price_per_unit', 'quantity']
+                            'product_price_per_unit', 'quantity', 'category', 'subcategory', 'section']
         
         for field in required_fields:
             if not request.form.get(field):
@@ -738,6 +742,11 @@ def edit_product(product_id):
         product.product_price_per_unit_farmer = request.form['product_price_per_unit']
         product.product_price_per_unit = price * 1.38  # Uvećanje cene za kupca
         product.quantity = request.form['quantity']
+        
+        # Ažuriranje kategorije, potkategorije i sekcije
+        product.product_category_id = request.form['category']
+        product.product_subcategory_id = request.form['subcategory']
+        product.product_section_id = request.form['section']
         
         # Ažuriranje cene po kilogramu
         if request.form['unit_of_measurement'] == 'kg':
