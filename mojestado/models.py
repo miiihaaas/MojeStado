@@ -67,7 +67,7 @@ class Farm(db.Model):
     farm_municipality_id = db.Column(db.Integer, db.ForeignKey('municipality.id'), nullable=False) #!
     farm_phone = db.Column(db.String(20), nullable=False)
     farm_account_number = db.Column(db.String(20), nullable=False)
-    farm_description = db.Column(db.String(2000), nullable=False)
+    farm_description = db.Column(db.Text, nullable=False)
     services = db.Column(db.JSON, nullable=True) #! usluga klanja, usluga obrade - tu treba da se definišu cene usluga za kategorije
     registration_date = db.Column(db.Date, nullable=True) #! kada admin potvrdi da je registrovan, tada se dodeli trenutni datum
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #!
@@ -165,7 +165,7 @@ class Product(db.Model):
     product_subcategory_id = db.Column(db.Integer, db.ForeignKey('product_subcategory.id'), nullable=False)
     product_section_id = db.Column(db.Integer, db.ForeignKey('product_section.id'), nullable=False)
     product_name = db.Column(db.String(50), nullable=False)
-    product_description = db.Column(db.String(500), nullable=False)
+    product_description = db.Column(db.Text, nullable=False)
     product_image = db.Column(db.String(20), nullable=False, default='default.jpg')
     product_image_collection = db.Column(db.JSON, nullable=True)
     unit_of_measurement = db.Column(db.String(20), nullable=False)
