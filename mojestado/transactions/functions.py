@@ -736,24 +736,25 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         orders_data = []
         sequence_no = 1
         
-        app.logger.debug(f'Poučinjem kreiranje naloga za plaćanje za {len(invoice_items)} stavki')
         # Provera da li korisnik ima adresu i grad
         user_address = user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa"
         user_city = user.city if hasattr(user, 'city') and user.city else "Nepoznat grad"
         app.logger.debug(f'Adresa korisnika: {user_address}, Grad: {user_city}')
         
-        # Provera da li je prosleđen objekat fakture
+        # Provera da li je prosleu0111en objekat fakture
         if not invoice:
-            app.logger.warning('Nije prosleđen objekat fakture')
-            return False, "Faktura nije prosleđena."
+            app.logger.warning('Nije prosleu0111en objekat fakture')
+            return False, "Faktura nije prosleu0111ena."
         
         # Dohvatanje stavki fakture
         invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice.id).all()
-        app.logger.debug(f'Pronađeno {len(invoice_items)} stavki za fakturu {invoice.id}')
+        app.logger.debug(f'Pronau0111eno {len(invoice_items)} stavki za fakturu {invoice.id}')
         
         if not invoice_items:
-            app.logger.warning(f'Faktura {invoice.id} nema stavke, nije moguće kreirati naloge za plaćanje')
-            return False, "Faktura nema stavke. Nije moguće kreirati naloge za plaćanje."
+            app.logger.warning(f'Faktura {invoice.id} nema stavke, nije moguu0107e kreirati naloge za plau0107anje')
+            return False, "Faktura nema stavke. Nije moguu0107e kreirati naloge za plau0107anje."
+        
+        app.logger.debug(f'Pou010dinjem kreiranje naloga za plau0107anje za {len(invoice_items)} stavki')
         
         for item in invoice_items:
             # Dobavljanje podataka o farmi
@@ -762,7 +763,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 app.logger.warning(f'Farma sa ID {item.farm_id} nije pronađena za stavku {item.id}')
                 continue
             
-            app.logger.debug(f'Pronađena farma: {farm.farm_name}, ID: {farm.id}')
+            app.logger.debug(f'Pronau0111ena farma: {farm.farm_name}, ID: {farm.id}')
             
             # Dobavljanje podataka o vlasniku farme
             farmer = User.query.get(farm.user_id)
@@ -770,7 +771,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 app.logger.warning(f'Vlasnik nije pronađen za farmu {farm.id}')
                 continue
             
-            app.logger.debug(f'Pronađen vlasnik farme: {farmer.name} {farmer.surname}, ID: {farmer.id}')
+            app.logger.debug(f'Pronau0111en vlasnik farme: {farmer.name} {farmer.surname}, ID: {farmer.id}')
             
             # Dobavljanje detalja stavke
             item_details = item.invoice_item_details
@@ -782,7 +783,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             # 1. Kreiranje naloga za farmera (cena/1.38)
             farmer_amount = round(item_price / 1.38, 2)  # Cena bez PDV-a
             
-            app.logger.debug(f'Iznos za farmera: {farmer_amount}, broj računa: {farm.farm_account_number if hasattr(farm, "farm_account_number") else "nije definisan"}')
+            app.logger.debug(f'Iznos za farmera: {farmer_amount}, broj rau010duna: {farm.farm_account_number if hasattr(farm, "farm_account_number") else "nije definisan"}')
             
             farmer_order = {
                 "sequenceNo": sequence_no,
