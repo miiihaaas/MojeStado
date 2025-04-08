@@ -319,6 +319,7 @@
             <input type="hidden" name="successURL" value="{{ url_for('transactions.success_url', _external=True) }}" />
             <input type="hidden" name="cancelURL" value="{{ url_for('transactions.cancel_url', _external=True) }}" />
             <input type="hidden" name="errorURL" value="{{ url_for('transactions.error_url', _external=True) }}" />
+            <input type="hidden" name="callbackURL" value="{{ url_for('transactions.callback_url', _external=True) }}" />
             <input type="hidden" name="email" value='{{ user.email }}' />
             <input type="hidden" name="customerId" value='123456789' />
             <input type="hidden" name="requestType" value='10'/> <!-- 11 za normalnu transakciju, 10 za split transakcije -->
