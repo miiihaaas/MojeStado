@@ -222,26 +222,50 @@
         function showPagination() {
             var totalProducts = productsContainer.find('.product-item').length;
             var totalPages = Math.ceil(totalProducts / productsPerPage);
-            
+
             // Ako ima samo jedna stranica, ne prikazujemo paginaciju
             if (totalPages <= 1) {
                 $('#pagination').parent().parent().hide();
                 return;
             }
-            
+
             var paginationHtml = '';
-            
-            // Dodajemo dugme "Prethodna"
+            var windowSize = 5; // koliko stranica prikazujemo (prozor)
+            var halfWindow = Math.floor(windowSize / 2);
+
+            var startPage = currentPage - halfWindow;
+            var endPage = currentPage + halfWindow;
+
+            if (startPage < 1) {
+                startPage = 1;
+                endPage = Math.min(windowSize, totalPages);
+            }
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, totalPages - windowSize + 1);
+            }
+
+            // Dugme "Prethodna"
             paginationHtml += '<li class="page-item' + (currentPage === 1 ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="prev">Prethodna</a></li>';
-            
-            // Dodajemo brojeve stranica
-            for (var i = 1; i <= totalPages; i++) {
+
+            // Ako startPage > 1, dodaj "..."
+            if (startPage > 1) {
+                paginationHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+
+            // Brojevi stranica u prozoru
+            for (var i = startPage; i <= endPage; i++) {
                 paginationHtml += '<li class="page-item' + (i === currentPage ? ' active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
             }
-            
-            // Dodajemo dugme "Sledeća"
+
+            // Ako endPage < totalPages, dodaj "..."
+            if (endPage < totalPages) {
+                paginationHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+
+            // Dugme "Sledeća"
             paginationHtml += '<li class="page-item' + (currentPage === totalPages ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="next">Sledeća</a></li>';
-            
+
             $('#pagination').html(paginationHtml);
         }
         

@@ -331,6 +331,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     body { font-size: 16px; }
     body:not(.main\.home) nav.navbar-dark { background-color: #5e4432; }
     .navbar-nav.main-menu .nav-item a { color: #ffffff !important; }
+    header nav .dropdown-menu { background-color: #4c3729; }
     section.page-hero { background-position-y: 160px; background-size: contain; padding-bottom: 0; }
     section.page-hero .container .row > .col-md-6 { margin-top: 26%; padding-top: 30px; /*background-color: #f8f2e9;*/ }
     section.page-hero .container .row > .col-md-6 .wht-text { color: #5e4432; text-shadow: none; }
