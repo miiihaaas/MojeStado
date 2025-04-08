@@ -700,3 +700,191 @@ def provera_validnosti_poziva_na_broj(podaci):
         # Poziv na broj nije u ispravnom formatu (treba da bude 11 cifara ili format 5-6 cifara)
         podaci['Validnost'] = False
     return podaci
+
+
+def send_payment_order_insert(merchant_order_id, merchant_order_amount, user):
+    """
+    Šalje PaymentOrderInsert (MsgType=101) zahtev ka PaySpot-u pre plaćanja
+    """
+    try:
+        import requests
+        import os
+        import datetime
+        from mojestado import app
+        
+        # Generisanje random stringa za hash
+        rnd = generate_random_string()
+        
+        # Trenutno vreme u formatu koji očekuje PaySpot
+        request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Priprema podataka za nalog
+        orders_data = []
+        
+        # Ovde treba pripremiti podatke za svaki nalog (za svakog prodavca)
+        # Primer za jedan nalog:
+        order = {
+            "sequenceNo": 1,
+            "merchantOrderReference": f"REF-{merchant_order_id}",
+            "debtorName": f"{user.name} {user.surname}",
+            "debtorAddress": user.address,
+            "debtorCity": user.city,
+            "beneficiaryAccount": "265178031000308698",  # Račun primaoca
+            "beneficiaryName": "Naša imperija doo",
+            "beneficiaryAddress": "Kneza Grbovića 10",
+            "beneficiaryCity": "Mionica",
+            "amountTrans": float(merchant_order_amount),
+            "senderFeeAmount": 0.00,  # Provizija
+            "beneficiaryAmount": float(merchant_order_amount),
+            "beneficiaryCurrency": 941,  # RSD
+            "purposeCode": 289,  # Kod plaćanja
+            "paymentPurpose": "Plaćanje za proizvode",
+            "isUrgent": 0,  # Nije hitno
+            "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
+        }
+        
+        orders_data.append(order)
+        
+        # Priprema podataka za zahtev
+        request_data = {
+            "data": {
+                "header": {
+                    "companyID": os.environ.get('PAYSPOT_COMPANY_ID'),
+                    "requestDateTime": request_date_time,
+                    "msgType": 101,
+                    "rnd": rnd,
+                    "hash": "",  # Biće izračunat kasnije
+                    "language": 1  # Srpski jezik
+                },
+                "body": {
+                    "paymentOrderGroup": {
+                        "merchantOrderID": merchant_order_id,
+                        "merchantOrderAmount": float(merchant_order_amount),
+                        "merchantCurrencyCode": 941,  # RSD
+                        "paymentType": 1,  # Plaćanje karticom
+                        "actionType": "I",  # Insert
+                        "sumOfOrders": float(merchant_order_amount),  # Ukupan iznos svih naloga
+                        "numberOfOrders": len(orders_data),  # Broj naloga
+                        "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'XXXXX'),
+                        "transtype": "Auth",
+                        "orders": orders_data
+                    }
+                }
+            }
+        }
+        
+        # Izračunavanje hash-a
+        secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+        plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
+        hash_value = calculate_hash(plaintext)
+        
+        # Dodavanje hash-a u zahtev
+        request_data["data"]["header"]["hash"] = hash_value
+        
+        # Slanje zahteva ka PaySpot-u
+        url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
+        headers = {"Content-Type": "application/json"}
+        
+        response = requests.post(url, json=request_data, headers=headers)
+        
+        if response.status_code == 200:
+            response_data = response.json()
+            error_code = response_data.get("data", {}).get("status", {}).get("errorCode")
+            
+            if error_code == 0:
+                app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
+                return True, None
+            else:
+                error_message = response_data.get("data", {}).get("status", {}).get("errorMessage", "Nepoznata greška")
+                app.logger.error(f'Greška pri slanju PaymentOrderInsert: {error_message}')
+                return False, error_message
+        else:
+            app.logger.error(f'HTTP greška pri slanju PaymentOrderInsert: {response.status_code}')
+            return False, f"HTTP greška: {response.status_code}"
+            
+    except Exception as e:
+        app.logger.error(f'Izuzetak pri slanju PaymentOrderInsert: {str(e)}')
+        return False, str(e)
+
+
+def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
+    """
+    Šalje PaymentOrderConfirm (MsgType=110) zahtev ka PaySpot-u nakon uspešnog plaćanja
+    """
+    try:
+        import requests
+        import os
+        import datetime
+        from mojestado import app, db
+        from mojestado.models import Invoice
+        
+        # Generisanje random stringa za hash
+        rnd = generate_random_string()
+        
+        # Trenutno vreme u formatu koji očekuje PaySpot
+        request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Pronalazenje fakture i podataka o narudžbini
+        invoice = Invoice.query.get(invoice_id)
+        if not invoice:
+            return False, "Faktura nije pronađena."
+        
+        # Priprema podataka za zahtev
+        request_data = {
+            "data": {
+                "header": {
+                    "companyID": os.environ.get('PAYSPOT_COMPANY_ID'),
+                    "requestDateTime": request_date_time,
+                    "msgType": 110,
+                    "rnd": rnd,
+                    "hash": "",  # Biće izračunat kasnije
+                    "language": 1  # Srpski jezik
+                },
+                "body": {
+                    "orderConfirm": [
+                        {
+                            "merchantOrderID": merchant_order_id,
+                            "merchantReference": f"REF-{merchant_order_id}",
+                            "payspotGroupID": payspot_order_id,
+                            "payspotTransactionID": payspot_order_id,
+                            "beneficiaryAccount": "265178031000308698",  # Račun primaoca
+                            "beneficiaryAmount": float(invoice.total_amount),
+                            "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
+                        }
+                    ]
+                }
+            }
+        }
+        
+        # Izračunavanje hash-a
+        secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+        plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{secret_key}"
+        hash_value = calculate_hash(plaintext)
+        
+        # Dodavanje hash-a u zahtev
+        request_data["data"]["header"]["hash"] = hash_value
+        
+        # Slanje zahteva ka PaySpot-u
+        url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
+        headers = {"Content-Type": "application/json"}
+        
+        response = requests.post(url, json=request_data, headers=headers)
+        
+        if response.status_code == 200:
+            response_data = response.json()
+            error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
+            
+            if error_code == 0:
+                app.logger.info(f'Uspešno poslat PaymentOrderConfirm za narudžbinu {merchant_order_id}')
+                return True, None
+            else:
+                error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
+                app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
+                return False, error_message
+        else:
+            app.logger.error(f'HTTP greška pri slanju PaymentOrderConfirm: {response.status_code}')
+            return False, f"HTTP greška: {response.status_code}"
+            
+    except Exception as e:
+        app.logger.error(f'Izuzetak pri slanju PaymentOrderConfirm: {str(e)}')
+        return False, str(e)
