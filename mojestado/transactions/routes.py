@@ -342,4 +342,3 @@ def callback_url():
     except Exception as e:
         app.logger.error(f'Greška u callback_url funkciji: {str(e)}')
         return jsonify({"error": "Internal server error"}), 500
-{{ ... }}
