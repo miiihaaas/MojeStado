@@ -710,16 +710,28 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user):
         import requests
         import os
         import datetime
+        import json
         from mojestado import app
+        
+        app.logger.info(f'Započinjem slanje PaymentOrderInsert za narudžbinu {merchant_order_id}')
+        app.logger.debug(f'Parametri: merchant_order_id={merchant_order_id}, merchant_order_amount={merchant_order_amount}')
+        app.logger.debug(f'Korisnik: id={user.id}, name={user.name}, surname={user.surname}')
         
         # Generisanje random stringa za hash
         rnd = generate_random_string()
+        app.logger.debug(f'Generisan random string: {rnd}')
         
         # Trenutno vreme u formatu koji očekuje PaySpot
         request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        app.logger.debug(f'Vreme zahteva: {request_date_time}')
         
         # Priprema podataka za nalog
         orders_data = []
+        
+        # Provera da li korisnik ima adresu i grad
+        user_address = user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa"
+        user_city = user.city if hasattr(user, 'city') and user.city else "Nepoznat grad"
+        app.logger.debug(f'Adresa korisnika: {user_address}, Grad: {user_city}')
         
         # Ovde treba pripremiti podatke za svaki nalog (za svakog prodavca)
         # Primer za jedan nalog:
@@ -727,8 +739,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user):
             "sequenceNo": 1,
             "merchantOrderReference": f"REF-{merchant_order_id}",
             "debtorName": f"{user.name} {user.surname}",
-            "debtorAddress": user.address,
-            "debtorCity": user.city,
+            "debtorAddress": user_address,
+            "debtorCity": user_city,
             "beneficiaryAccount": "265178031000308698",  # Račun primaoca
             "beneficiaryName": "Naša imperija doo",
             "beneficiaryAddress": "Kneza Grbovića 10",
@@ -744,6 +756,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user):
         }
         
         orders_data.append(order)
+        app.logger.debug(f'Pripremljeni podaci za nalog: {json.dumps(order)}')
         
         # Priprema podataka za zahtev
         request_data = {
@@ -773,34 +786,77 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user):
             }
         }
         
+        # Provera konfiguracije
+        app.logger.debug(f'PAYSPOT_COMPANY_ID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
+        app.logger.debug(f'PAYSPOT_TERMINAL_ID: {os.environ.get("PAYSPOT_TERMINAL_ID")}')
+        
         # Izračunavanje hash-a
         secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+        if not secret_key:
+            app.logger.error('Nedostaje PAYSPOT_SECRET_KEY u konfiguraciji')
+            return False, "Nedostaje PAYSPOT_SECRET_KEY u konfiguraciji"
+            
+        # Formiranje plaintext stringa za hash
         plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
+        app.logger.debug(f'Plaintext za hash (bez secret_key): {rnd}|{request_date_time}|{merchant_order_id}|{merchant_order_amount:.2f}|******')
+        
         hash_value = calculate_hash(plaintext)
+        app.logger.debug(f'Izračunati hash: {hash_value}')
         
         # Dodavanje hash-a u zahtev
         request_data["data"]["header"]["hash"] = hash_value
         
+        # Logovanje zahteva za dijagnostiku (bez osetljivih podataka)
+        request_data_log = json.loads(json.dumps(request_data))
+        request_data_log["data"]["header"]["hash"] = "*****"
+        app.logger.info(f'PaymentOrderInsert zahtev: {json.dumps(request_data_log)}')
+        
         # Slanje zahteva ka PaySpot-u
         url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
         headers = {"Content-Type": "application/json"}
+        app.logger.debug(f'Šaljem zahtev na URL: {url}')
         
-        response = requests.post(url, json=request_data, headers=headers)
-        
-        if response.status_code == 200:
-            response_data = response.json()
-            error_code = response_data.get("data", {}).get("status", {}).get("errorCode")
+        try:
+            response = requests.post(url, json=request_data, headers=headers, timeout=30)
+            app.logger.debug(f'Status kod odgovora: {response.status_code}')
+            app.logger.debug(f'Zaglavlja odgovora: {response.headers}')
             
-            if error_code == 0:
-                app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
-                return True, None
+            if response.status_code == 200:
+                try:
+                    response_data = response.json()
+                    app.logger.info(f'PaymentOrderInsert odgovor: {json.dumps(response_data)}')
+                    error_code = response_data.get("data", {}).get("status", {}).get("errorCode")
+                    
+                    if error_code == 0:
+                        app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
+                        return True, None
+                    else:
+                        error_message = response_data.get("data", {}).get("status", {}).get("errorMessage", "Nepoznata greška")
+                        app.logger.error(f'Greška pri slanju PaymentOrderInsert: {error_message}')
+                        return False, error_message
+                except ValueError as e:
+                    app.logger.error(f'Greška pri parsiranju JSON odgovora: {str(e)}')
+                    app.logger.debug(f'Sadržaj odgovora: {response.text}')
+                    return False, f"Greška pri parsiranju odgovora: {str(e)}"
             else:
-                error_message = response_data.get("data", {}).get("status", {}).get("errorMessage", "Nepoznata greška")
-                app.logger.error(f'Greška pri slanju PaymentOrderInsert: {error_message}')
-                return False, error_message
-        else:
-            app.logger.error(f'HTTP greška pri slanju PaymentOrderInsert: {response.status_code}')
-            return False, f"HTTP greška: {response.status_code}"
+                # Logovanje detalja greške
+                try:
+                    error_content = response.text
+                    app.logger.error(f'HTTP greška pri slanju PaymentOrderInsert: {response.status_code}')
+                    app.logger.error(f'Detalji greške: {error_content}')
+                    return False, f"HTTP greška: {response.status_code}"
+                except Exception as e:
+                    app.logger.error(f'HTTP greška pri slanju PaymentOrderInsert: {response.status_code}, Nije moguće parsirati odgovor: {str(e)}')
+                    return False, f"HTTP greška: {response.status_code}"
+        except requests.exceptions.Timeout:
+            app.logger.error(f'Timeout pri slanju PaymentOrderInsert zahteva')
+            return False, "Isteklo je vreme za odgovor servera. Molimo pokušajte ponovo kasnije."
+        except requests.exceptions.ConnectionError as e:
+            app.logger.error(f'Greška pri povezivanju sa PaySpot servisom: {str(e)}')
+            return False, "Nije moguće povezati se sa servisom za plaćanje. Molimo proverite internet konekciju."
+        except Exception as e:
+            app.logger.error(f'Neočekivana greška pri slanju zahteva: {str(e)}')
+            return False, f"Neočekivana greška: {str(e)}"
             
     except Exception as e:
         app.logger.error(f'Izuzetak pri slanju PaymentOrderInsert: {str(e)}')
