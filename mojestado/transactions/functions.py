@@ -645,7 +645,7 @@ def send_email_to_update_product_quantity(invoice_item):
     '''
     print(f'send_email > proizvod > slanje mejla PG ako je proizvod da ažurira količine proizvoda na portalu')
     farm = Farm.query.filter_by(id=invoice_item.farm_id).first()
-    farmer = User.query.filter_by(id=farm.user_id).first()
+    farmer = User.query.get(farm.user_id)
     farmer_email = farmer.email
     subject = 'Obaveštenje o prodaji i stanju proizvoda - Ažuriranje potrebno'
     
@@ -762,7 +762,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 continue
             
             # Dobavljanje podataka o vlasniku farme
-            farmer = farm.owner
+            farmer = User.query.get(farm.user_id)
             if not farmer:
                 app.logger.warning(f'Vlasnik nije pronađen za farmu {farm.id}')
                 continue
