@@ -736,6 +736,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         orders_data = []
         sequence_no = 1
         
+        app.logger.debug(f'Poučinjem kreiranje naloga za plaćanje za {len(invoice_items)} stavki')
         # Provera da li korisnik ima adresu i grad
         user_address = user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa"
         user_city = user.city if hasattr(user, 'city') and user.city else "Nepoznat grad"
@@ -761,19 +762,27 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 app.logger.warning(f'Farma sa ID {item.farm_id} nije pronađena za stavku {item.id}')
                 continue
             
+            app.logger.debug(f'Pronađena farma: {farm.farm_name}, ID: {farm.id}')
+            
             # Dobavljanje podataka o vlasniku farme
             farmer = User.query.get(farm.user_id)
             if not farmer:
                 app.logger.warning(f'Vlasnik nije pronađen za farmu {farm.id}')
                 continue
             
+            app.logger.debug(f'Pronađen vlasnik farme: {farmer.name} {farmer.surname}, ID: {farmer.id}')
+            
             # Dobavljanje detalja stavke
             item_details = item.invoice_item_details
             item_price = float(item_details.get('price', 0))
             item_name = item_details.get('name', 'Nepoznat proizvod')
             
+            app.logger.debug(f'Detalji stavke: {item_name}, cena: {item_price}')
+            
             # 1. Kreiranje naloga za farmera (cena/1.38)
             farmer_amount = round(item_price / 1.38, 2)  # Cena bez PDV-a
+            
+            app.logger.debug(f'Iznos za farmera: {farmer_amount}, broj računa: {farm.farm_account_number if hasattr(farm, "farm_account_number") else "nije definisan"}')
             
             farmer_order = {
                 "sequenceNo": sequence_no,
@@ -781,7 +790,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "debtorName": f"{user.name} {user.surname}",
                 "debtorAddress": user_address,
                 "debtorCity": user_city,
-                "beneficiaryAccount": farmer.account_number if hasattr(farmer, 'account_number') and farmer.account_number else "0000000000000000000",
+                "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
