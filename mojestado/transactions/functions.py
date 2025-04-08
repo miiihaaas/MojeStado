@@ -775,15 +775,36 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             
             # Dobavljanje detalja stavke
             item_details = item.invoice_item_details
-            item_price = float(item_details.get('price', 0))
-            item_name = item_details.get('name', 'Nepoznat proizvod')
             
-            app.logger.debug(f'Detalji stavke: {item_name}, cena: {item_price}')
+            # Provera tipa stavke i dobavljanje odgovarajuu0107ih podataka
+            if item.invoice_item_type == 1:  # Proizvod
+                item_name = item_details.get('product_name', 'Nepoznat proizvod')
+                item_price = float(item_details.get('total_price', 0))
+                quantity = int(item_details.get('quantity', 1))
+            elif item.invoice_item_type == 2:  # u017divotinja
+                item_name = item_details.get('animal_name', 'Nepoznata u017eivotinja')
+                item_price = float(item_details.get('total_price', 0))
+                quantity = 1
+            elif item.invoice_item_type == 3:  # Usluga
+                item_name = item_details.get('service_name', 'Nepoznata usluga')
+                item_price = float(item_details.get('total_price', 0))
+                quantity = int(item_details.get('quantity', 1))
+            else:  # Nepoznat tip
+                item_name = 'Nepoznata stavka'
+                item_price = 0
+                quantity = 1
+            
+            app.logger.debug(f'Detalji stavke: {item_name}, cena: {item_price}, kolu010dina: {quantity}')
             
             # 1. Kreiranje naloga za farmera (cena/1.38)
             farmer_amount = round(item_price / 1.38, 2)  # Cena bez PDV-a
             
             app.logger.debug(f'Iznos za farmera: {farmer_amount}, broj rau010duna: {farm.farm_account_number if hasattr(farm, "farm_account_number") else "nije definisan"}')
+            
+            # Provera da li je iznos veu0107i od 0
+            if farmer_amount <= 0:
+                app.logger.warning(f'Iznos za farmera je 0 ili negativan: {farmer_amount}, preskaeu010dem kreiranje naloga')
+                continue
             
             farmer_order = {
                 "sequenceNo": sequence_no,
@@ -809,6 +830,13 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             
             # 2. Kreiranje naloga za portal (15% od cene bez PDV-a)
             portal_amount = round(farmer_amount * 0.15, 2)
+            
+            # Provera da li je iznos veu0107i od 0
+            if portal_amount <= 0:
+                app.logger.warning(f'Iznos za portal je 0 ili negativan: {portal_amount}, preskaeu010dem kreiranje naloga')
+                continue
+            
+            app.logger.debug(f'Iznos za portal: {portal_amount}')
             
             portal_order = {
                 "sequenceNo": sequence_no,
