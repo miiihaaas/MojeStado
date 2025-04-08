@@ -219,6 +219,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .form-check-input:active { filter: brightness(100%); }
 .big-textarea { height: 160px; }
 .not-like-input { background-color: transparent; border: none !important; }
+.select2-search__field { height: 24px !important;}
 
 .sidebar .card { border: none; border-bottom: 1px solid #5e4432; border-radius: 0; }
 .sidebar .card:last-child { border-bottom: 0 !important; }
@@ -260,6 +261,9 @@ table.info-table .info-table-header { background-color: #eee !important;}
 ul.pagination .page-link { color: #6e5646; }
 ul.pagination .page-item.active .page-link { background-color: #e0bd5d; border-color: #e0bd5d; }
 ul.pagination .page-link:focus { box-shadow: none; }
+.popup-content { display: none; position: absolute; top: 0; left: 100%; background-color: #f9f9f9; font-size: 14px; color: #333; padding: 10px; border: 1px solid #ccc;
+    border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: 200px; overflow: auto; aspect-ratio: 1 / 1; z-index: 100; box-sizing: border-box; }
+.popup-content.active { display: block; }
 
 /***  Nalog   ***/
 .loginform { max-width: 300px; margin: auto; padding: 50px 0; }
@@ -326,8 +330,10 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 @media (max-width: 767px) {
     body { font-size: 16px; }
     body:not(.main\.home) nav.navbar-dark { background-color: #5e4432; }
+    header.hero { position: fixed; width: -webkit-fill-available; z-index: 999;}
     .navbar-nav.main-menu .nav-item a { color: #ffffff !important; }
     header nav .dropdown-menu { background-color: #4c3729; }
+    main { margin-top: 191px;}
     section.page-hero { background-position-y: 160px; background-size: contain; padding-bottom: 0; }
     section.page-hero .container .row > .col-md-6 { margin-top: 26%; padding-top: 30px; /*background-color: #f8f2e9;*/ }
     section.page-hero .container .row > .col-md-6 .wht-text { color: #5e4432; text-shadow: none; }

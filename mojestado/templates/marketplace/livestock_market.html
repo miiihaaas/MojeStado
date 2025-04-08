@@ -124,9 +124,17 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
                                 <label class="form-check-label" for="organic_filter">Organski</label>
-                                <a href="https://sr.wikipedia.org/sr/Organska_poljoprivreda" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
+                                <!---
+                                <a href="#" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
                                     <i class="fas fa-question-circle"></i>
                                 </a>
+                                 -->
+                                <a href="#" id="infoLink" title="Detaljnije o organskoj proizvodnji">
+                                    <i class="fas fa-question-circle"></i>
+                                </a>
+                                <div class="popup-content" id="popupText">
+                                    Organska proizvodnja podrazumeva upotrebu prirodnih resursa i metoda koji ne štete životnoj sredini...
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1056,6 +1064,22 @@ $(document).ready(function() {
         sessionStorage.setItem("scrollPosition", window.scrollY);
     });
 });
+</script>
+<script>
+    const link = document.getElementById('infoLink');
+    const popup = document.getElementById('popupText');
+
+    link.addEventListener('click', function(event) {
+        event.preventDefault();
+        popup.classList.toggle('active');
+    });
+
+    // Klik van popup-a zatvara prozor
+    document.addEventListener('click', function(event) {
+        if (!link.contains(event.target) && !popup.contains(event.target)) {
+            popup.classList.remove('active');
+        }
+    });
 </script>
 
 {% endblock scripts %}
