@@ -213,7 +213,7 @@ def make_order():
             app.logger.debug(f'Ukupan iznos za naplatu: {merchant_order_amount}')
             
             # Slanje PaymentOrderInsert zahteva (za split transakcije)
-            success, error_message = send_payment_order_insert(merchant_order_id, merchant_order_amount, user)
+            success, error_message = send_payment_order_insert(merchant_order_id, merchant_order_amount, user, new_invoice)
             
             if not success:
                 flash(f'Greška pri pripremi podataka za plaćanje: {error_message}.', 'danger')
