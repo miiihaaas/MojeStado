@@ -732,29 +732,33 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         app.logger.debug(f'Vreme zahteva: {request_date_time}')
         
-        # Priprema podataka za nalog
-        orders_data = []
-        sequence_no = 1
         
         # Provera da li korisnik ima adresu i grad
         user_address = user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa"
         user_city = user.city if hasattr(user, 'city') and user.city else "Nepoznat grad"
         app.logger.debug(f'Adresa korisnika: {user_address}, Grad: {user_city}')
         
-        # Provera da li je prosleu0111en objekat fakture
+        # Provera da li je prosleđen objekat fakture
         if not invoice:
-            app.logger.warning('Nije prosleu0111en objekat fakture')
-            return False, "Faktura nije prosleu0111ena."
+            app.logger.warning('Nije prosleđen objekat fakture')
+            return False, "Faktura nije prosleđena."
         
         # Dohvatanje stavki fakture
         invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice.id).all()
         app.logger.debug(f'Pronau0111eno {len(invoice_items)} stavki za fakturu {invoice.id}')
         
+        
         if not invoice_items:
             app.logger.warning(f'Faktura {invoice.id} nema stavke, nije moguu0107e kreirati naloge za plau0107anje')
             return False, "Faktura nema stavke. Nije moguu0107e kreirati naloge za plau0107anje."
         
-        app.logger.debug(f'Pou010dinjem kreiranje naloga za plau0107anje za {len(invoice_items)} stavki')
+        # Priprema podataka za nalog
+        orders_data = []
+        sequence_no = 1
+        app.logger.debug(f'Počinjem kreiranje naloga za plaćanje za {len(invoice_items)} stavki')
+        
+        # Rečnik za grupisanje stavki po farm.id
+        farm_orders = {}
         
         for item in invoice_items:
             # Dobavljanje podataka o farmi
@@ -763,7 +767,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 app.logger.warning(f'Farma sa ID {item.farm_id} nije pronađena za stavku {item.id}')
                 continue
             
-            app.logger.debug(f'Pronau0111ena farma: {farm.farm_name}, ID: {farm.id}')
+            app.logger.debug(f'Pronađena farma: {farm.farm_name}, ID: {farm.id}')
             
             # Dobavljanje podataka o vlasniku farme
             farmer = User.query.get(farm.user_id)
@@ -771,18 +775,18 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 app.logger.warning(f'Vlasnik nije pronađen za farmu {farm.id}')
                 continue
             
-            app.logger.debug(f'Pronau0111en vlasnik farme: {farmer.name} {farmer.surname}, ID: {farmer.id}')
+            app.logger.debug(f'Pronađen vlasnik farme: {farmer.name} {farmer.surname}, ID: {farmer.id}')
             
             # Dobavljanje detalja stavke
             item_details = item.invoice_item_details
             
-            # Provera tipa stavke i dobavljanje odgovarajuu0107ih podataka
+            # Provera tipa stavke i dobavljanje odgovarajućih podataka
             if item.invoice_item_type == 1:  # Proizvod
                 item_name = item_details.get('product_name', 'Nepoznat proizvod')
                 item_price = float(item_details.get('total_price', 0))
                 quantity = int(item_details.get('quantity', 1))
-            elif item.invoice_item_type == 2:  # u017divotinja
-                item_name = item_details.get('animal_name', 'Nepoznata u017eivotinja')
+            elif item.invoice_item_type == 2:  # životinja
+                item_name = item_details.get('animal_name', 'Nepoznata životinja')
                 item_price = float(item_details.get('total_price', 0))
                 quantity = 1
             elif item.invoice_item_type == 3:  # Usluga
@@ -794,70 +798,61 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 item_price = 0
                 quantity = 1
             
-            app.logger.debug(f'Detalji stavke: {item_name}, cena: {item_price}, kolu010dina: {quantity}')
+            app.logger.debug(f'Detalji stavke: {item_name}, cena: {item_price}, količina: {quantity}')
             
             # 1. Kreiranje naloga za farmera (cena/1.38)
             farmer_amount = round(item_price / 1.38, 2)  # Cena bez PDV-a
             
-            app.logger.debug(f'Iznos za farmera: {farmer_amount}, broj rau010duna: {farm.farm_account_number if hasattr(farm, "farm_account_number") else "nije definisan"}')
+            app.logger.debug(f'Iznos za farmera: {farmer_amount}, broj računa: {farm.farm_account_number if hasattr(farm, "farm_account_number") else "nije definisan"}')
             
             # Provera da li je iznos veu0107i od 0
             if farmer_amount <= 0:
                 app.logger.warning(f'Iznos za farmera je 0 ili negativan: {farmer_amount}, preskaeu010dem kreiranje naloga')
                 continue
             
-            farmer_order = {
+            # Grupisanje po farm.id
+            if farm.id in farm_orders:
+                # Dodavanje iznosa postojećoj farmi
+                farm_orders[farm.id]['item_price'] += item_price
+                farm_orders[farm.id]['farmer_amount'] += farmer_amount
+            else:
+                # Kreiranje nove stavke za farmu
+                farm_orders[farm.id] = {
+                    'farm': farm,
+                    'farmer': farmer,
+                    'item_price': item_price,
+                    'farmer_amount': farmer_amount,
+                    'user_address': user_address,
+                    'user_city': user_city
+                }
+        
+        # Kreiranje naloga za svaku farmu
+        for farm_id, farm_data in farm_orders.items():
+            farm = farm_data['farm']
+            farmer = farm_data['farmer']
+            item_price = farm_data['item_price']
+            farmer_amount = farm_data['farmer_amount']
+            
+            order = {
                 "sequenceNo": sequence_no,
                 "merchantOrderReference": f"REF-{merchant_order_id}-F{farm.id}",
                 "debtorName": f"{user.name} {user.surname}",
-                "debtorAddress": user_address,
-                "debtorCity": user_city,
+                "debtorAddress": farm_data['user_address'],
+                "debtorCity": farm_data['user_city'],
                 "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
-                "amountTrans": farmer_amount,
-                "senderFeeAmount": 0.00,  # Provizija
+                "amountTrans": round(item_price, 2) - farmer_amount,
+                "senderFeeAmount": round(item_price, 2) - farmer_amount, #! Provizija (platforma + payspot)
                 "beneficiaryAmount": farmer_amount,
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
-                "paymentPurpose": f"Plaćanje za {item_name}",
+                "paymentPurpose": f"Plaćanje za {farm.farm_name} po fakturi sa brojem {invoice.id}",
                 "isUrgent": 0,  # Nije hitno
                 "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
             }
-            orders_data.append(farmer_order)
-            sequence_no += 1
-            
-            # 2. Kreiranje naloga za portal (15% od cene bez PDV-a)
-            portal_amount = round(farmer_amount * 0.15, 2)
-            
-            # Provera da li je iznos veu0107i od 0
-            if portal_amount <= 0:
-                app.logger.warning(f'Iznos za portal je 0 ili negativan: {portal_amount}, preskaeu010dem kreiranje naloga')
-                continue
-            
-            app.logger.debug(f'Iznos za portal: {portal_amount}')
-            
-            portal_order = {
-                "sequenceNo": sequence_no,
-                "merchantOrderReference": f"REF-{merchant_order_id}-P{item.id}",
-                "debtorName": f"{user.name} {user.surname}",
-                "debtorAddress": user_address,
-                "debtorCity": user_city,
-                "beneficiaryAccount": "265178031000308698",  # Račun portala (Naša imperija)
-                "beneficiaryName": "Naša imperija doo",
-                "beneficiaryAddress": "Kneza Grbovića 10",
-                "beneficiaryCity": "Mionica",
-                "amountTrans": portal_amount,
-                "senderFeeAmount": 0.00,  # Provizija
-                "beneficiaryAmount": portal_amount,
-                "beneficiaryCurrency": 941,  # RSD
-                "purposeCode": 289,  # Kod plaćanja
-                "paymentPurpose": f"Provizija za {item_name}",
-                "isUrgent": 0,  # Nije hitno
-                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-            }
-            orders_data.append(portal_order)
+            orders_data.append(order)
             sequence_no += 1
         
         # Izračunavanje ukupnog iznosa svih naloga
@@ -910,8 +905,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                         "merchantCurrencyCode": 941,  # RSD
                         "paymentType": 1,  # Plaćanje karticom
                         "actionType": "I",  # Insert
-                        "sumOfOrders": total_amount,  # Ukupan iznos svih naloga
-                        "numberOfOrders": len(orders_data),  # Broj naloga
+                        "sumOfOrders": total_amount,  #! Ukupan iznos svih naloga, u našem slučaju treba da je isti kao merchantOrderAmount
+                        "numberOfOrders": len(orders_data),  #! spajaj uplate po farmama jer će jeftinije biti u odnosu na pojedinačne proizvode/životinje
                         "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'XXXXX'),
                         "transtype": "Auth",
                         "orders": orders_data
@@ -921,9 +916,14 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         }
         
         # Izračunavanje hash-a
+        # companyID, msgType (101), rnd, secretKey
         secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
-        plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{secret_key}"
+        company_id = os.environ.get('PAYSPOT_COMPANY_ID')
+        plaintext = f'{company_id}|101|{rnd}|{secret_key}'
+        # plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{secret_key}"
+        app.logger.debug(f'PaySpot plaintext: {company_id}|101|{rnd}|my_secret_key')
         hash_value = calculate_hash(plaintext)
+        app.logger.debug(f'PaySpot hash: {hash_value=}')
         
         # Dodavanje hash-a u zahtev
         request_data["data"]["header"]["hash"] = hash_value
@@ -1025,6 +1025,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         hash_value = calculate_hash(plaintext)
         
         # Dodavanje hash-a u zahtev
+        # companyID, msgType (101), rnd, secretKey
         request_data["data"]["header"]["hash"] = hash_value
         
         # Slanje zahteva ka PaySpot-u
