@@ -864,6 +864,34 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         total_amount = sum(order["amountTrans"] for order in orders_data)
         app.logger.debug(f'Ukupan iznos svih naloga: {total_amount}')
         
+        # Provera da li postoji dostava i dodavanje naloga za dostavu ako je potrebno
+        delivery_total = invoice.delivery_total if hasattr(invoice, 'delivery_total') and invoice.delivery_total else 0
+        if delivery_total > 0:
+            app.logger.debug(f'Dodajem nalog za dostavu u iznosu od {delivery_total} din')
+            # Dodavanje naloga za dostavu
+            delivery_order = {
+                "sequenceNo": sequence_no,
+                "merchantOrderReference": f"REF-{merchant_order_id}-D",
+                "amountTrans": float(delivery_total),
+                "currencyTrans": 941,  # RSD
+                "paymentPurpose": "Dostava",
+                "paymentDescription": "Dostava porudžbine",
+                "payeeInfo": {
+                    "accountNumber": "265-1100310003721-71",  # Broj računa portala za dostavu
+                    "name": "MojeStado Portal",
+                    "address": "Miloša Velikog 39",
+                    "city": "Gornji Milanovac",
+                    "zip": "32300",
+                    "country": "Srbija"
+                }
+            }
+            orders_data.append(delivery_order)
+            sequence_no += 1
+            
+            # Ažuriranje ukupnog iznosa svih naloga
+            total_amount = sum(order["amountTrans"] for order in orders_data)
+            app.logger.debug(f'Ukupan iznos svih naloga nakon dodavanja dostave: {total_amount}')
+        
         # Priprema podataka za zahtev
         request_data = {
             "data": {
@@ -904,8 +932,24 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
         headers = {"Content-Type": "application/json"}
         
+        # Logovanje zahteva pre slanja
+        app.logger.debug(f'PaySpot URL: {url}')
+        app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
+        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2)}')
+        
         response = requests.post(url, json=request_data, headers=headers)
         
+        # Logovanje odgovora
+        app.logger.debug(f'PaySpot status kod: {response.status_code}')
+        try:
+            response_text = response.text
+            app.logger.debug(f'PaySpot odgovor: {response_text}')
+            response_data = response.json()
+        except Exception as e:
+            app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
+            return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
+        
+        # Provera odgovora
         if response.status_code == 200:
             response_data = response.json()
             error_code = response_data.get("data", {}).get("status", {}).get("errorCode")
