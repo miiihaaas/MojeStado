@@ -954,14 +954,13 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         
         # Provera odgovora
         if response.status_code == 200:
-            response_data = response.json()
-            error_code = response_data.get("data", {}).get("status", {}).get("errorCode")
+            error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
             
             if error_code == 0:
                 app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
                 return True, None
             else:
-                error_message = response_data.get("data", {}).get("status", {}).get("errorMsg", "Nepoznata greška")
+                error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
                 app.logger.error(f'Greška pri slanju PaymentOrderInsert: {error_message}')
                 return False, error_message
         else:
@@ -1035,10 +1034,29 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
         headers = {"Content-Type": "application/json"}
         
-        response = requests.post(url, json=request_data, headers=headers)
+        # Logovanje zahteva pre slanja
+        app.logger.debug(f'PaySpot URL: {url}')
+        app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
+        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
         
-        if response.status_code == 200:
+        # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
+        json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
+        
+        # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
+        response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
+        
+        # Logovanje odgovora
+        app.logger.debug(f'PaySpot status kod: {response.status_code}')
+        try:
+            response_text = response.text
+            app.logger.debug(f'PaySpot odgovor: {response_text}')
             response_data = response.json()
+        except Exception as e:
+            app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
+            return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
+        
+        # Provera odgovora
+        if response.status_code == 200:
             error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
             
             if error_code == 0:
