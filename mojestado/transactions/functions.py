@@ -960,7 +960,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
                 return True, None
             else:
-                error_message = response_data.get("data", {}).get("status", {}).get("errorMsg", "Nepoznata greška")
+                error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
                 app.logger.error(f'Greška pri slanju PaymentOrderInsert: {error_message}')
                 return False, error_message
         else:
