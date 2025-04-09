@@ -843,7 +843,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
-                "amountTrans": round(item_price, 2) - farmer_amount,
+                "amountTrans": round(item_price, 2),
                 "senderFeeAmount": round(item_price, 2) - farmer_amount, #! Provizija (platforma + payspot)
                 "beneficiaryAmount": farmer_amount,
                 "beneficiaryCurrency": 941,  # RSD
