@@ -955,12 +955,12 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         # Provera odgovora
         if response.status_code == 200:
             error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
-            
+            app.logger.debug(f'Provera da li postoji greška: {error_code=}')
             if error_code == 0:
                 app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
                 return True, None
             else:
-                error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
+                error_message = response_data.get("data", {}).get("status", {}).get("errorMsg", "Nepoznata greška")
                 app.logger.error(f'Greška pri slanju PaymentOrderInsert: {error_message}')
                 return False, error_message
         else:
