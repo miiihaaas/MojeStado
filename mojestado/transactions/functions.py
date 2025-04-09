@@ -930,14 +930,17 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         
         # Slanje zahteva ka PaySpot-u
         url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
-        headers = {"Content-Type": "application/json"}
         
         # Logovanje zahteva pre slanja
         app.logger.debug(f'PaySpot URL: {url}')
         app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2)}')
+        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
         
-        response = requests.post(url, json=request_data, headers=headers)
+        # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
+        json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
+        
+        # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
+        response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
         
         # Logovanje odgovora
         app.logger.debug(f'PaySpot status kod: {response.status_code}')
