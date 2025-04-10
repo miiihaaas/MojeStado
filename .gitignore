@@ -6,6 +6,7 @@
 #TODO: komanda za brisanje fajlova sa gita: git rm -r --cached .\your\file\destination\file.extension
 app_logs/
 flask_session/
+# documentation/
 mojestado/site.db
 mojestado/__pycache__/
 mojestado/schools/__pycache__/

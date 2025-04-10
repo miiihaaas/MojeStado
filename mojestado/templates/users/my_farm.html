@@ -72,7 +72,7 @@
             <div class="col-md-9">
                 <h3>{{farm.farm_name}} <a href="{{ url_for('farms.farm_detail', farm_id=farm.id) }}"><i class="fa-solid fa-link"></i></a></h3>
                 <h4>{{farm.farm_city}}</h4>
-                <p style="white-space: pre-line;">{{farm.farm_description}}</p>
+                <p class="preserve-newlines">{{farm.farm_description}}</p>
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#descriptionModal">
                     Izmena opisa poljoprivednog gazdinstva
                 </button>

@@ -113,6 +113,10 @@ ul.navbar-nav.main-menu .dropdown-item:hover { background-color: #e0bd5d; }
 @keyframes slideDown { from { top: -100px; } to { top: 0; }}
 
 main { flex: 1; }
+.preserve-newlines {
+    white-space: pre-line;
+}
+
 .content-title { text-align: center; border-bottom: 1px solid #e0bd5d; padding-bottom: 10px; margin-bottom: 50px; }
 
 section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
@@ -301,7 +305,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .border-right { border-right: 1px solid #5e4432; }
     .pl-50 { padding-left: 50px; }
     .pr-50 { padding-right: 50px; }
-    .table>:not(.caption)>*>*:not(:last-child) { border-bottom-width: 1px; border-right-width: 1px; border-color: #ddd !important; }
+    .table>:not(caption)>*>*:not(:last-child) { border-bottom-width: 1px; border-right-width: 1px; border-color: #ddd !important; }
     .resetform input[type="text"] { min-width: 450px; }
     .sameimage-wrapper { height: 150px; }
     .d-d-flex { display: flex; }
