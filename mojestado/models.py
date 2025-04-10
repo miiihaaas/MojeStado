@@ -2,6 +2,7 @@ from mojestado import app, db, login_manager
 from flask_login import UserMixin
 # from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous.url_safe import URLSafeTimedSerializer
+from datetime import datetime
 
 
 @login_manager.user_loader
@@ -73,6 +74,7 @@ class Farm(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #!
     animals = db.relationship('Animal', backref='farm_animal', lazy=True) #!
     products = db.relationship('Product', backref='farm_product', lazy=True) #!
+    payspot_transactions = db.relationship('PaySpotTransaction', backref='farm_payspot_transaction', lazy=True)
 
 
 class Animal(db.Model):
@@ -199,6 +201,7 @@ class Invoice(db.Model):
     
     invoice_items = db.relationship('InvoiceItems', back_populates='invoice', lazy=True) #!
     animals = db.relationship('Animal', backref='animal_invoice', lazy=True)
+    payspot_transactions = db.relationship('PaySpotTransaction', backref='invoice_payspot_transaction', lazy=True)
 
 
 class InvoiceItems(db.Model):
@@ -263,6 +266,34 @@ class PaySpotCallback(db.Model):
     amount = db.Column(db.Float, nullable=False)
     recived_at = db.Column(db.DateTime, nullable=False)
     callback_data = db.Column(db.JSON, nullable=False)
+
+
+class PaySpotTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
+    merchant_order_id = db.Column(db.String(50), nullable=False)
+    payspot_group_id = db.Column(db.String(20), nullable=False)
+    
+    # Podaci specifični za pojedinačni nalog
+    sequence_no = db.Column(db.Integer, nullable=False)
+    merchant_order_reference = db.Column(db.String(50), nullable=False)
+    payspot_transaction_id = db.Column(db.String(20), nullable=False)
+    status_trans = db.Column(db.String(10), nullable=True)
+    create_date = db.Column(db.String(10), nullable=True)
+    create_time = db.Column(db.String(10), nullable=True)
+    sender_fee = db.Column(db.Float, nullable=True)
+    
+    # Relacija
+    invoice = db.relationship('Invoice', backref=db.backref('payspot_transactions', lazy=True))
+    
+    # Veza sa farmom
+    farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=True)
+    farm = db.relationship('Farm', backref=db.backref('payspot_transactions', lazy=True))
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"PaySpotTransaction(id={self.id}, payspot_transaction_id={self.payspot_transaction_id})"
 
 
 with app.app_context():

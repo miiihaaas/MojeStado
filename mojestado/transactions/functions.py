@@ -8,7 +8,7 @@ import requests
 from PIL import Image
 
 from mojestado import db, mail
-from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User
+from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User, PaySpotTransaction
 
 from flask import flash, json, redirect, render_template, session, url_for
 from flask import current_app as app
@@ -958,11 +958,67 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             app.logger.debug(f'Provera da li postoji greška: {error_code=}')
             if error_code == 0:
                 app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
-                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
-                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
-                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
-                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
-                app.logger.info(f'Dodat logiku da sačuva payspotGroupID i payspotTransactionID u db!!!')
+                
+                # Čuvanje podataka o transakciji u bazi
+                try:
+                    from mojestado.models import PaySpotTransaction
+                    
+                    # Dobijanje podataka iz odgovora
+                    body_data = response_data.get("data", {}).get("body", {})
+                    payspot_group_id = body_data.get("payspotGroupID")
+                    
+                    # Dobijanje liste transakcija
+                    orders_response = body_data.get("orders", [])
+                    
+                    if payspot_group_id and orders_response:
+                        app.logger.info(f'Pronađen payspotGroupID: {payspot_group_id} i {len(orders_response)} transakcija')
+                        
+                        # Iteracija kroz sve transakcije
+                        for order in orders_response:
+                            payspot_transaction_id = order.get("payspotTransactionID")
+                            sequence_no = order.get("sequenceNo")
+                            merchant_order_reference = order.get("merchantOrderReference")
+                            status_trans = order.get("statusTrans")
+                            create_date = order.get("createDate")
+                            create_time = order.get("createTime")
+                            sender_fee = order.get("senderFeeAmount")
+                            
+                            # Određivanje farm_id iz merchantOrderReference
+                            farm_id = None
+                            if merchant_order_reference and merchant_order_reference.startswith(f"REF-{merchant_order_id}-F"):
+                                try:
+                                    farm_id = int(merchant_order_reference.split('-F')[1])
+                                    app.logger.debug(f'Izdvojen farm_id: {farm_id} iz reference: {merchant_order_reference}')
+                                except (ValueError, IndexError):
+                                    app.logger.warning(f'Nije moguće izdvojiti farm_id iz reference: {merchant_order_reference}')
+                            
+                            # Kreiranje novog PaySpotTransaction objekta
+                            transaction = PaySpotTransaction(
+                                invoice_id=invoice.id,
+                                merchant_order_id=merchant_order_id,
+                                payspot_group_id=payspot_group_id,
+                                sequence_no=sequence_no,
+                                merchant_order_reference=merchant_order_reference,
+                                payspot_transaction_id=payspot_transaction_id,
+                                status_trans=status_trans,
+                                create_date=create_date,
+                                create_time=create_time,
+                                sender_fee=sender_fee,
+                                farm_id=farm_id
+                            )
+                            
+                            db.session.add(transaction)
+                        
+                        # Čuvanje svih transakcija u bazi
+                        db.session.commit()
+                        app.logger.info(f'Sačuvano {len(orders_response)} PaySpot transakcija u bazi za fakturu {invoice.id}')
+                    else:
+                        app.logger.warning(f'Nedostaje payspotGroupID ili orders u odgovoru za narudžbinu {merchant_order_id}')
+                        
+                except Exception as e:
+                    app.logger.error(f'Greška pri čuvanju PaySpot transakcija u bazi: {str(e)}')
+                    # Ne prekidamo proces jer je plaćanje već uspešno inicirano
+                
                 return True, None
             else:
                 error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
