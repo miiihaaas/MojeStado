@@ -113,10 +113,7 @@ ul.navbar-nav.main-menu .dropdown-item:hover { background-color: #e0bd5d; }
 @keyframes slideDown { from { top: -100px; } to { top: 0; }}
 
 main { flex: 1; }
-.preserve-newlines {
-    white-space: pre-line;
-}
-
+.preserve-newlines { white-space: pre-line; }
 .content-title { text-align: center; border-bottom: 1px solid #e0bd5d; padding-bottom: 10px; margin-bottom: 50px; }
 
 section.zivavaga { background-color: #f8f2e9; padding: 50px 0; }
@@ -269,6 +266,9 @@ ul.pagination .page-link:focus { box-shadow: none; }
     border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: 200px; overflow: auto; aspect-ratio: 1 / 1; z-index: 100; box-sizing: border-box; }
 .popup-content.active { display: block; }
 
+.total-price .amount { font-size: 24px; color: #dc3545; font-weight: 700; }
+.delivery-price .amount { font-weight: 700; font-size: 24px; }
+
 /***  Nalog   ***/
 .loginform { max-width: 300px; margin: auto; padding: 50px 0; }
 .my-navbar { border-bottom: 1px solid #e0bd5d; }
@@ -305,7 +305,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .border-right { border-right: 1px solid #5e4432; }
     .pl-50 { padding-left: 50px; }
     .pr-50 { padding-right: 50px; }
-    .table>:not(caption)>*>*:not(:last-child) { border-bottom-width: 1px; border-right-width: 1px; border-color: #ddd !important; }
+    .table>:not(.caption)>*>*:not(:last-child) { border-bottom-width: 1px; border-right-width: 1px; border-color: #ddd !important; }
     .resetform input[type="text"] { min-width: 450px; }
     .sameimage-wrapper { height: 150px; }
     .d-d-flex { display: flex; }
@@ -313,6 +313,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 	.box-bordering { padding: 0 20px; }
     .mygridboxes>* { width: 31.3333333333%; margin: 1%; box-shadow: 0 0 15px #ddd; border-radius: 5px; /*padding-top: 10px;*/ padding: 0; overflow: hidden; }
     .card-text-farm {  }
+    .neki-mbr-1 { margin-right: 0.5em; }
 }
 @media (min-width: 1400px) {
     .container, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl { max-width: 1324px; }
@@ -360,6 +361,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .col-exeption .col-sm-3 { flex: 0 0 auto; width: 25%; }
     .box-bordering:not(:last-child) { border-bottom: 1px solid #ddd }
 	.box-bordering { padding: 20px 0; }
+    .neki-mbr-1 { margin-bottom: 0.5em; }
     
 }
 @media (max-width: 480px) {
