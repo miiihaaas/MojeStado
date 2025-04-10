@@ -17,7 +17,7 @@
 <section class="firstsection mb-5">
     <div class="container">
         <div class="row">
-            <div class="col-md-3 sidebar">
+            <div class="col-md-2 sidebar">
                 <form action="{{url_for('farms.farm_list')}}" method="POST">
                     <!--<h2>Filteri</h2>-->
                     <div class="card mb-3">
@@ -41,15 +41,18 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
                                 <label class="form-check-label" for="organic_filter">Organski</label>
-                                <a href="https://sr.wikipedia.org/sr/Organska_poljoprivreda" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
+                                <a href="#" id="infoLink" title="Detaljnije o organskoj proizvodnji">
                                     <i class="fas fa-question-circle"></i>
                                 </a>
+                                <div class="popup-content" id="popupText">
+                                    Organska proizvodnja podrazumeva upotrebu prirodnih resursa i metoda koji ne štete životnoj sredini...
+                                </div>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="col-md-9">
+            <div class="col-md-10">
                 <div class="row row-cols-1 row-cols-md-3 g-4 mygridboxes">
                     {% if farm_list %}
                     {% for farm in farm_list %}
@@ -107,6 +110,22 @@
             // post form
             $('form').submit();
         });
+    });
+</script>
+<script>
+    const link = document.getElementById('infoLink');
+    const popup = document.getElementById('popupText');
+
+    link.addEventListener('click', function(event) {
+        event.preventDefault();
+        popup.classList.toggle('active');
+    });
+
+    // Klik van popup-a zatvara prozor
+    document.addEventListener('click', function(event) {
+        if (!link.contains(event.target) && !popup.contains(event.target)) {
+            popup.classList.remove('active');
+        }
     });
 </script>
 {% endblock %}

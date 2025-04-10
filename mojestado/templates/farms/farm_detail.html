@@ -85,7 +85,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <div>
+                <div class="mb-5">
                     {% if animals %}
                     <h2>Živa vaga</h2>
                     <table class="table table-striped mobtable popupable" id="ziva-vaga-table">
@@ -124,21 +124,21 @@
                                 <td>{{ "{:.2f}".format(animal.current_weight) }}</td>
                                 <td>{{ "{:.2f}".format(animal.price_per_kg) }}</td>
                                 <td>{{ "{:.2f}".format(animal.total_price) }}</td>
-                                <td><!--{{ animal.insured }}-->
+                                <td class="text-center"><!--{{ animal.insured }}-->
                                     {% if animal.insured %}
                                         <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
                                     {% else %}
                                         <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
                                     {% endif %}
                                 </td>
-                                <td><!--{{ animal.organic_animal }}-->
+                                <td class="text-center"><!--{{ animal.organic_animal }}-->
                                     {% if animal.organic_animal %}
                                         <img src="{{ url_for('static', filename='images/true-icon.png') }}" alt="Osigurano" width="32" height="32">
                                     {% else %}
                                         <img src="{{ url_for('static', filename='images/false-icon.png') }}" alt="-" width="32" height="32">
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     {% for service, category in farm.services.items() %}
                                         {% for category_id, price in category.items() %}
                                             {% if price | float > 0 and category_id | int == animal.animal_category.id %}
@@ -227,7 +227,7 @@
                 </div>
                 <div>
                     {% if products %}
-                    <h2>Gotovi proizvodi</h2>
+                    <h2 class="mb-4">Gotovi proizvodi</h2>
                     <div id="products-container" class="row row-cols-1 row-cols-md-3 g-4 mb-3 mygridboxes">
                         {% for product in products %}
                         <div class="product-item col">
@@ -319,7 +319,7 @@
                 
                 <form id="servicesForm" action="{{ url_for('main.add_services_to_chart') }}" method="POST">
                     <input type="hidden" id="serviceAnimalId" name="animalId">
-                    <p>Za ovu životinju poljoprivredno gazdinstvo pruža sledeće usluge:</p>
+                    <p>Za ovu životinju poljoprivredno gazdinstvo nudi dodatne usluge po želji:</p>
                     
                     <div class="row">
                         <!-- Klanje usluga -->

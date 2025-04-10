@@ -72,6 +72,9 @@
                         {{ product.product_subcategory.product_subcategory_name }} &gt; 
                         {{ product.product_section.product_section_name }}
                     </p>
+                    <p class="text-muted small mb-3">
+                        <strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}" target="_blank">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.municipality_farm.municipality_name }}
+                    </p>
                     
                     <!-- Opis proizvoda -->
                     <div class="mb-3">
