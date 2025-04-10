@@ -200,7 +200,7 @@ def make_order():
                 raise ValueError('Nedostaje PAYSPOT_COMPANY_ID')
                 
             rnd = generate_random_string()
-            merchant_order_id = f'MS-{new_invoice.id:09}'
+            merchant_order_id = f'PMS-{new_invoice.id:09}'
             
             # Računanje ukupnog iznosa
             merchant_order_amount, installment_total, delivery_total = get_cart_total()
