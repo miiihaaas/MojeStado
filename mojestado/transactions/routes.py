@@ -344,3 +344,23 @@ def callback_url():
     except Exception as e:
         app.logger.error(f'Greška u callback_url funkciji: {str(e)}')
         return jsonify({"error": "Internal server error"}), 500
+
+
+@transactions.route('/success_url', methods=['GET'])
+def success_url():
+    app.logger.info('Uspesno zavrsena transakcija')
+    flash('Uspesno zavrsena transakcija', 'success')
+    return redirect(url_for('main.home'))
+
+@transactions.route('/error_url', methods=['GET'])
+def error_url():
+    app.logger.error('Neuspešna transakcija')
+    flash('Neuspešna transakcija', 'danger')
+    return redirect(url_for('main.home'))
+
+@transactions.route('/cancel_url', methods=['GET'])
+def cancel_url():
+    app.logger.warning('Transakcija je otkazana')
+    flash('Transakcija je otkazana', 'warning')
+    return redirect(url_for('main.home'))
+
