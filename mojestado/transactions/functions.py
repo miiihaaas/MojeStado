@@ -745,7 +745,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         
         # Dohvatanje stavki fakture
         invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice.id).all()
-        app.logger.debug(f'Pronau0111eno {len(invoice_items)} stavki za fakturu {invoice.id}')
+        app.logger.debug(f'Pronađeno {len(invoice_items)} stavki za fakturu {invoice.id}')
         
         
         if not invoice_items:
@@ -958,6 +958,11 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             app.logger.debug(f'Provera da li postoji greška: {error_code=}')
             if error_code == 0:
                 app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
+                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
+                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
+                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
+                #! dodati logiku da sačuva payspotGroupID i payspotTransactionID u db
+                app.logger.info(f'Dodat logiku da sačuva payspotGroupID i payspotTransactionID u db!!!')
                 return True, None
             else:
                 error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")

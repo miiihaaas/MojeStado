@@ -260,8 +260,10 @@ def callback_url():
     Callback URL za PaySpot transakcije.
     Prima podatke o transakciji i ažurira status fakture.
     """
+    app.logger.debug('###################################')
     app.logger.debug('Pristup callback_url')
     app.logger.debug('Callback_url: ' + str(request.json))
+    app.logger.debug('###################################')
     try:
         data = request.json
         if not data:
