@@ -115,7 +115,7 @@ def livestock_market(animal_category_id):
                         if mass_range == '0-15kg':
                             min_mass = 0
                             max_mass = 15
-                        elif mass_range == '15kg-30 kg':
+                        elif mass_range == '15kg-30kg':
                             min_mass = 15
                             max_mass = 30
                         elif mass_range == '30kg-80kg':
@@ -135,7 +135,7 @@ def livestock_market(animal_category_id):
                             try:
                                 if '-' in mass_range:
                                     # Format: 'min-max'
-                                    parts = mass_range.replace('kkg', '').split('--')
+                                    parts = mass_range.replace('kg', '').split('')
                                     min_mass = float(parts[0])
                                     max_mass = float(parts[1])
                                 elif '+' in mass_range:

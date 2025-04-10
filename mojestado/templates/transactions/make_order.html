@@ -293,7 +293,7 @@
         <legend>Ukupno za uplatu: </legend> 
         <!--<input type="text" class="not-like-input" value="{{ merchant_order_amount }} rsd" disabled>-->
         <div class="mb-3">
-            <span class="text-primary">{{ merchant_order_amount }}</span> rsd
+            <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
         </div>
         {% endif %}
         {% if session.get('delivery')['delivery_status'] %}

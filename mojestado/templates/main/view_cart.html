@@ -294,7 +294,8 @@
 
             <!-- Delivery and Total Section -->
             <div class="row mt-4">
-                <div class="col-md-6">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
                     {% if animals or products or fattening %}
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-light">
@@ -308,7 +309,7 @@
                             {% else %}
                                 <div class="form-group mb-3">
                                     <label class="form-label">Cena dostave sadržaja korpe</label>
-                                    <input type="text" class="form-control" value="{{ delivery_total }}.00 rsd" id="delivery_total_" name="delivery_total_" disabled>
+                                    <div class="delivery-price"><span class="amount">{{ delivery_total }}.00  </span> <span class="currency"> rsd</span></div>
                                 </div>
                             {% endif %}
                             <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
@@ -325,8 +326,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-light">
                             <h3 class="mb-0">Ukupno</h3>
@@ -335,14 +335,14 @@
                             {% if merchant_order_amount %}
                             <div class="form-group mb-3">
                                 <label class="form-label">Ukupno za uplatu:</label>
-                                <input type="text" class="form-control form-control-lg bg-light" value="{{ merchant_order_amount }} rsd" disabled>
+                                <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
                             </div>
                             {% endif %}
                             
                             {% if installment_total %}
                             <div class="form-group">
                                 <label class="form-label">Ukupno na rate:</label>
-                                <input type="text" class="form-control bg-light" value="{{ installment_total }} rsd" disabled>
+                                <div class="total-price"><span class="amount">{{ installment_total }} </span> <span class="currency"> rsd</span></div>
                             </div>
                             {% endif %}
                             
@@ -353,14 +353,14 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="d-flex justify-content-between mt-4 mb-5">
-                <a class="btn btn-danger" href="{{ url_for('main.clear_cart')}}">
+            <div class="d-flex justify-content-end mt-4 mb-5 flex-column flex-md-row">
+                <a class="btn btn-danger neki-mbr-1" href="{{ url_for('main.clear_cart')}}">
                     <i class="fa-solid fa-trash me-2"></i>Obriši korpu
                 </a>
                 
                 {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
                     {% if not current_user.is_authenticated and installment_total %}
-                    <a href="{{ url_for('users.login')}}" class="btn btn-primary btn-lg">
+                    <a href="{{ url_for('users.login')}}" class="btn btn-primary btn-l neki-mbr-1">
                         <i class="fa-solid fa-user me-2"></i>Uloguj/Registruj se
                     </a>
                     {% else %}

@@ -249,7 +249,7 @@
             }
 
             // Dugme "Prethodna"
-            paginationHtml += '<li class="page-item' + (currentPage === 1 ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="prev">Prethodna</a></li>';
+            paginationHtml += '<li class="page-item' + (currentPage === 1 ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="prev"><span class="d-none d-sm-inline">Prethodna</span><span class="d-inline d-sm-none">&laquo;</span></a></li>';
 
             // Ako startPage > 1, dodaj "..."
             if (startPage > 1) {
@@ -267,7 +267,7 @@
             }
 
             // Dugme "Sledeća"
-            paginationHtml += '<li class="page-item' + (currentPage === totalPages ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="next">Sledeća</a></li>';
+            paginationHtml += '<li class="page-item' + (currentPage === totalPages ? ' disabled' : '') + '"><a class="page-link" href="#" data-page="next"><span class="d-none d-sm-inline">Sledeća</span><span class="d-inline d-sm-none">&raquo;</span></a></li>';
 
             $('#pagination').html(paginationHtml);
         }
