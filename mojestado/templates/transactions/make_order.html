@@ -331,12 +331,6 @@
             <button class="btn btn-primary mb-20" type="submit">Nastavi ka uplati</button>
         </form>
     </div>
-    <!-- Druga forma za slanje POST zahteva -->
-    <form method="post" action="{{ url_for('transactions.callback_local_test') }}" class="mb-5">
-        <input type="hidden" name="merchantOrderID" value="{{ merchant_order_id }}" />
-        <input type="hidden" name="merchantOrderAmount" value="{{ merchant_order_amount }}" />
-        <button class="btn btn-danger" type="submit">callback_local_test</button>
-    </form>
-  </div>
+</div>
 </section>
 {% endblock %}
