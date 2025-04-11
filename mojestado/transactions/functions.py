@@ -873,7 +873,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
                 "paymentPurpose": f"Plaćanje za {farm.farm_name} po fakturi sa brojem {invoice.id}",
-                "isUrgent": 0,  # Nije hitno
+                "isUrgent": 2,  # Nije hitno
                 "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
             }
             orders_data.append(order)
@@ -931,7 +931,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                         "actionType": "I",  # Insert
                         "sumOfOrders": total_amount,  #! Ukupan iznos svih naloga, u našem slučaju treba da je isti kao merchantOrderAmount
                         "numberOfOrders": len(orders_data),  #! spajaj uplate po farmama jer će jeftinije biti u odnosu na pojedinačne proizvode/životinje
-                        "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'XXXXX'),
+                        "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'IN001807'), #! ovo treba banka da da, a ako neme u .env učitava potak iz dokumentacije 'IN001807'
                         "transtype": "Auth",
                         "orders": orders_data
                     }
