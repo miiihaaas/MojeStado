@@ -200,7 +200,7 @@ def make_order():
                 raise ValueError('Nedostaje PAYSPOT_COMPANY_ID')
                 
             rnd = generate_random_string()
-            merchant_order_id = f'MS-{new_invoice.id:09}'
+            merchant_order_id = f'PMS-{new_invoice.id:09}'
             
             # Računanje ukupnog iznosa
             merchant_order_amount, installment_total, delivery_total = get_cart_total()
@@ -260,6 +260,10 @@ def callback_url():
     Callback URL za PaySpot transakcije.
     Prima podatke o transakciji i ažurira status fakture.
     """
+    app.logger.debug('###################################')
+    app.logger.debug('Pristup callback_url')
+    app.logger.debug('Callback_url: ' + str(request.json))
+    app.logger.debug('###################################')
     try:
         data = request.json
         if not data:
@@ -299,13 +303,9 @@ def callback_url():
         # Čuvanje callback podataka
         callback = PaySpotCallback(
             invoice_id=invoice_id,
-            order_id=order_id,
-            shop_id=shop_id,
             amount=amount,
-            result=result,
-            hash=received_hash,
-            raw_data=json.dumps(data),
-            timestamp=datetime.datetime.now()
+            recived_at=datetime.datetime.now(),
+            callback_data=json.dumps(data)
         )
         db.session.add(callback)
 
@@ -315,23 +315,21 @@ def callback_url():
             invoice.payment_date = datetime.datetime.now()
             
             # Slanje PaymentOrderConfirm zahteva za split transakcije
-            if data.get('requestType') == '10':
-                success, error_message = send_payment_order_confirm(order_id, payspot_order_id, invoice_id)
-                if not success:
-                    app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
-                    # Nastavljamo dalje, ne prekidamo proces jer je plaćanje već uspešno
+            success, error_message = send_payment_order_confirm(order_id, payspot_order_id, invoice_id)
+            if not success:
+                app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
+                # Nastavljamo dalje, ne prekidamo proces jer je plaćanje već uspešno
                     
             # Deaktivacija životinja i proizvoda
+            app.logger.info(f'{invoice_id=}')
+
             deactivate_animals(invoice_id)
             deactivate_products(invoice_id)
             
             # Slanje email-a korisniku
             user = User.query.get(invoice.user_id)
             if user:
-                send_email(user.email, 'Uspešna transakcija',
-                            'transactions/email/transaction_success', 
-                            user=user, 
-                            invoice=invoice)
+                send_email(user, invoice_id)
                 
             app.logger.info(f'Callback_url: Uspešna transakcija za fakturu {invoice_id}')
         else:
@@ -344,3 +342,25 @@ def callback_url():
     except Exception as e:
         app.logger.error(f'Greška u callback_url funkciji: {str(e)}')
         return jsonify({"error": "Internal server error"}), 500
+
+
+@transactions.route('/success_url', methods=['GET'])
+def success_url():
+    app.logger.info('Uspesno zavrsena transakcija')
+    flash('Uspesno zavrsena transakcija', 'success')
+    return redirect(url_for('main.clear_cart'))
+
+
+@transactions.route('/error_url', methods=['GET'])
+def error_url():
+    app.logger.error('Neuspešna transakcija')
+    flash('Neuspešna transakcija', 'danger')
+    return redirect(url_for('main.home'))
+
+
+@transactions.route('/cancel_url', methods=['GET'])
+def cancel_url():
+    app.logger.warning('Transakcija je otkazana')
+    flash('Transakcija je otkazana', 'warning')
+    return redirect(url_for('main.home'))
+

@@ -8,7 +8,7 @@ import requests
 from PIL import Image
 
 from mojestado import db, mail
-from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User
+from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User, PaySpotTransaction
 
 from flask import flash, json, redirect, render_template, session, url_for
 from flask import current_app as app
@@ -545,32 +545,56 @@ def create_invoice():
 
 
 def deactivate_animals(invoice_id):
-    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
-    for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 2:
-            animal_id = invoice_item.invoice_item_details['id']
-            # animal_id = json.loads(invoice_item.invoice_item_details)['id']
-            animal_to_edit = Animal.query.get(animal_id)
-            animal_to_edit.active = False
-            db.session.commit()
-
+    '''
+    Deaktivira životinje za fakturu
+    '''
+    try:
+        invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+        if len(invoice_items) == 0:
+            app.logger.info('Nema stavki u korpi.')
+        else:
+            for invoice_item in invoice_items:
+                if invoice_item.invoice_item_type == 2:
+                    animal_id = invoice_item.invoice_item_details['id']
+                    # animal_id = json.loads(invoice_item.invoice_item_details)['id']
+                    animal_to_edit = Animal.query.get(animal_id)
+                    animal_to_edit.active = False
+                    db.session.commit()
+                    app.logger.info(f'Životinja: {animal_id} deaktivirana.')
+    except Exception as e:
+        app.logger.error(f'Greška pri deaktiviranju životinje: {str(e)}')
+        return False, str(e)
+    return True, None
 
 def deactivate_products(invoice_id):
-    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
-    for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 1:
-            product_id = invoice_item.invoice_item_details['id']
-            # product_id = json.loads(invoice_item.invoice_item_details)['id']
-            product_to_edit = Product.query.get(product_id)
-            product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
-            # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
-            db.session.commit()
+    '''
+    Oduzima količinu proizvoda iz skladišta
+    '''
+    app.logger.info(f'Oduzima količinu proizvoda za fakturu: {invoice_id}')
+    try:
+        invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+        if len(invoice_items) == 0:
+            app.logger.info('Nema stavki u korpi.')
+        else:
+            for invoice_item in invoice_items:
+                if invoice_item.invoice_item_type == 1:
+                    product_id = invoice_item.invoice_item_details['id']
+                    # product_id = json.loads(invoice_item.invoice_item_details)['id']
+                    product_to_edit = Product.query.get(product_id)
+                    product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
+                    # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
+                    db.session.commit()
+                    app.logger.info(f'Za proizvod: {product_id} umanjena količina za {float(invoice_item.invoice_item_details["quantity"])}.')
+    except Exception as e:
+        app.logger.error(f'Greška pri oduzimanju količine proizvoda: {str(e)}')
+        return False, str(e)
+    return True, None
 
 
 def send_email(user, invoice_id):
     '''
     - ako je na rate šalje fiskalni račun (dobija od firme Fiscomm) i sve uplatnice (generiše portal)
-    -- fiskalni račnu obugvata ukupnu sumu novca za plaćanje, stim što se odmah sa računa skida suma koja nije za tov (preko PaySpot firma), a ostatak se plaća preko uplatnica (koje generiše portal)
+    -- fiskalni račun obugvata ukupnu sumu novca za plaćanje, stim što se odmah sa računa skida suma koja nije za tov (preko PaySpot firma), a ostatak se plaća preko uplatnica (koje generiše portal)
     - ako nije na rate šalje samo fiskalni račun (dobija od firme Fiscomm)
     '''
     
@@ -745,7 +769,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         
         # Dohvatanje stavki fakture
         invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice.id).all()
-        app.logger.debug(f'Pronau0111eno {len(invoice_items)} stavki za fakturu {invoice.id}')
+        app.logger.debug(f'Pronađeno {len(invoice_items)} stavki za fakturu {invoice.id}')
         
         
         if not invoice_items:
@@ -849,7 +873,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
                 "paymentPurpose": f"Plaćanje za {farm.farm_name} po fakturi sa brojem {invoice.id}",
-                "isUrgent": 0,  # Nije hitno
+                "isUrgent": 2,  # Nije hitno
                 "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
             }
             orders_data.append(order)
@@ -907,7 +931,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                         "actionType": "I",  # Insert
                         "sumOfOrders": total_amount,  #! Ukupan iznos svih naloga, u našem slučaju treba da je isti kao merchantOrderAmount
                         "numberOfOrders": len(orders_data),  #! spajaj uplate po farmama jer će jeftinije biti u odnosu na pojedinačne proizvode/životinje
-                        "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'XXXXX'),
+                        "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'IN001807'), #! ovo treba banka da da, a ako neme u .env učitava potak iz dokumentacije 'IN001807'
                         "transtype": "Auth",
                         "orders": orders_data
                     }
@@ -958,6 +982,78 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             app.logger.debug(f'Provera da li postoji greška: {error_code=}')
             if error_code == 0:
                 app.logger.info(f'Uspešno poslat PaymentOrderInsert za narudžbinu {merchant_order_id}')
+                
+                # Čuvanje podataka o transakciji u bazi
+                try:
+                    from mojestado.models import PaySpotTransaction
+                    
+                    # Dobijanje podataka iz odgovora
+                    body_data = response_data.get("data", {}).get("body", {})
+                    payment_order_group = body_data.get("paymentOrderGroup")
+                    payspot_group_id = payment_order_group.get("payspotGroupID")
+                    
+                    # Dobijanje liste transakcija
+                    orders_response = payment_order_group.get("orders", [])
+                    
+                    if payspot_group_id and orders_response:
+                        app.logger.info(f'Pronađen payspotGroupID: {payspot_group_id} i {len(orders_response)} transakcija')
+                        
+                        beneficiary_amounts = {}
+                        for order in orders_data:#! proveri da li je 'orders_data' prava lista
+                            if "merchantOrderReference" in order and "beneficiaryAmount" in order:
+                                beneficiary_amounts[order["merchantOrderReference"]] = order["beneficiaryAmount"]
+                        
+                        app.logger.debug(f'Mapirani beneficiary iznosi: {beneficiary_amounts}')
+                        # Iteracija kroz sve transakcije
+                        for order in orders_response:
+                            payspot_transaction_id = order.get("payspotTransactionID")
+                            sequence_no = order.get("sequenceNo")
+                            merchant_order_reference = order.get("merchantOrderReference")
+                            status_trans = order.get("statusTrans")
+                            create_date = order.get("createDate")
+                            create_time = order.get("createTime")
+                            sender_fee = order.get("senderFeeAmount")
+                            
+                            # Određivanje farm_id iz merchantOrderReference
+                            farm_id = None
+                            if merchant_order_reference and merchant_order_reference.startswith(f"REF-{merchant_order_id}-F"):
+                                try:
+                                    farm_id = int(merchant_order_reference.split('-F')[1])
+                                    app.logger.debug(f'Izdvojen farm_id: {farm_id} iz reference: {merchant_order_reference}')
+                                except (ValueError, IndexError):
+                                    app.logger.warning(f'Nije moguće izdvojiti farm_id iz reference: {merchant_order_reference}')
+                            
+                            # Dobavljanje beneficiary_amount iz mapiranog rečnika
+                            beneficiary_amount = beneficiary_amounts.get(merchant_order_reference)
+                            
+                            # Kreiranje novog PaySpotTransaction objekta
+                            transaction = PaySpotTransaction(
+                                invoice_id=invoice.id,
+                                merchant_order_id=merchant_order_id,
+                                payspot_group_id=payspot_group_id,
+                                sequence_no=sequence_no,
+                                merchant_order_reference=merchant_order_reference,
+                                payspot_transaction_id=payspot_transaction_id,
+                                status_trans=status_trans,
+                                create_date=create_date,
+                                create_time=create_time,
+                                sender_fee=sender_fee,
+                                farm_id=farm_id,
+                                beneficiary_amount=beneficiary_amount
+                            )
+                            
+                            db.session.add(transaction)
+                        
+                        # Čuvanje svih transakcija u bazi
+                        db.session.commit()
+                        app.logger.info(f'Sačuvano {len(orders_response)} PaySpot transakcija u bazi za fakturu {invoice.id}')
+                    else:
+                        app.logger.warning(f'Nedostaje payspotGroupID ili orders u odgovoru za narudžbinu {merchant_order_id}')
+                        
+                except Exception as e:
+                    app.logger.error(f'Greška pri čuvanju PaySpot transakcija u bazi: {str(e)}')
+                    # Ne prekidamo proces jer je plaćanje već uspešno inicirano
+                
                 return True, None
             else:
                 error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
@@ -974,101 +1070,150 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
 
 def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
     """
-    Šalje PaymentOrderConfirm (MsgType=110) zahtev ka PaySpot-u nakon uspešnog plaćanja
+    Šalje PaymentOrderConfirm (MsgType=110) zahtev ka PaySpot-u nakon uspešnog plaćanja.
+    Šalje poseban zahtev za svaku transakciju.
     """
     try:
         import requests
         import os
         import datetime
+        import json
         from mojestado import app, db
-        from mojestado.models import Invoice
+        from mojestado.models import Invoice, PaySpotTransaction, Farm
         
-        # Generisanje random stringa za hash
-        rnd = generate_random_string()
-        
-        # Trenutno vreme u formatu koji očekuje PaySpot
-        request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        
-        # Pronalazenje fakture i podataka o narudžbini
+        # Pronalaženje fakture
         invoice = Invoice.query.get(invoice_id)
         if not invoice:
             return False, "Faktura nije pronađena."
         
-        # Priprema podataka za zahtev
-        request_data = {
-            "data": {
-                "header": {
-                    "companyID": os.environ.get('PAYSPOT_COMPANY_ID'),
-                    "requestDateTime": request_date_time,
-                    "msgType": 110,
-                    "rnd": rnd,
-                    "hash": "",  # Biće izračunat kasnije
-                    "language": 1  # Srpski jezik
-                },
-                "body": {
-                    "orderConfirm": [
-                        {
-                            "merchantOrderID": merchant_order_id,
-                            "merchantReference": f"REF-{merchant_order_id}",
-                            "payspotGroupID": payspot_order_id,
-                            "payspotTransactionID": payspot_order_id,
-                            "beneficiaryAccount": "265178031000308698",  # Račun primaoca
-                            "beneficiaryAmount": float(invoice.total_amount),
-                            "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-                        }
-                    ]
+        # Pronalaženje svih PaySpot transakcija za datu fakturu
+        payspot_transactions = PaySpotTransaction.query.filter_by(invoice_id=invoice_id).all()
+        
+        app.logger.debug(f'Pronađene PaySpot transakcije: {payspot_transactions=}')
+        
+        # Ako nema transakcija, vrati grešku
+        if not payspot_transactions:
+            app.logger.error('Nema PaySpot transakcija za datu fakturu')
+            return False, "Nema transakcija za slanje"
+        
+        success = True
+        last_error = None
+        
+        # Slanje posebnog zahteva za svaku transakciju
+        for transaction in payspot_transactions:
+            # Generisanje random stringa za hash za svaki zahtev
+            rnd = generate_random_string()
+            
+            # Trenutno vreme u formatu koji očekuje PaySpot
+            request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Izračunavanje hash-a za svaki zahtev
+            company_id = os.environ.get('PAYSPOT_COMPANY_ID')
+            secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+            plaintext = f"{company_id}|110|{rnd}|{secret_key}"
+            hash_value = calculate_hash(plaintext)
+            
+            farm = Farm.query.get(transaction.farm_id)
+            if not farm:
+                app.logger.error(f'Farma sa ID {transaction.farm_id} nije pronađena')
+                continue
+            
+            # Korišćenje sačuvane vrednosti beneficiary_amount
+            beneficiary_amount = transaction.beneficiary_amount
+            if beneficiary_amount is None:
+                app.logger.warning(f'Transakcija {transaction.id} nema definisan beneficiary_amount, koristi se 0')
+                beneficiary_amount = 0
+            
+            # Kreiranje zahteva samo za jednu transakciju
+            order_confirm_item = {
+                "merchantOrderID": merchant_order_id,
+                "merchantReference": f"REF-{merchant_order_id}-F{transaction.farm_id}",
+                "payspotGroupID": transaction.payspot_group_id,
+                "payspotTransactionID": transaction.payspot_transaction_id,
+                "beneficiaryAccount": farm.farm_account_number,
+                "beneficiaryAmount": beneficiary_amount,
+                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            }
+            
+            # Kreiranje zahteva za trenutnu transakciju
+            request_data = {
+                "data": {
+                    "header": {
+                        "companyID": company_id,
+                        "requestDateTime": request_date_time,
+                        "msgType": 110,
+                        "rnd": rnd,
+                        "hash": hash_value,
+                        "language": 1  # Srpski jezik
+                    },
+                    "body": {
+                        "orderConfirm": [order_confirm_item]  # Lista sa samo jednim elementom
+                    }
                 }
             }
-        }
-        
-        # Izračunavanje hash-a
-        secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
-        plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{secret_key}"
-        hash_value = calculate_hash(plaintext)
-        
-        # Dodavanje hash-a u zahtev
-        # companyID, msgType (101), rnd, secretKey
-        request_data["data"]["header"]["hash"] = hash_value
-        
-        # Slanje zahteva ka PaySpot-u
-        url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
-        headers = {"Content-Type": "application/json"}
-        
-        # Logovanje zahteva pre slanja
-        app.logger.debug(f'PaySpot URL: {url}')
-        app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
-        
-        # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
-        json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
-        
-        # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
-        response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
-        
-        # Logovanje odgovora
-        app.logger.debug(f'PaySpot status kod: {response.status_code}')
-        try:
-            response_text = response.text
-            app.logger.debug(f'PaySpot odgovor: {response_text}')
-            response_data = response.json()
-        except Exception as e:
-            app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
-            return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
-        
-        # Provera odgovora
-        if response.status_code == 200:
-            error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
             
-            if error_code == 0:
-                app.logger.info(f'Uspešno poslat PaymentOrderConfirm za narudžbinu {merchant_order_id}')
-                return True, None
+            # Slanje zahteva ka PaySpot-u
+            url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
+            
+            app.logger.debug(f'PaySpot URL: {url}')
+            app.logger.debug(f'PaySpot companyID: {company_id}')
+            app.logger.debug(f'PaySpot zahtev za transakciju {transaction.payspot_transaction_id}: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
+            
+            # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
+            json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
+            
+            # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
+            response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
+            
+            # Logovanje odgovora
+            app.logger.debug(f'PaySpot status kod za transakciju {transaction.payspot_transaction_id}: {response.status_code}')
+            try:
+                response_text = response.text
+                app.logger.debug(f'PaySpot odgovor za transakciju {transaction.payspot_transaction_id}: {response_text}')
+                response_data = response.json()
+            except Exception as e:
+                app.logger.error(f'Greška pri parsiranju PaySpot odgovora za transakciju {transaction.payspot_transaction_id}: {str(e)}')
+                success = False
+                last_error = f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
+                continue  # Prelazimo na sledeću transakciju
+            
+            # Provera odgovora
+            if response.status_code == 200:
+                # Proverimo status u odgovoru
+                status = response_data.get("data", {}).get("status", {})
+                error_code = status.get("errorCode") if status else None
+                
+                # Ako status nije dostupan u glavnom delu, proverimo u body delu
+                if error_code is None:
+                    error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
+                
+                if error_code == 0:
+                    app.logger.info(f'Uspešno poslat PaymentOrderConfirm za transakciju {transaction.payspot_transaction_id}')
+                else:
+                    # Prvo pokušaj da nađeš error message u statusu
+                    error_message = status.get("errorMessage") if status else None
+                    # Ako nije tamo, pokušaj u body delu
+                    if not error_message:
+                        error_message = response_data.get("data", {}).get("body", {}).get("errorMessage")
+                    
+                    if not error_message:
+                        error_message = "Nepoznata greška"
+                        
+                    app.logger.error(f'Greška pri slanju PaymentOrderConfirm za transakciju {transaction.payspot_transaction_id}: {error_message}')
+                    success = False
+                    last_error = error_message
             else:
-                error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
-                app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
-                return False, error_message
+                app.logger.error(f'HTTP greška pri slanju PaymentOrderConfirm za transakciju {transaction.payspot_transaction_id}: {response.status_code}')
+                success = False
+                last_error = f"HTTP greška: {response.status_code}"
+        
+        # Vraćanje konačnog rezultata
+        if success:
+            app.logger.info(f'Uspešno poslati svi PaymentOrderConfirm zahtevi za narudžbinu {merchant_order_id}')
+            return True, None
         else:
-            app.logger.error(f'HTTP greška pri slanju PaymentOrderConfirm: {response.status_code}')
-            return False, f"HTTP greška: {response.status_code}"
+            app.logger.error(f'Greška pri slanju PaymentOrderConfirm zahteva za narudžbinu {merchant_order_id}: {last_error}')
+            return False, last_error
             
     except Exception as e:
         app.logger.error(f'Izuzetak pri slanju PaymentOrderConfirm: {str(e)}')

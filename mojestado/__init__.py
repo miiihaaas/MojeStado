@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate
 from celery.schedules import crontab
 import logging
 from logging.handlers import RotatingFileHandler
@@ -57,6 +58,7 @@ if not os.path.exists('flask_session'):
 
 # Inicijalizacija ekstenzija
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 sess = Session()
 sess.init_app(app)
 bcrypt = Bcrypt(app)
