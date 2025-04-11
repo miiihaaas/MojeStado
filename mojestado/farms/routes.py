@@ -170,6 +170,7 @@ def farm_detail(farm_id):
     #! samo životinje koje nisu u tovu
     animals = [animal for animal in animals if animal.fattening == False]
     products = Product.query.filter_by(farm_id=farm_id).all()
+    products = [product for product in products if product.quantity > 0]
     organic_filter = request.form.get('organic_filter')
     if request.method == 'POST':
         if organic_filter == 'on':
