@@ -288,7 +288,7 @@ class PaySpotTransaction(db.Model):
     
     # Veza sa farmom
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=True)
-    farm = db.relationship('Farm', backref=db.backref('payspot_transactions', lazy=True))
+    farm = db.relationship('Farm')
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
