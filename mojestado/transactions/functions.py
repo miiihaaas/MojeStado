@@ -1060,14 +1060,16 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
 
 def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
     """
-    Šalje PaymentOrderConfirm (MsgType=110) zahtev ka PaySpot-u nakon uspešnog plaćanja
+    Šalje PaymentOrderConfirm (MsgType=110) zahtev ka PaySpot-u nakon uspešnog plaćanja.
+    Šalje jedan zahtev koji sadrži sve split transakcije u listi.
     """
     try:
         import requests
         import os
         import datetime
+        import json
         from mojestado import app, db
-        from mojestado.models import Invoice, PaySpotTransaction
+        from mojestado.models import Invoice, PaySpotTransaction, Farm
         
         # Generisanje random stringa za hash
         rnd = generate_random_string()
@@ -1075,7 +1077,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         # Trenutno vreme u formatu koji očekuje PaySpot
         request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         
-        # Pronalazenje fakture i podataka o narudžbini
+        # Pronalazenje fakture
         invoice = Invoice.query.get(invoice_id)
         if not invoice:
             return False, "Faktura nije pronađena."
@@ -1087,77 +1089,101 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         plaintext = f"{company_id}|110|{rnd}|{secret_key}"
         hash_value = calculate_hash(plaintext)
         
+        # Pronalaženje svih PaySpot transakcija za datu fakturu
         payspot_transactions = PaySpotTransaction.query.filter_by(invoice_id=invoice_id).all()
         
         app.logger.debug(f'Pronađene PaySpot transakcije: {payspot_transactions=}')
         
+        # Priprema liste za sve order_confirm elemente
+        order_confirm_list = []
+        
+        # Popunjavanje liste sa svim transakcijama
         for transaction in payspot_transactions:
-            # Priprema podataka za zahtev
             farm = Farm.query.get(transaction.farm_id)
-            request_data = {
-                "data": {
-                    "header": {
-                        "companyID": os.environ.get('PAYSPOT_COMPANY_ID'),
-                        "requestDateTime": request_date_time,
-                        "msgType": 110,
-                        "rnd": rnd,
-                        "hash": hash_value,  #? Biće izračunat kasnije - ako ovo ne radi stavi da se računa kasnije
-                        "language": 1  # Srpski jezik
-                    },
-                    "body": {
-                        "orderConfirm": [
-                            {
-                                "merchantOrderID": merchant_order_id,
-                                "merchantReference": f"REF-{merchant_order_id}-F{transaction.farm_id}", #!
-                                "payspotGroupID": transaction.payspot_group_id,
-                                "payspotTransactionID": transaction.payspot_transaction_id,
-                                "beneficiaryAccount": farm.farm_account_number,  #? Račun primaoca
-                                "beneficiaryAmount": 0, #!
-                                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-                            }
-                        ]
-                    }
-                }
+            if not farm:
+                app.logger.error(f'Farma sa ID {transaction.farm_id} nije pronađena')
+                continue
+                
+            order_confirm_item = {
+                "merchantOrderID": merchant_order_id,
+                "merchantReference": f"REF-{merchant_order_id}-F{transaction.farm_id}",
+                "payspotGroupID": transaction.payspot_group_id,
+                "payspotTransactionID": transaction.payspot_transaction_id,
+                "beneficiaryAccount": farm.farm_account_number,
+                "beneficiaryAmount": 0,  # Ovde postaviti stvarni iznos kada bude potrebno
+                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             }
             
-            #? # Dodavanje hash-a u zahtev
-            #? request_data["data"]["header"]["hash"] = hash_value
-
-            app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
-            
-            # Slanje zahteva ka PaySpot-u
-            url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
-            
-            # Logovanje zahteva pre slanja
-            app.logger.debug(f'PaySpot URL: {url}')
-            app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-            app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
-            
-            # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
-            json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
-            
-            # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
-            response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
-            
-            # Logovanje odgovora
-            app.logger.debug(f'PaySpot status kod: {response.status_code}')
-            try:
-                response_text = response.text
-                app.logger.debug(f'PaySpot odgovor: {response_text}')
-                response_data = response.json()
-            except Exception as e:
-                app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
-                return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
+            order_confirm_list.append(order_confirm_item)
+        
+        # Ako nema transakcija, vrati grešku
+        if not order_confirm_list:
+            app.logger.error('Nema PaySpot transakcija za datu fakturu')
+            return False, "Nema transakcija za slanje"
+        
+        # Kreiranje jedinstvenog zahteva sa svim transakcijama
+        request_data = {
+            "data": {
+                "header": {
+                    "companyID": company_id,
+                    "requestDateTime": request_date_time,
+                    "msgType": 110,
+                    "rnd": rnd,
+                    "hash": hash_value,
+                    "language": 1  # Srpski jezik
+                },
+                "body": {
+                    "orderConfirm": order_confirm_list
+                }
+            }
+        }
+        
+        # Slanje zahteva ka PaySpot-u
+        url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
+        
+        app.logger.debug(f'PaySpot URL: {url}')
+        app.logger.debug(f'PaySpot companyID: {company_id}')
+        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
+        
+        # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
+        json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
+        
+        # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
+        response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
+        
+        # Logovanje odgovora
+        app.logger.debug(f'PaySpot status kod: {response.status_code}')
+        try:
+            response_text = response.text
+            app.logger.debug(f'PaySpot odgovor: {response_text}')
+            response_data = response.json()
+        except Exception as e:
+            app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
+            return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
         
         # Provera odgovora
         if response.status_code == 200:
-            error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
+            # Proverimo status u odgovoru
+            status = response_data.get("data", {}).get("status", {})
+            error_code = status.get("errorCode") if status else None
+            
+            # Ako status nije dostupan u glavnom delu, proverimo u body delu
+            if error_code is None:
+                error_code = response_data.get("data", {}).get("body", {}).get("errorCode")
             
             if error_code == 0:
                 app.logger.info(f'Uspešno poslat PaymentOrderConfirm za narudžbinu {merchant_order_id}')
                 return True, None
             else:
-                error_message = response_data.get("data", {}).get("body", {}).get("errorMsg", "Nepoznata greška")
+                # Prvo pokušaj da nađeš error message u statusu
+                error_message = status.get("errorMessage") if status else None
+                # Ako nije tamo, pokušaj u body delu
+                if not error_message:
+                    error_message = response_data.get("data", {}).get("body", {}).get("errorMessage")
+                
+                if not error_message:
+                    error_message = "Nepoznata greška"
+                    
                 app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
                 return False, error_message
         else:
