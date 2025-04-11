@@ -965,10 +965,11 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                     
                     # Dobijanje podataka iz odgovora
                     body_data = response_data.get("data", {}).get("body", {})
-                    payspot_group_id = body_data.get("payspotGroupID")
+                    payment_order_group = body_data.get("paymentOrderGroup")
+                    payspot_group_id = payment_order_group.get("payspotGroupID")
                     
                     # Dobijanje liste transakcija
-                    orders_response = body_data.get("orders", [])
+                    orders_response = payment_order_group.get("orders", [])
                     
                     if payspot_group_id and orders_response:
                         app.logger.info(f'Pronađen payspotGroupID: {payspot_group_id} i {len(orders_response)} transakcija')
