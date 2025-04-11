@@ -322,6 +322,8 @@ def callback_url():
                     # Nastavljamo dalje, ne prekidamo proces jer je plaćanje već uspešno
                     
             # Deaktivacija životinja i proizvoda
+            app.logger.info(f'{invoice_id=}')
+
             deactivate_animals(invoice_id)
             deactivate_products(invoice_id)
             

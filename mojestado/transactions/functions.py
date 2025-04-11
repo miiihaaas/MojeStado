@@ -545,26 +545,50 @@ def create_invoice():
 
 
 def deactivate_animals(invoice_id):
-    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
-    for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 2:
-            animal_id = invoice_item.invoice_item_details['id']
-            # animal_id = json.loads(invoice_item.invoice_item_details)['id']
-            animal_to_edit = Animal.query.get(animal_id)
-            animal_to_edit.active = False
-            db.session.commit()
-
+    '''
+    Deaktivira životinje za fakturu
+    '''
+    try:
+        invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+        if len(invoice_items) == 0:
+            app.logger.info('Nema stavki u korpi.')
+        else:
+            for invoice_item in invoice_items:
+                if invoice_item.invoice_item_type == 2:
+                    animal_id = invoice_item.invoice_item_details['id']
+                    # animal_id = json.loads(invoice_item.invoice_item_details)['id']
+                    animal_to_edit = Animal.query.get(animal_id)
+                    animal_to_edit.active = False
+                    db.session.commit()
+                    app.logger.info(f'Životinja: {animal_id} deaktivirana.')
+    except Exception as e:
+        app.logger.error(f'Greška pri deaktiviranju životinje: {str(e)}')
+        return False, str(e)
+    return True, None
 
 def deactivate_products(invoice_id):
-    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
-    for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 1:
-            product_id = invoice_item.invoice_item_details['id']
-            # product_id = json.loads(invoice_item.invoice_item_details)['id']
-            product_to_edit = Product.query.get(product_id)
-            product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
-            # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
-            db.session.commit()
+    '''
+    Oduzima količinu proizvoda iz skladišta
+    '''
+    app.logger.info(f'Oduzima količinu proizvoda za fakturu: {invoice_id}')
+    try:
+        invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+        if len(invoice_items) == 0:
+            app.logger.info('Nema stavki u korpi.')
+        else:
+            for invoice_item in invoice_items:
+                if invoice_item.invoice_item_type == 1:
+                    product_id = invoice_item.invoice_item_details['id']
+                    # product_id = json.loads(invoice_item.invoice_item_details)['id']
+                    product_to_edit = Product.query.get(product_id)
+                    product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
+                    # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
+                    db.session.commit()
+                    app.logger.info(f'Za proizvod: {product_id} umanjena količina za {float(invoice_item.invoice_item_details['quantity'])}.')
+    except Exception as e:
+        app.logger.error(f'Greška pri oduzimanju količine proizvoda: {str(e)}')
+        return False, str(e)
+    return True, None
 
 
 def send_email(user, invoice_id):
