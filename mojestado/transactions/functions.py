@@ -1102,7 +1102,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
                                 "payspotGroupID": transaction.payspot_group_id,
                                 "payspotTransactionID": transaction.payspot_transaction_id,
                                 "beneficiaryAccount": farm.farm_account_number,  #? Račun primaoca
-                                "beneficiaryAmount": float(invoice.total_amount), #!
+                                "beneficiaryAmount": 0, #!
                                 "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
                             }
                         ]
@@ -1118,7 +1118,9 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
             # Dodavanje hash-a u zahtev
             # companyID, msgType (101), rnd, secretKey
             request_data["data"]["header"]["hash"] = hash_value
-        
+
+            app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
+            
             # Slanje zahteva ka PaySpot-u
             url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
             
