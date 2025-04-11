@@ -256,8 +256,8 @@ def generate_invoice_attach(invoice_id):
     '''
     generiše fakturu. dokument će biti attachovan u emali.
     '''
+    app.logger.info(f'Započeto generisanje fakture za invoice_id: {invoice_id}')
     try:
-        app.logger.info(f'Započeto generisanje fakture za invoice_id: {invoice_id}')
         invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
         invoice = Invoice.query.get(invoice_id)
         
@@ -600,28 +600,7 @@ def register_guest_user(form_object):
     return user.id
 
 
-###########################
-### PaySpot integration ###
-###########################
-def generate_random_string(length=20):
-    letters = string.ascii_letters + string.digits
-    rnd = ''.join(random.choice(letters) for i in range(length))
-    print(f'* generate random string: {rnd=}')
-    return rnd
 
-def check_invalid_characters(text):
-    return '\\' in str(text) or '|' in str(text)
-
-def calculate_hash(plaintext):
-    if any(check_invalid_characters(value) for value in plaintext.split('|')):
-        raise ValueError("Nevažeći karakteri: (\\ or |) pronađeni u plaintext-u.")
-
-    print(f'* calculate hash: {plaintext=}')
-    sha512_hash = hashlib.sha512(plaintext.encode('utf-8')).hexdigest()
-    print(f'* calculate hash: {sha512_hash=}')
-    hash_ = base64.b64encode(bytes.fromhex(sha512_hash)).decode('utf-8')
-    print(f'** calculate hash: {hash_=}')
-    return hash_
 
 
 def create_invoice():
@@ -763,74 +742,72 @@ def deactivate_products(invoice_id):
 
 
 def send_email(user, invoice_id):
-    '''
-    - ako je na rate šalje fiskalni račun (dobija od firme Fiscomm) i sve uplatnice (generiše portal)
-    -- fiskalni račun obugvata ukupnu sumu novca za plaćanje, stim što se odmah sa računa skida suma koja nije za tov (preko PaySpot firma), a ostatak se plaća preko uplatnica (koje generiše portal)
-    - ako nije na rate šalje samo fiskalni račun (dobija od firme Fiscomm)
-    '''
+    app.logger.info(f'Započinjem slanje email-a za korisnika {user.email}, faktura {invoice_id}')
     
-    #! proveravam da li je na rate
-    #! invoice_items čiji je type = 4 (fattening)
-    
-    payment_slips = [] #! ako je prazna lista onda NIJE na rate
+    payment_slips = [] 
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    app.logger.debug(f'Pronađeno {len(invoice_items)} stavki fakture')
+    
     for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 4: #! razmatra samo usluge tova (4)
-            # fattening = json.loads(invoice_item.invoice_item_details)
+        if invoice_item.invoice_item_type == 4:
             fattening = invoice_item.invoice_item_details
-            if int(fattening['installment_options']) > 1: #! Ako je na rate, generišu se uplatnice i zaduži
+            app.logger.debug(f'Stavka tova: {fattening}')
+            
+            if int(fattening['installment_options']) > 1:
+                app.logger.info(f'Usluga na rate za stavku {invoice_item.id}')
                 create_debt(user, invoice_item)
-                print('wip: ova usluga je na rate')
                 new_payment_slip = generate_payment_slips_attach(invoice_item)
-                payment_slips.append(new_payment_slip) #! ako lista NIJE prazna onda je na rate
-        elif invoice_item.invoice_item_type == 1: #! ako je gotov proizvod treba da pošalje mejl farmeru:
-            '''
-            Prilikom svake kupovine stiže mejl sa informacijama o prodatoj količini i o trenutnom stanju količine proizvoda na portalu, 
-            sa molbom da se količine ažuriraju po potrebi. U mejlu se nalazi i link za ažuriranje stanja gotovih proizvoda.
-            '''
-            send_email_to_update_product_quantity(invoice_item) #! definisati funkciju
-    print(f'{payment_slips=}')
+                app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
+                payment_slips.append(new_payment_slip)
+        elif invoice_item.invoice_item_type == 1:
+            app.logger.info(f'Slanje mejla za ažuriranje količine proizvoda za stavku {invoice_item.id}')
+            send_email_to_update_product_quantity(invoice_item)
+    
+    app.logger.debug(f'Generisane uplatnice: {payment_slips}')
     
     invoice_attach = generate_invoice_attach(invoice_id)
+    app.logger.debug(f'Generisan prilog fakture: {invoice_attach}')
 
     to = [user.email]
     bcc = [os.environ.get('MAIL_ADMIN')]
     subject = 'Potvrda kupovine na portalu "Moje stado"'
 
-    if payment_slips: #! ako lista NIJE prazna onda je na rate
-        # body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalji kupovine i uplatnice možete da vidite u prilogu.\n\nHvala na poverenju!"
-        attachments = [invoice_attach] + [new_payment_slip]
+    if payment_slips:
+        app.logger.info('Faktura je na rate - prilažem uplatnice')
+        attachments = [invoice_attach] + payment_slips
         na_rate = True
-        # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach] + payment_slips)
     else:
-        # body = f"Poštovani/a {user.name},\n\nVaša kupovina je uspešno izvršena.\n\nDetalje kupovine možete da vidite u prilogu.\n\nHvala na poverenju!"
+        app.logger.info('Faktura nije na rate - prilažem samo fakturu')
         attachments = [invoice_attach]
         na_rate = False
-        # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc, attachments=[invoice_attach])
         
     message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
-    # message.body = body
     message.html = render_template('message_html_confirm_invoice.html', na_rate=na_rate)
-    print(f'{attachments=}')
+    
+    app.logger.debug(f'Prilozi za slanje: {attachments}')
+    
+    # Provera postojanja fajlova pre pripajanja
     for attachment in attachments:
+        if not os.path.exists(attachment):
+            app.logger.error(f'Fajl {attachment} ne postoji!')
+            continue
+            
         try:
             with open(attachment, 'rb') as f:
-                message.attach(os.path.basename(attachment), "application/pdf", f.read())
+                file_content = f.read()
+                app.logger.debug(f'Uspešno pročitan fajl: {attachment}, veličina: {len(file_content)} bajtova')
+                message.attach(os.path.basename(attachment), "application/pdf", file_content)
+                app.logger.debug(f'Uspešno dodat prilog: {os.path.basename(attachment)}')
         except Exception as e:
-            print(f"Greška prilikom dodavanja priloga: {attachment}. Greška: {e}")
-    
-    print(f"To: {to}")
-    print(f"Subject: {subject}")
-    # print(f"Body: {body}")
-    
-    # TODO: Implement actual email sending logic here
-    # For now, we'll just print the email details
+            app.logger.error(f'Greška prilikom dodavanja priloga: {attachment}. Greška: {str(e)}')
     
     try:
         mail.send(message)
-        app.logger.info('Email poslat')
+        app.logger.info(f'Email uspešno poslat na: {to}')
+        return True
     except Exception as e:
-        app.logger.error(f'Greška prilikom slanja mejla: {e}')
+        app.logger.error(f'Greška prilikom slanja mejla: {str(e)}')
+        return False
 
 
 def send_email_to_update_product_quantity(invoice_item):
@@ -895,6 +872,32 @@ def provera_validnosti_poziva_na_broj(podaci):
         # Poziv na broj nije u ispravnom formatu (treba da bude 11 cifara ili format 5-6 cifara)
         podaci['Validnost'] = False
     return podaci
+
+
+###########################
+### PaySpot integration ###
+###########################
+def generate_random_string(length=20):
+    letters = string.ascii_letters + string.digits
+    rnd = ''.join(random.choice(letters) for i in range(length))
+    print(f'* generate random string: {rnd=}')
+    return rnd
+
+
+def check_invalid_characters(text):
+    return '\\' in str(text) or '|' in str(text)
+
+
+def calculate_hash(plaintext):
+    if any(check_invalid_characters(value) for value in plaintext.split('|')):
+        raise ValueError("Nevažeći karakteri: (\\ or |) pronađeni u plaintext-u.")
+
+    print(f'* calculate hash: {plaintext=}')
+    sha512_hash = hashlib.sha512(plaintext.encode('utf-8')).hexdigest()
+    print(f'* calculate hash: {sha512_hash=}')
+    hash_ = base64.b64encode(bytes.fromhex(sha512_hash)).decode('utf-8')
+    print(f'** calculate hash: {hash_=}')
+    return hash_
 
 
 def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, invoice):
