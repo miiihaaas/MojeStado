@@ -998,6 +998,12 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                     if payspot_group_id and orders_response:
                         app.logger.info(f'Pronađen payspotGroupID: {payspot_group_id} i {len(orders_response)} transakcija')
                         
+                        beneficiary_amounts = {}
+                        for order in orders_data:#! proveri da li je 'orders_data' prava lista
+                            if "merchantOrderReference" in order and "beneficiaryAmount" in order:
+                                beneficiary_amounts[order["merchantOrderReference"]] = order["beneficiaryAmount"]
+                        
+                        app.logger.debug(f'Mapirani beneficiary iznosi: {beneficiary_amounts}')
                         # Iteracija kroz sve transakcije
                         for order in orders_response:
                             payspot_transaction_id = order.get("payspotTransactionID")
@@ -1017,6 +1023,9 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                                 except (ValueError, IndexError):
                                     app.logger.warning(f'Nije moguće izdvojiti farm_id iz reference: {merchant_order_reference}')
                             
+                            # Dobavljanje beneficiary_amount iz mapiranog rečnika
+                            beneficiary_amount = beneficiary_amounts.get(merchant_order_reference)
+                            
                             # Kreiranje novog PaySpotTransaction objekta
                             transaction = PaySpotTransaction(
                                 invoice_id=invoice.id,
@@ -1029,7 +1038,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                                 create_date=create_date,
                                 create_time=create_time,
                                 sender_fee=sender_fee,
-                                farm_id=farm_id
+                                farm_id=farm_id,
+                                beneficiary_amount=beneficiary_amount
                             )
                             
                             db.session.add(transaction)
@@ -1077,7 +1087,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         # Trenutno vreme u formatu koji očekuje PaySpot
         request_date_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         
-        # Pronalazenje fakture
+        # Pronalaženje fakture
         invoice = Invoice.query.get(invoice_id)
         if not invoice:
             return False, "Faktura nije pronađena."
@@ -1103,14 +1113,20 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
             if not farm:
                 app.logger.error(f'Farma sa ID {transaction.farm_id} nije pronađena')
                 continue
-                
+            
+            # Korišćenje sačuvane vrednosti beneficiary_amount
+            beneficiary_amount = transaction.beneficiary_amount
+            if beneficiary_amount is None:
+                app.logger.warning(f'Transakcija {transaction.id} nema definisan beneficiary_amount, koristi se 0')
+                beneficiary_amount = 0
+            
             order_confirm_item = {
                 "merchantOrderID": merchant_order_id,
                 "merchantReference": f"REF-{merchant_order_id}-F{transaction.farm_id}",
                 "payspotGroupID": transaction.payspot_group_id,
                 "payspotTransactionID": transaction.payspot_transaction_id,
                 "beneficiaryAccount": farm.farm_account_number,
-                "beneficiaryAmount": 0,  # Ovde postaviti stvarni iznos kada bude potrebno
+                "beneficiaryAmount": beneficiary_amount,
                 "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             }
             
