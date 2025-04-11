@@ -584,7 +584,7 @@ def deactivate_products(invoice_id):
                     product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
                     # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
                     db.session.commit()
-                    app.logger.info(f'Za proizvod: {product_id} umanjena količina za {float(invoice_item.invoice_item_details['quantity'])}.')
+                    app.logger.info(f'Za proizvod: {product_id} umanjena količina za {float(invoice_item.invoice_item_details["quantity"])}.')
     except Exception as e:
         app.logger.error(f'Greška pri oduzimanju količine proizvoda: {str(e)}')
         return False, str(e)
