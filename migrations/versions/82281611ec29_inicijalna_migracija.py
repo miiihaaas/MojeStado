@@ -1,8 +1,8 @@
-"""Inicijalna migracija
+"""inicijalna_migracija
 
-Revision ID: aad9afb73b6b
+Revision ID: 82281611ec29
 Revises: 
-Create Date: 2025-04-10 21:38:38.663252
+Create Date: 2025-04-11 06:56:54.666910
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'aad9afb73b6b'
+revision = '82281611ec29'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,6 +22,7 @@ def upgrade():
         batch_op.drop_index('session_id')
 
     op.drop_table('sessions')
+    op.drop_table('pay_spot_transaction')
     with op.batch_alter_table('animal', schema=None) as batch_op:
         batch_op.alter_column('current_weight',
                existing_type=mysql.VARCHAR(length=20),
@@ -50,16 +51,7 @@ def upgrade():
                existing_nullable=False)
         batch_op.alter_column('product_price_per_unit_farmer',
                existing_type=mysql.FLOAT(),
-               type_=sa.String(length=20),
                nullable=False)
-        batch_op.alter_column('product_price_per_unit',
-               existing_type=mysql.FLOAT(),
-               type_=sa.String(length=20),
-               existing_nullable=False)
-        batch_op.alter_column('product_price_per_kg',
-               existing_type=mysql.FLOAT(),
-               type_=sa.String(length=20),
-               existing_nullable=True)
         batch_op.alter_column('quantity',
                existing_type=mysql.VARCHAR(length=20),
                type_=sa.Float(),
@@ -83,17 +75,8 @@ def downgrade():
                existing_type=sa.Float(),
                type_=mysql.VARCHAR(length=20),
                existing_nullable=False)
-        batch_op.alter_column('product_price_per_kg',
-               existing_type=sa.String(length=20),
-               type_=mysql.FLOAT(),
-               existing_nullable=True)
-        batch_op.alter_column('product_price_per_unit',
-               existing_type=sa.String(length=20),
-               type_=mysql.FLOAT(),
-               existing_nullable=False)
         batch_op.alter_column('product_price_per_unit_farmer',
-               existing_type=sa.String(length=20),
-               type_=mysql.FLOAT(),
+               existing_type=mysql.FLOAT(),
                nullable=True)
         batch_op.alter_column('product_description',
                existing_type=sa.Text(),
@@ -121,6 +104,27 @@ def downgrade():
                type_=mysql.VARCHAR(length=20),
                existing_nullable=False)
 
+    op.create_table('pay_spot_transaction',
+    sa.Column('id', mysql.INTEGER(display_width=11), autoincrement=True, nullable=False),
+    sa.Column('invoice_id', mysql.INTEGER(display_width=11), autoincrement=False, nullable=False),
+    sa.Column('merchant_order_id', mysql.VARCHAR(length=50), nullable=False),
+    sa.Column('payspot_group_id', mysql.VARCHAR(length=20), nullable=False),
+    sa.Column('sequence_no', mysql.INTEGER(display_width=11), autoincrement=False, nullable=False),
+    sa.Column('merchant_order_reference', mysql.VARCHAR(length=50), nullable=False),
+    sa.Column('payspot_transaction_id', mysql.VARCHAR(length=20), nullable=False),
+    sa.Column('status_trans', mysql.VARCHAR(length=10), nullable=True),
+    sa.Column('create_date', mysql.VARCHAR(length=10), nullable=True),
+    sa.Column('create_time', mysql.VARCHAR(length=10), nullable=True),
+    sa.Column('sender_fee', mysql.FLOAT(), nullable=True),
+    sa.Column('farm_id', mysql.INTEGER(display_width=11), autoincrement=False, nullable=True),
+    sa.Column('created_at', mysql.DATETIME(), nullable=True),
+    sa.ForeignKeyConstraint(['farm_id'], ['farm.id'], name='pay_spot_transaction_ibfk_2'),
+    sa.ForeignKeyConstraint(['invoice_id'], ['invoice.id'], name='pay_spot_transaction_ibfk_1'),
+    sa.PrimaryKeyConstraint('id'),
+    mysql_collate='utf8mb4_unicode_ci',
+    mysql_default_charset='utf8mb4',
+    mysql_engine='InnoDB'
+    )
     op.create_table('sessions',
     sa.Column('id', mysql.INTEGER(display_width=11), autoincrement=True, nullable=False),
     sa.Column('session_id', mysql.VARCHAR(length=255), nullable=True),
