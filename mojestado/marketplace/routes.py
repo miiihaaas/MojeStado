@@ -4,6 +4,7 @@ from flask import Blueprint, request
 from flask import  render_template, flash, redirect, url_for
 from flask_login import current_user, login_required
 from mojestado import app, db
+from mojestado.main.functions import optimize_image
 from mojestado.models import Animal, AnimalCategorization, AnimalCategory, Farm, Municipality, Product, ProductCategory, ProductSection, ProductSubcategory, User
 from sqlalchemy import func
 
@@ -466,6 +467,7 @@ def upload_product_image(product_id):
         - Maksimalan broj slika po proizvodu je 4
         - Podržani formati su jpg, jpeg, png
         - Zahteva da korisnik bude ulogovan i da bude vlasnik proizvoda
+        - Slike se automatski optimizuju za veličinu
     """
     try:
         app.logger.debug(f'Pokušaj dodavanja slike za proizvod: {product_id}')
@@ -506,19 +508,37 @@ def upload_product_image(product_id):
         if not picture.filename:
             flash('Nije izabrana slika.', 'danger')
             return redirect(url_for('marketplace.product_detail', product_id=product_id))
-            
-        # Provera ekstenzije
-        _, f_ext = os.path.splitext(picture.filename)
-        if f_ext.lower() not in ['.jpg', '.jpeg', '.png']:
-            flash('Dozvoljeni formati su: jpg, jpeg, png', 'danger')
+        
+        # Definisanje dozvoljenih formata
+        allowed_formats = ['.jpg', '.jpeg', '.png']
+        
+        # Optimizacija slike
+        optimized_image, img_format, extension = optimize_image(
+            picture, 
+            max_size_kb=500, 
+            allowed_formats=allowed_formats
+        )
+        
+        # Provera da li je format dozvoljen
+        if optimized_image is None:
+            flash(f'Dozvoljeni formati su: {allowed_formats}', 'danger')
             return redirect(url_for('marketplace.product_detail', product_id=product_id))
+        
+        #######################
+        # Provera ekstenzije
+        # _, f_ext = os.path.splitext(picture.filename)
+        # if f_ext.lower() not in ['.jpg', '.jpeg', '.png']:
+        #     flash('Dozvoljeni formati su: jpg, jpeg, png', 'danger')
+        #     return redirect(url_for('marketplace.product_detail', product_id=product_id))
             
         # Čuvanje slike
         f_name = f'product_{product_id}_{(counter + 1):03}'
-        product_image_fn = f_name + f_ext.lower()
+        product_image_fn = f_name + extension
         product_image_path = os.path.join(product_image_folder, product_image_fn)
         
-        picture.save(product_image_path)
+        # Čuvanje optimizovane slike
+        with open(product_image_path, 'wb') as f:
+            f.write(optimized_image)
         app.logger.debug(f'Slika sačuvana: {product_image_fn}')
         
         # Ažuriranje kolekcije slika

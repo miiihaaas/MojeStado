@@ -242,3 +242,62 @@ Poslato od korisnika sa email adrese: {email}'''
         error_msg = f'Neočekivana greška pri slanju FAQ email-a: {str(e)}'
         app.logger.error(error_msg, exc_info=True)
         return False
+
+
+def optimize_image(image_file, max_size_kb=500, allowed_formats=None):
+    """
+    Optimizuje veličinu slike bez promene dimenzija.
+    
+    Parameters:
+    - image_file: File-like objekat (npr. request.files['picture'])
+    - max_size_kb: Maksimalna dozvoljena veličina slike u KB
+    - allowed_formats: Lista dozvoljenih ekstenzija (npr. ['.jpg', '.jpeg', '.png', '.gif'])
+    
+    Returns:
+    - tuple: (optimizovana_slika_bytes, format_slike, ekstenzija)
+    - None: ako format nije dozvoljen
+    """
+    from PIL import Image
+    import io
+    
+    # Provera formata ako je navedeno
+    if allowed_formats:
+        _, f_ext = os.path.splitext(image_file.filename.lower())
+        if f_ext not in allowed_formats:
+            return None, None, None
+    
+    # Čitanje slike u memoriju
+    img = Image.open(image_file)
+    
+    # Detekcija formata
+    img_format = img.format or 'JPEG'
+    
+    # Mapiranje ekstenzije na osnovu formata
+    format_to_ext = {
+        'JPEG': '.jpg',
+        'PNG': '.png',
+        'GIF': '.gif'
+    }
+    extension = format_to_ext.get(img_format, '.jpg')
+    
+    # Sačuvaj originalnu sliku u bytes buffer sa kvalitetom 100 da izmerimo veličinu
+    img_io = io.BytesIO()
+    img.save(img_io, format=img_format, quality=100)
+    img_size_kb = len(img_io.getvalue()) / 1024
+    
+    # Ako je slika veća od max_size_kb, smanjujemo kvalitet
+    if img_size_kb > max_size_kb:
+        quality = 90  # Početni kvalitet
+        while quality > 10:  # Minimalni kvalitet 10
+            img_io = io.BytesIO()
+            img.save(img_io, format=img_format, quality=quality)
+            new_size_kb = len(img_io.getvalue()) / 1024
+            
+            if new_size_kb <= max_size_kb:
+                break
+                
+            # Smanjujemo kvalitet za 10% svakim korakom
+            quality -= 10
+    
+    img_io.seek(0)
+    return img_io.getvalue(), img_format, extension

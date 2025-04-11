@@ -3,6 +3,7 @@ from flask import Blueprint
 from flask import  render_template, url_for, flash, redirect, request, abort
 from mojestado import bcrypt, db, mail, app
 from mojestado.users.forms import LoginForm, RequestResetForm, ResetPasswordForm
+from mojestado.main.functions import optimize_image
 from mojestado.models import Animal, Product, User, Farm, Municipality
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_mail import Message
@@ -34,13 +35,33 @@ def upload_image():
         return redirect(url_for('users.my_farm', farm_id=farm.id))
     
     picture = request.files['picture']
+    
+    # Definisanje dozvoljenih formata
+    allowed_formats = ['.jpg', '.jpeg', '.png', '.gif']
+    
+    # Optimizacija slike
+    optimized_image, img_format, extension = optimize_image(
+        picture, 
+        max_size_kb=500, 
+        allowed_formats=allowed_formats
+    )
+    
+    # Provera da li je format dozvoljen
+    if optimized_image is None:
+        flash(f'Neispravan format slike. Dozvoljeni formati: {allowed_formats}', 'danger')
+        return redirect(url_for('users.my_farm', farm_id=farm.id))
+    
+    ######################
+    # Generisanje naziva fajla
     f_name = f'farm_{farm.id:05}_{(counter + 1):03}'
-    _, f_ext = os.path.splitext(picture.filename)
-    farm_image_fn = f_name + f_ext
+    farm_image_fn = f_name + extension
     farm_image_path = os.path.join(app.root_path, 'static', 'farm_image', farm_image_fn)
-    picture.save(farm_image_path)
-    #! dodati kod koji će da proširi listu u objektu farm tako što će dodati generisani fajl
-    farm.farm_image_collection = farm.farm_image_collection + [farm_image_fn] #! dodati kolonu farm_image_colection
+    
+    # Čuvanje optimizovane slike
+    with open(farm_image_path, 'wb') as f:
+        f.write(optimized_image)
+    
+    farm.farm_image_collection = farm.farm_image_collection + [farm_image_fn]
     db.session.commit()
     flash('Slika je uspešno dodata.', 'success')
     return redirect(url_for('users.my_farm', farm_id=farm.id))

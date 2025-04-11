@@ -260,6 +260,7 @@ def generate_invoice_attach(invoice_id):
     try:
         invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
         invoice = Invoice.query.get(invoice_id)
+        customer = User.query.get(invoice.user_id)
         
         if not invoice:
             app.logger.error(f'Faktura sa ID {invoice_id} nije pronađena')
@@ -342,7 +343,7 @@ def generate_invoice_attach(invoice_id):
                     self.cell(90, 8, 'Informacije o kupcu:', new_x='LMARGIN', new_y='NEXT', align='L')
                     self.set_font('DejaVuSansCondensed', '', 9)
                     self.set_xy(15, 53)
-                    self.multi_cell(90, 6, f"Ime i prezime: _____\nAdresa: _____\nTelefon: _____\nEmail: _____", new_x='LMARGIN', new_y='NEXT', align='L')
+                    self.multi_cell(90, 6, f"Ime i prezime: {customer.name} {customer.surname}\nAdresa: {customer.address}\n{customer.zip_code}, {customer.city}\n", new_x='LMARGIN', new_y='NEXT', align='L')
                     
                     # Desna kolona - informacije o fakturi
                     self.set_xy(self.w - 105, 45)
@@ -351,7 +352,7 @@ def generate_invoice_attach(invoice_id):
                     self.set_font('DejaVuSansCondensed', '', 9)
                     self.set_xy(self.w - 105, 53)
                     datum_izdavanja = datetime.date.today().strftime('%d.%m.%Y.')
-                    self.multi_cell(90, 6, f"Datum izdavanja: {datum_izdavanja}\nRok plaćanja: _____\nNačin plaćanja: PaySpot\nReferentni broj: _____", new_x='LMARGIN', new_y='NEXT', align='L')
+                    self.multi_cell(90, 6, f"Datum izdavanja: {datum_izdavanja}", new_x='LMARGIN', new_y='NEXT', align='L')
                     
                     # Razmak nakon info sekcije
                     self.ln(10)
@@ -400,7 +401,7 @@ def generate_invoice_attach(invoice_id):
                 pdf.add_section_title('Proizvodi')
                 
                 headers = ['Kategorija', 'Potkategorija', 'Sektor', 'Naziv', 'Količina', 'Jed. mere', 'Cena po jed.', 'Cena po kg', 'Ukupno', 'PG', 'Lokacija']
-                col_widths = [25, 25, 25, 25, 15, 15, 20, 20, 20, 25, 25]
+                col_widths = [30, 30, 30, 30, 15, 15, 20, 20, 20, 25, 25]
                 
                 pdf.add_table_header(headers, col_widths)
                 
@@ -432,7 +433,7 @@ def generate_invoice_attach(invoice_id):
                 pdf.add_section_title('Živa vaga')
                 
                 headers = ['Kategorija', 'Potkategorija', 'Rasa', 'Pol', 'Masa', 'Cena po kg', 'Ukupno', 'Osigurano', 'Organsko', 'PG', 'Lokacija']
-                col_widths = [25, 25, 25, 10, 15, 20, 20, 25, 25, 25, 25]
+                col_widths = [30, 30, 30, 10, 15, 20, 20, 25, 25, 25, 25]
                 
                 pdf.add_table_header(headers, col_widths)
                 
