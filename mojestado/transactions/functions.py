@@ -24,11 +24,13 @@ print(f'{project_folder=}')
 
 font_path = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed.ttf')
 font_path_B = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed-Bold.ttf')
+font_path_I = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed-Oblique.ttf')
 
 
 def add_fonts(pdf):
     pdf.add_font('DejaVuSansCondensed', '', font_path, uni=True)
     pdf.add_font('DejaVuSansCondensed', 'B', font_path_B, uni=True)
+    pdf.add_font('DejaVuSansCondensed', 'I', font_path_I, uni=True)
 
 
 def generate_payment_slips_attach(invoice_item):
@@ -270,133 +272,243 @@ def generate_invoice_attach(invoice_id):
     project_folder = os.path.dirname(os.path.dirname((current_file_path)))
     font_path = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed.ttf')
     font_path_B = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed-Bold.ttf')
+    font_path_I = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed-Oblique.ttf')
+    
+    # Definisanje boja za dokument
+    HEADER_BG_COLOR = (41, 128, 185)  # Plava boja za zaglavlje
+    HEADER_TEXT_COLOR = (255, 255, 255)  # Bela boja za tekst u zaglavlju
+    TABLE_HEADER_BG_COLOR = (236, 240, 241)  # Svetlo siva za zaglavlje tabele
+    TABLE_HEADER_TEXT_COLOR = (44, 62, 80)  # Tamno plava za tekst zaglavlja tabele
+    BORDER_COLOR = (189, 195, 199)  # Siva boja za ivice
+    SECTION_TITLE_COLOR = (52, 152, 219)  # Svetlo plava za naslove sekcija
+    
     class PDF(FPDF):
         def __init__(self, **kwargs):
             super(PDF, self).__init__(**kwargs)
             self.add_font('DejaVuSansCondensed', '', font_path, uni=True)
             self.add_font('DejaVuSansCondensed', 'B', font_path_B, uni=True)
+            self.add_font('DejaVuSansCondensed', 'I', font_path_I, uni=True)
+            
         def header(self):
-            self.set_font('DejaVuSansCondensed', 'B', 16)
-            self.cell(0, 10, f'Faktura {invoice.invoice_number}', new_x='LMARGIN', new_y='NEXT', align='C')
+            # Logo i naziv kompanije
+            self.set_fill_color(*HEADER_BG_COLOR)
+            self.rect(10, 10, self.w - 20, 25, 'F')
+            self.set_text_color(*HEADER_TEXT_COLOR)
+            self.set_font('DejaVuSansCondensed', 'B', 18)
+            self.set_xy(15, 15)
+            self.cell(0, 10, 'MojeStado', new_x='RIGHT', new_y='SAME', align='L')
+            
+            # Broj fakture
+            self.set_font('DejaVuSansCondensed', 'B', 14)
+            self.set_xy(self.w - 100, 15)
+            self.cell(90, 10, f'Faktura: {invoice.invoice_number}', new_x='LMARGIN', new_y='NEXT', align='R')
+            
+            # Razmak nakon zaglavlja
+            self.ln(10)
+            
+        def footer(self):
+            self.set_y(-20)
+            self.set_font('DejaVuSansCondensed', 'I', 8)
+            self.set_text_color(128, 128, 128)
+            self.cell(0, 10, f'Strana {self.page_no()}/{{nb}}', new_x='LMARGIN', new_y='NEXT', align='C')
+            self.cell(0, 5, 'MojeStado - Platforma za poljoprivrednike', new_x='LMARGIN', new_y='NEXT', align='C')
+            
+        def add_section_title(self, title):
+            self.set_font('DejaVuSansCondensed', 'B', 12)
+            self.set_text_color(*SECTION_TITLE_COLOR)
+            self.cell(0, 10, title, new_x='LMARGIN', new_y='NEXT', align='L', border=0)
+            self.set_text_color(0, 0, 0)  # Vraćanje na crnu boju teksta
+            
+        def add_info_section(self):
+            # Informacije o fakturi
+            self.set_font('DejaVuSansCondensed', 'B', 10)
+            self.set_fill_color(245, 245, 245)  # Vrlo svetlo siva pozadina
+            
+            # Leva kolona - informacije o kupcu
+            self.set_xy(15, 45)
+            self.cell(90, 8, 'Informacije o kupcu:', new_x='LMARGIN', new_y='NEXT', align='L')
+            self.set_font('DejaVuSansCondensed', '', 9)
+            self.set_xy(15, 53)
+            self.multi_cell(90, 6, f"Ime i prezime: _____\nAdresa: _____\nTelefon: _____\nEmail: _____", new_x='LMARGIN', new_y='NEXT', align='L')
+            
+            # Desna kolona - informacije o fakturi
+            self.set_xy(self.w - 105, 45)
+            self.set_font('DejaVuSansCondensed', 'B', 10)
+            self.cell(90, 8, 'Detalji fakture:', new_x='LMARGIN', new_y='NEXT', align='L')
+            self.set_font('DejaVuSansCondensed', '', 9)
+            self.set_xy(self.w - 105, 53)
+            datum_izdavanja = datetime.date.today().strftime('%d.%m.%Y.')
+            self.multi_cell(90, 6, f"Datum izdavanja: {datum_izdavanja}\nRok plaćanja: _____\nNačin plaćanja: PaySpot\nReferentni broj: _____", new_x='LMARGIN', new_y='NEXT', align='L')
+            
+            # Razmak nakon info sekcije
+            self.ln(10)
+            
+        def add_table_header(self, headers, col_widths):
+            self.set_font('DejaVuSansCondensed', 'B', 8)
+            self.set_fill_color(*TABLE_HEADER_BG_COLOR)
+            self.set_text_color(*TABLE_HEADER_TEXT_COLOR)
+            self.set_draw_color(*BORDER_COLOR)
+            
+            for i, header in enumerate(headers):
+                self.cell(col_widths[i], 8, header, new_y='LAST', align='C', border=1, fill=True)
+            self.ln()
+            self.set_text_color(0, 0, 0)  # Vraćanje na crnu boju teksta
+            
+        def add_table_row(self, data, col_widths):
+            self.set_font('DejaVuSansCondensed', '', 8)
+            for i, value in enumerate(data):
+                self.cell(col_widths[i], 7, str(value), new_y='LAST', align='L', border=1)
+            self.ln()
     
+    # Inicijalizacija PDF dokumenta
     pdf = PDF()
+    pdf.alias_nb_pages()
     pdf.add_page(orientation='L')
-    pdf.set_fill_color(200, 200, 200)  # Svetlo siva boja
-    #! proizvodi
+    pdf.add_info_section()
+    
+    # Dodavanje napomene o fakturi
+    pdf.set_font('DejaVuSansCondensed', 'I', 9)
+    pdf.set_text_color(100, 100, 100)
+    pdf.multi_cell(0, 5, "Ova faktura predstavlja zvanični dokument o kupovini preko MojeStado platforme. "
+                      "Za sva pitanja i reklamacije, molimo kontaktirajte našu korisničku podršku.", 
+                      new_x='LMARGIN', new_y='NEXT', align='L')
+    pdf.ln(5)
+    pdf.set_text_color(0, 0, 0)  # Vraćanje na crnu boju teksta
+    
+    # Proizvodi
     if products:
-        pdf.set_font('DejaVuSansCondensed', 'B', 10)
-        pdf.cell(0, 10, f'Proizvodi', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
-        pdf.set_font('DejaVuSansCondensed', 'B', 7)
-        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Sektor', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Naziv', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(15, 10, f'Količina', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(20, 10, f'Jedinica mere', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Cena po jedinici mere', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(20, 10, f'Cena po kg', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(20, 10, f'Ukupna cena', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'PG', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Lokacija', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
-        # pdf.set_fill_color(255, 255, 255)  # Svetlo siva boja
-        pdf.set_font('DejaVuSansCondensed', '', 7)
+        pdf.add_section_title('Proizvodi')
+        
+        headers = ['Kategorija', 'Potkategorija', 'Sektor', 'Naziv', 'Količina', 'Jed. mere', 'Cena po jed.', 'Cena po kg', 'Ukupno', 'PG', 'Lokacija']
+        col_widths = [25, 25, 25, 25, 15, 15, 20, 20, 20, 25, 25]
+        
+        pdf.add_table_header(headers, col_widths)
+        
         for product in products:
-            pdf.cell(30, 10, f'{product["category"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{product["subcategory"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{product["section"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{product["product_name"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{product["quantity"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{product["unit_of_measurement"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{float(product["product_price_per_unit"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{float(product["product_price_per_kg"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{float(product["total_price"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{product["farm"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{product["location"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
-        pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
-    #! živa vaga
+            row_data = [
+                product["category"],
+                product["subcategory"],
+                product["section"],
+                product["product_name"],
+                product["quantity"],
+                product["unit_of_measurement"],
+                f"{float(product['product_price_per_unit']):.2f}",
+                f"{float(product['product_price_per_kg']):.2f}",
+                f"{float(product['total_price']):.2f}",
+                product["farm"],
+                product["location"]
+            ]
+            pdf.add_table_row(row_data, col_widths)
+        
+        pdf.ln(5)
+    
+    # Živa vaga
     if animals:
-        pdf.set_font('DejaVuSansCondensed', 'B', 10)
-        pdf.cell(0, 10, f'Živa vaga', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
-        # pdf.set_fill_color(200, 200, 200)  # Svetlo siva boja
-        pdf.set_font('DejaVuSansCondensed', 'B', 7)
-        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Rasa', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(10, 10, f'Pol', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(15, 10, f'Masa', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(20, 10, f'Cena po kg', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(20, 10, f'Ukupna cena', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Osigurano', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Organsko', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'PG', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Lokacija', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
-        # pdf.set_fill_color(255, 255, 255)  # Svetlo siva boja
-        pdf.set_font('DejaVuSansCondensed', '', 7)
+        pdf.add_section_title('Živa vaga')
+        
+        headers = ['Kategorija', 'Potkategorija', 'Rasa', 'Pol', 'Masa', 'Cena po kg', 'Ukupno', 'Osigurano', 'Organsko', 'PG', 'Lokacija']
+        col_widths = [25, 25, 25, 10, 15, 20, 20, 25, 25, 25, 25]
+        
+        pdf.add_table_header(headers, col_widths)
+        
         for animal in animals:
-            pdf.cell(30, 10, f'{animal["category"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{animal["subcategory"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{animal["race"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(10, 10, f'{animal["animal_gender"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{float(animal["current_weight"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{float(animal["price_per_kg"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(20, 10, f'{float(animal["total_price"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{animal["insured"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{animal["organic_animal"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{animal["farm"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{animal["location"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
-        pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
-    #! usluge
+            row_data = [
+                animal["category"],
+                animal["subcategory"],
+                animal["race"],
+                animal["animal_gender"],
+                f"{float(animal['current_weight']):.2f}",
+                f"{float(animal['price_per_kg']):.2f}",
+                f"{float(animal['total_price']):.2f}",
+                animal["insured"],
+                animal["organic_animal"],
+                animal["farm"],
+                animal["location"]
+            ]
+            pdf.add_table_row(row_data, col_widths)
+        
+        pdf.ln(5)
+    
+    # Usluge
     if services:
-        pdf.set_font('DejaVuSansCondensed', 'B', 10)
-        pdf.cell(0, 10, f'Usluge', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
-        pdf.set_font('DejaVuSansCondensed', 'B', 7)
-        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Rasa', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(10, 10, f'Pol', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(15, 10, f'Masa', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Usluga', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Cena', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
-        pdf.set_font('DejaVuSansCondensed', '', 7)
+        pdf.add_section_title('Usluge')
+        
+        headers = ['Kategorija', 'Potkategorija', 'Rasa', 'Pol', 'Masa', 'Usluga', 'Cena']
+        col_widths = [30, 30, 30, 15, 20, 50, 30]
+        
+        pdf.add_table_header(headers, col_widths)
+        
         for service in services:
-            pdf.cell(30, 10, f'{service["category"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{service["subcategory"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{service["race"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(10, 10, f'{service["animal_gender"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{float(service["current_weight"]):.2f}', new_y='LAST', align='L', border=1)
-            if service['slaughterService'] == True and service['processingPrice'] > 0:
-                pdf.cell(30, 10, f'Klanje i obrada', new_y='LAST', align='L', border=1)
-                pdf.cell(30, 10, f'{float(service["slaughterPrice"]):.2f}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
-            elif service['slaughterService']:
-                pdf.cell(30, 10, f'Klanje', new_y='LAST', align='L', border=1)
-                pdf.cell(30, 10, f'{float(service["slaughterPrice"] + service["processingPrice"]):.2f}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
-        pdf.cell(0, 10, '', new_y='NEXT', new_x='LMARGIN')
+            usluga_tekst = 'Klanje i obrada' if service.get('slaughterService') == True and service.get('processingPrice', 0) > 0 else 'Klanje'
+            cena_tekst = f"{float(service.get('slaughterPrice', 0)):.2f}" if service.get('slaughterService') == True and service.get('processingPrice', 0) > 0 else f"{float(service.get('slaughterPrice', 0) + service.get('processingPrice', 0)):.2f}"
+            
+            row_data = [
+                service["category"],
+                service["subcategory"],
+                service["race"],
+                service["animal_gender"],
+                f"{float(service['current_weight']):.2f}",
+                usluga_tekst,
+                cena_tekst
+            ]
+            pdf.add_table_row(row_data, col_widths)
+        
+        pdf.ln(5)
     
-    #! tov (samo koji NIJE na rate?)
+    # Tov
     if fattening:
-        pdf.set_font('DejaVuSansCondensed', 'B', 10)
-        pdf.cell(0, 10, f'Tov', new_y='NEXT', new_x='LMARGIN', align='L', border=0, fill=False)
-        pdf.set_font('DejaVuSansCondensed', 'B', 7)
-        pdf.cell(30, 10, f'Kategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Potkategorija', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Rasa', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(10, 10, f'Pol', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(15, 10, f'Željena masa', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(15, 10, f'Cena tova', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(15, 10, f'Br hranidbenih dana', new_y='LAST', align='L', border=1, fill=True)
-        pdf.cell(30, 10, f'Br rata', new_y='NEXT', new_x='LMARGIN', align='L', border=1, fill=True)
-        pdf.set_font('DejaVuSansCondensed', '', 7)
+        pdf.add_section_title('Tov')
+        
+        headers = ['Kategorija', 'Potkategorija', 'Rasa', 'Pol', 'Željena masa', 'Cena tova', 'Br. hranidbenih dana', 'Br. rata']
+        col_widths = [30, 30, 30, 15, 25, 25, 30, 20]
+        
+        pdf.add_table_header(headers, col_widths)
+        
         for fattening_item in fattening:
-            pdf.cell(30, 10, f'{fattening_item["category"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{fattening_item["subcategory"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{fattening_item["race"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(10, 10, f'{fattening_item["animal_gender"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{float(fattening_item["desired_weight"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{float(fattening_item["fattening_price"]):.2f}', new_y='LAST', align='L', border=1)
-            pdf.cell(15, 10, f'{fattening_item["feeding_days"]}', new_y='LAST', align='L', border=1)
-            pdf.cell(30, 10, f'{fattening_item["installment_options"]}', new_y='NEXT', new_x='LMARGIN', align='L', border=1)
+            row_data = [
+                fattening_item["category"],
+                fattening_item["subcategory"],
+                fattening_item["race"],
+                fattening_item["animal_gender"],
+                f"{float(fattening_item['desired_weight']):.2f}",
+                f"{float(fattening_item['fattening_price']):.2f}",
+                fattening_item["feeding_days"],
+                fattening_item["installment_options"]
+            ]
+            pdf.add_table_row(row_data, col_widths)
+        
+        pdf.ln(5)
     
+    # Ukupna cena
+    total_price = 0
+    for item in invoice_items:
+        details = item.invoice_item_details
+        if isinstance(details, dict) and 'total_price' in details:
+            total_price += float(details['total_price'])
     
+    pdf.ln(5)
+    pdf.set_font('DejaVuSansCondensed', 'B', 10)
+    pdf.cell(0, 10, f"Ukupno za plaćanje: {total_price:.2f} RSD", new_x='LMARGIN', new_y='NEXT', align='R')
+    
+    # Napomene i uslovi
+    pdf.ln(5)
+    pdf.set_font('DejaVuSansCondensed', 'B', 9)
+    pdf.cell(0, 5, "Napomene i uslovi:", new_x='LMARGIN', new_y='NEXT', align='L')
+    pdf.set_font('DejaVuSansCondensed', '', 8)
+    pdf.multi_cell(0, 4, "1. Plaćanje se vrši preko PaySpot servisa.\n"
+                        "2. Rok za reklamacije je 7 dana od datuma izdavanja fakture.\n"
+                        "3. Za dodatne informacije posetite naš sajt ili kontaktirajte korisničku podršku.", 
+                        new_x='LMARGIN', new_y='NEXT', align='L')
+    
+    # Potpisi
+    pdf.ln(10)
+    pdf.line(40, pdf.get_y(), 100, pdf.get_y())
+    pdf.line(pdf.w - 100, pdf.get_y(), pdf.w - 40, pdf.get_y())
+    pdf.set_font('DejaVuSansCondensed', '', 8)
+    pdf.cell(pdf.w/2 - 10, 5, "Potpis prodavca", new_x='RIGHT', new_y='LAST', align='C')
+    pdf.cell(pdf.w/2 - 10, 5, "Potpis kupca", new_x='LMARGIN', new_y='NEXT', align='C')
+    
+    # Čuvanje PDF-a
     path = os.path.join(project_folder, 'static', 'invoices')
     if not os.path.exists(path):
         os.mkdir(path)
