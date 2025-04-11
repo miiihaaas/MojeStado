@@ -303,13 +303,9 @@ def callback_url():
         # Čuvanje callback podataka
         callback = PaySpotCallback(
             invoice_id=invoice_id,
-            order_id=order_id,
-            shop_id=shop_id,
             amount=amount,
-            result=result,
-            hash=received_hash,
-            raw_data=json.dumps(data),
-            timestamp=datetime.datetime.now()
+            recived_at=datetime.datetime.now(),
+            callback_data=json.dumps(data)
         )
         db.session.add(callback)
 
