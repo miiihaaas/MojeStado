@@ -1079,7 +1079,17 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         invoice = Invoice.query.get(invoice_id)
         if not invoice:
             return False, "Faktura nije pronađena."
+        
+        # Izračunavanje hash-a
+        company_id = os.environ.get('PAYSPOT_COMPANY_ID')
+        secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+        # companyID, msgType (110), rnd, secretKey
+        plaintext = f"{company_id}|110|{rnd}|{secret_key}"
+        hash_value = calculate_hash(plaintext)
+        
         payspot_transactions = PaySpotTransaction.query.filter_by(invoice_id=invoice_id).all()
+        
+        app.logger.debug(f'Pronađene PaySpot transakcije: {payspot_transactions=}')
         
         for transaction in payspot_transactions:
             # Priprema podataka za zahtev
@@ -1091,14 +1101,14 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
                         "requestDateTime": request_date_time,
                         "msgType": 110,
                         "rnd": rnd,
-                        "hash": "",  # Biće izračunat kasnije
+                        "hash": hash_value,  #? Biće izračunat kasnije - ako ovo ne radi stavi da se računa kasnije
                         "language": 1  # Srpski jezik
                     },
                     "body": {
                         "orderConfirm": [
                             {
                                 "merchantOrderID": merchant_order_id,
-                                "merchantReference": f"REF-{merchant_order_id}-{transaction.farm_id}", #!
+                                "merchantReference": f"REF-{merchant_order_id}-F{transaction.farm_id}", #!
                                 "payspotGroupID": transaction.payspot_group_id,
                                 "payspotTransactionID": transaction.payspot_transaction_id,
                                 "beneficiaryAccount": farm.farm_account_number,  #? Račun primaoca
@@ -1110,14 +1120,8 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
                 }
             }
             
-            # Izračunavanje hash-a
-            secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
-            plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{secret_key}"
-            hash_value = calculate_hash(plaintext)
-            
-            # Dodavanje hash-a u zahtev
-            # companyID, msgType (101), rnd, secretKey
-            request_data["data"]["header"]["hash"] = hash_value
+            #? # Dodavanje hash-a u zahtev
+            #? request_data["data"]["header"]["hash"] = hash_value
 
             app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
             
