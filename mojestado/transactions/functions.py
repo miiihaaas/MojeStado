@@ -1067,7 +1067,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         import os
         import datetime
         from mojestado import app, db
-        from mojestado.models import Invoice
+        from mojestado.models import Invoice, PaySpotTransaction
         
         # Generisanje random stringa za hash
         rnd = generate_random_string()
@@ -1079,67 +1079,69 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         invoice = Invoice.query.get(invoice_id)
         if not invoice:
             return False, "Faktura nije pronađena."
+        payspot_transactions = PaySpotTransaction.query.filter_by(invoice_id=invoice_id).all()
         
-        # Priprema podataka za zahtev
-        request_data = {
-            "data": {
-                "header": {
-                    "companyID": os.environ.get('PAYSPOT_COMPANY_ID'),
-                    "requestDateTime": request_date_time,
-                    "msgType": 110,
-                    "rnd": rnd,
-                    "hash": "",  # Biće izračunat kasnije
-                    "language": 1  # Srpski jezik
-                },
-                "body": {
-                    "orderConfirm": [
-                        {
-                            "merchantOrderID": merchant_order_id,
-                            "merchantReference": f"REF-{merchant_order_id}",
-                            "payspotGroupID": payspot_order_id,
-                            "payspotTransactionID": payspot_order_id,
-                            "beneficiaryAccount": "265178031000308698",  # Račun primaoca
-                            "beneficiaryAmount": float(invoice.total_amount),
-                            "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-                        }
-                    ]
+        for transaction in payspot_transactions:
+            # Priprema podataka za zahtev
+            farm = Farm.query.get(transaction.farm_id)
+            request_data = {
+                "data": {
+                    "header": {
+                        "companyID": os.environ.get('PAYSPOT_COMPANY_ID'),
+                        "requestDateTime": request_date_time,
+                        "msgType": 110,
+                        "rnd": rnd,
+                        "hash": "",  # Biće izračunat kasnije
+                        "language": 1  # Srpski jezik
+                    },
+                    "body": {
+                        "orderConfirm": [
+                            {
+                                "merchantOrderID": merchant_order_id,
+                                "merchantReference": f"REF-{merchant_order_id}-{transaction.farm_id}", #!
+                                "payspotGroupID": transaction.payspot_group_id,
+                                "payspotTransactionID": transaction.payspot_transaction_id,
+                                "beneficiaryAccount": farm.farm_account_number,  #? Račun primaoca
+                                "beneficiaryAmount": float(invoice.total_amount), #!
+                                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
+                            }
+                        ]
+                    }
                 }
             }
-        }
+            
+            # Izračunavanje hash-a
+            secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+            plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{secret_key}"
+            hash_value = calculate_hash(plaintext)
+            
+            # Dodavanje hash-a u zahtev
+            # companyID, msgType (101), rnd, secretKey
+            request_data["data"]["header"]["hash"] = hash_value
         
-        # Izračunavanje hash-a
-        secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
-        plaintext = f"{rnd}|{request_date_time}|{merchant_order_id}|{secret_key}"
-        hash_value = calculate_hash(plaintext)
-        
-        # Dodavanje hash-a u zahtev
-        # companyID, msgType (101), rnd, secretKey
-        request_data["data"]["header"]["hash"] = hash_value
-        
-        # Slanje zahteva ka PaySpot-u
-        url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
-        headers = {"Content-Type": "application/json"}
-        
-        # Logovanje zahteva pre slanja
-        app.logger.debug(f'PaySpot URL: {url}')
-        app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
-        
-        # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
-        json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
-        
-        # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
-        response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
-        
-        # Logovanje odgovora
-        app.logger.debug(f'PaySpot status kod: {response.status_code}')
-        try:
-            response_text = response.text
-            app.logger.debug(f'PaySpot odgovor: {response_text}')
-            response_data = response.json()
-        except Exception as e:
-            app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
-            return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
+            # Slanje zahteva ka PaySpot-u
+            url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
+            
+            # Logovanje zahteva pre slanja
+            app.logger.debug(f'PaySpot URL: {url}')
+            app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
+            app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
+            
+            # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
+            json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
+            
+            # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
+            response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
+            
+            # Logovanje odgovora
+            app.logger.debug(f'PaySpot status kod: {response.status_code}')
+            try:
+                response_text = response.text
+                app.logger.debug(f'PaySpot odgovor: {response_text}')
+                response_data = response.json()
+            except Exception as e:
+                app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
+                return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
         
         # Provera odgovora
         if response.status_code == 200:

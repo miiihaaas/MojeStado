@@ -315,11 +315,10 @@ def callback_url():
             invoice.payment_date = datetime.datetime.now()
             
             # Slanje PaymentOrderConfirm zahteva za split transakcije
-            if data.get('requestType') == '10':
-                success, error_message = send_payment_order_confirm(order_id, payspot_order_id, invoice_id)
-                if not success:
-                    app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
-                    # Nastavljamo dalje, ne prekidamo proces jer je plaćanje već uspešno
+            success, error_message = send_payment_order_confirm(order_id, payspot_order_id, invoice_id)
+            if not success:
+                app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
+                # Nastavljamo dalje, ne prekidamo proces jer je plaćanje već uspešno
                     
             # Deaktivacija životinja i proizvoda
             app.logger.info(f'{invoice_id=}')
@@ -349,13 +348,15 @@ def callback_url():
 def success_url():
     app.logger.info('Uspesno zavrsena transakcija')
     flash('Uspesno zavrsena transakcija', 'success')
-    return redirect(url_for('main.home'))
+    return redirect(url_for('main.clear_cart'))
+
 
 @transactions.route('/error_url', methods=['GET'])
 def error_url():
     app.logger.error('Neuspešna transakcija')
     flash('Neuspešna transakcija', 'danger')
     return redirect(url_for('main.home'))
+
 
 @transactions.route('/cancel_url', methods=['GET'])
 def cancel_url():
