@@ -309,7 +309,7 @@ def generate_invoice_attach(invoice_id):
                     self.set_text_color(*HEADER_TEXT_COLOR)
                     self.set_font('DejaVuSansCondensed', 'B', 18)
                     self.set_xy(15, 15)
-                    self.cell(0, 10, 'MojeStado', new_x='RIGHT', new_y='SAME', align='L')
+                    self.cell(0, 10, 'MojeStado', new_x='RIGHT', align='L')
                     
                     # Broj fakture
                     self.set_font('DejaVuSansCondensed', 'B', 14)
