@@ -284,7 +284,7 @@ class PaySpotTransaction(db.Model):
     sender_fee = db.Column(db.Float, nullable=True)
     
     # Relacija
-    invoice = db.relationship('Invoice', backref=db.backref('payspot_transactions', lazy=True))
+    invoice = db.relationship('Invoice')
     
     # Veza sa farmom
     farm_id = db.Column(db.Integer, db.ForeignKey('farm.id'), nullable=True)
