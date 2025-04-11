@@ -1,3 +1,4 @@
+import os
 from flask import session
 from flask import current_app as app
 from flask_mail import Message
