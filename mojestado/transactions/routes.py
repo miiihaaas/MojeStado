@@ -328,10 +328,7 @@ def callback_url():
             # Slanje email-a korisniku
             user = User.query.get(invoice.user_id)
             if user:
-                send_email(user.email, 'Uspešna transakcija',
-                            'transactions/email/transaction_success', 
-                            user=user, 
-                            invoice=invoice)
+                send_email(user, invoice_id)
                 
             app.logger.info(f'Callback_url: Uspešna transakcija za fakturu {invoice_id}')
         else:

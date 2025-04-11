@@ -570,7 +570,7 @@ def deactivate_products(invoice_id):
 def send_email(user, invoice_id):
     '''
     - ako je na rate šalje fiskalni račun (dobija od firme Fiscomm) i sve uplatnice (generiše portal)
-    -- fiskalni račnu obugvata ukupnu sumu novca za plaćanje, stim što se odmah sa računa skida suma koja nije za tov (preko PaySpot firma), a ostatak se plaća preko uplatnica (koje generiše portal)
+    -- fiskalni račun obugvata ukupnu sumu novca za plaćanje, stim što se odmah sa računa skida suma koja nije za tov (preko PaySpot firma), a ostatak se plaća preko uplatnica (koje generiše portal)
     - ako nije na rate šalje samo fiskalni račun (dobija od firme Fiscomm)
     '''
     
