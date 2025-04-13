@@ -122,7 +122,11 @@
                         </div>
                         <div class="card-body">
                             <div class="form-check form-switch">
+                                {% if organic_filter == '"on"' %}
+                                <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter" checked>
+                                {% else %}
                                 <input class="form-check-input" type="checkbox" id="organic_filter" name="organic_filter">
+                                {% endif %}
                                 <label class="form-check-label" for="organic_filter">Organski</label>
                                 <!---
                                 <a href="#" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Detaljnije o organskoj proizvodnji">
@@ -144,7 +148,11 @@
                         </div>
                         <div class="card-body">
                             <div class="form-check form-switch">
+                                {% if insure_filter == '"on"' %}
+                                <input class="form-check-input" type="checkbox" id="insure_filter" name="insure_filter" checked>
+                                {% else %}
                                 <input class="form-check-input" type="checkbox" id="insure_filter" name="insure_filter">
+                                {% endif %}
                                 <label class="form-check-label" for="insure_filter">Osigurano</label>
                             </div>
                         </div>
@@ -1079,6 +1087,15 @@ $(document).ready(function() {
         if (!link.contains(event.target) && !popup.contains(event.target)) {
             popup.classList.remove('active');
         }
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Automatsko slanje forme kada se promeni bilo koji filter
+        $('.form-check-input, #municipality').change(function() {
+            $('#livestock').submit();
+        });
     });
 </script>
 

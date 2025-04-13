@@ -136,7 +136,7 @@ def livestock_market(animal_category_id):
                             try:
                                 if '-' in mass_range:
                                     # Format: 'min-max'
-                                    parts = mass_range.replace('kg', '').split('')
+                                    parts = mass_range.replace('kg', '').split('-')
                                     min_mass = float(parts[0])
                                     max_mass = float(parts[1])
                                 elif '+' in mass_range:

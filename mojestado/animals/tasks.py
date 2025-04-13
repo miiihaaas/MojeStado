@@ -9,6 +9,8 @@ logger = get_task_logger(__name__)
 @celery.task(name='mojestado.animals.tasks.daily_weight_gain_task')
 def daily_weight_gain_task():
     try:
+        logger.info(f"============ POČETAK ZADATKA - {datetime.now()} ============")
+
         # Procesiranje životinja u grupama od 100 za bolje performanse
         page = 0
         per_page = 100
@@ -62,10 +64,12 @@ def daily_weight_gain_task():
             
         msg = f"Uspešno ažurirano {total_processed} životinja u {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         logger.info(msg)
+        logger.info(f"============ KRAJ ZADATKA - {datetime.now()} ============")
         return msg
             
     except Exception as e:
         error_msg = f"Došlo je do greške: {str(e)}"
         logger.error(error_msg)
+        logger.error(f"============ ZADATAK PREKINUT SA GREŠKOM - {datetime.now()} ============")
         db.session.rollback()
         return error_msg
