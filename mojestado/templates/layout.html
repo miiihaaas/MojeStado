@@ -168,6 +168,15 @@
             </section>
             {% endif %}
         </main>
+        <div class="pay-logos">
+            <img src="{{ url_for('static', filename='images/mastercard-logo.png') }}" alt="Mastercard logo">
+            <img src="{{ url_for('static', filename='images/visa-logo.png') }}" alt="Visa logo">
+            <img src="{{ url_for('static', filename='images/dina-logo.png') }}" alt="Dina logo">
+            <a href="https://www.otpbanka.rs/" target="_blanc"><img src="{{ url_for('static', filename='images/otp-banka-logo.png') }}" alt="OTP Banka logo"></a>
+            <a href="https://www.mastercard.rs/sr-rs/korisnici/pronadite-karticu.html" target="_blanc"><img src="{{ url_for('static', filename='images/md-id-check-logo.png') }}" alt="ID Check logo"></a>
+            <a href="https://rs.visa.com/pay-with-visa/security-and-assistance/protected-everywhere.html" target="_blanc"><img src="{{ url_for('static', filename='images/visa-secure-logo.png') }}" alt="Visa secure logo"></a>
+            <a href="https://www.payspot.rs/en/homepage/" target="_blanc"><img src="{{ url_for('static', filename='images/payspot-logo.png') }}" alt="Payspot logo"></a>
+        </div>
         <footer class="footer bg-mosta">
             <div class="container">
                 <div class="row">
@@ -192,14 +201,15 @@
                         </ul>
                     </div>
                     <div class="col-md-3">
-                        Moje stado<br>
-                        Tax ID: 87621589225<br>
-                        Identifikacioni broj: 02535618<br>
-                        Adresa: Srbija
+                        Naša Imperija DOO<br>
+                        Kneza Grbovića 10<br>
+                        14242 Mionica<br>
+                        Srbija<br>
+                        PIB: 114244045
                     </div>
                 </div>
                 <div class="copyright text-center">
-                    © Copyright 2024 Moje stado | All rights reserved.
+                    © Copyright {{ current_year }} Moje stado | All rights reserved.
                 </div>
             </div>
         </footer>

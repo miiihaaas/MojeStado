@@ -103,7 +103,7 @@ header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover
 .navbar-nav.main-menu .nav-item .dropdown-menu a { color: #5e4432;}
 .shrink .navbar { position: fixed; top: -100px; width: 100%; z-index: 9999; animation: slideDown 0.5s forwards; }
 .shrink .navbar ul.main-menu li a { color: #fff !important; }
-.shrink .navbar ul.main-menu li ul li a { color: #5e4432 !important; }
+.shrink .navbar ul.main-menu li ul li a { color: #fff !important; }
 ul.navbar-nav.main-menu .dropdown-item { color: #5e4432; }
 ul.navbar-nav.main-menu .dropdown-item:hover { background-color: #e0bd5d; }
 .shrink .top-bar { display: none; }
@@ -292,6 +292,21 @@ table.popupable td { position: relative; }
 .clickable-image { cursor: pointer }
 .table-responsive-2 { border-radius: 5px; overflow: hidden; border: 1px solid #ddd; }
 .cart-notice { font-style: italic; font-size: 12px; }
+table.dataTable > thead .sorting:before, table.dataTable > thead .sorting:after, table.dataTable > thead .sorting_asc:before, table.dataTable > thead .sorting_asc:after, 
+table.dataTable > thead .sorting_desc:before, table.dataTable > thead .sorting_desc:after, table.dataTable > thead .sorting_asc_disabled:before, 
+table.dataTable > thead .sorting_asc_disabled:after, table.dataTable > thead .sorting_desc_disabled:before, table.dataTable > thead .sorting_desc_disabled:after { 
+    top: 0.5em; }
+table.dataTable > thead .sorting:before, table.dataTable > thead .sorting_asc:before, table.dataTable > thead .sorting_desc:before, 
+table.dataTable > thead .sorting_asc_disabled:before, table.dataTable > thead .sorting_desc_disabled:before {
+    left: 0.5em;}
+table.dataTable > thead .sorting:after, table.dataTable > thead .sorting_asc:after, table.dataTable > thead .sorting_desc:after, 
+table.dataTable > thead .sorting_asc_disabled:after, table.dataTable > thead .sorting_desc_disabled:after {
+    left: 1em;}
+table.dataTable > thead > tr > th:not(.sorting_disabled), table.dataTable > thead > tr > td:not(.sorting_disabled) { padding-right: 5px; }
+
+/*** Banka i plaćanja ***/
+.pay-logos { display:flex; background-color: #fff; justify-content: center; }
+.pay-logos img { margin:0 20px; }
 
 /***  Footer   ***/
 footer.footer { padding: 30px 0; color: #ddd4cb; }
@@ -362,6 +377,8 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .box-bordering:not(:last-child) { border-bottom: 1px solid #ddd }
 	.box-bordering { padding: 20px 0; }
     .neki-mbr-1 { margin-bottom: 0.5em; }
+    .pay-logos { flex-wrap: wrap; }
+    .pay-logos img { max-height: 36px;}
     
 }
 @media (max-width: 480px) {
