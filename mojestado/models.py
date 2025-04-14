@@ -4,6 +4,10 @@ from flask_login import UserMixin
 from itsdangerous.url_safe import URLSafeTimedSerializer
 from datetime import datetime
 
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.now().year}
+
 
 @login_manager.user_loader
 def load_user(user_id):
