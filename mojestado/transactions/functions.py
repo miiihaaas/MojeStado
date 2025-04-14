@@ -53,7 +53,7 @@ def generate_payment_slips_attach(invoice_item):
         uplatilac = invoice_item.invoice.user_invoice.name + ' ' + invoice_item.invoice.user_invoice.surname
         sifra_placanja = f'189'
         model='00'
-        poziv_na_broj = f'{invoice_item.invoice.user_id:05d}-{invoice_item.id:06d}'
+        poziv_na_broj = f'{invoice_item.invoice.user_id:05d}-{invoice_item.id:07d}'
         svrha_uplate = f'Uplata za uslugu tova - rata {i}'
         
         new_data = {

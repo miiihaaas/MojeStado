@@ -304,20 +304,21 @@ def callback_url():
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
     app.logger.info('Uspesno zavrsena transakcija')
-    flash('Uspesno zavrsena transakcija', 'success')
-    return redirect(url_for('main.clear_cart'))
+    clear_cart_session()
+    flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
+    return render_template('transactions/success_url.html')
 
 
 @transactions.route('/error_url', methods=['GET'])
 def error_url():
     app.logger.error('Neuspešna transakcija')
-    flash('Neuspešna transakcija', 'danger')
-    return redirect(url_for('main.home'))
+    flash('Transakcija je neuspešna. Račun vaše platne kartice nije zadužen.', 'danger')
+    return render_template('transactions/error_url.html')
 
 
 @transactions.route('/cancel_url', methods=['GET'])
 def cancel_url():
     app.logger.warning('Transakcija je otkazana')
-    flash('Transakcija je otkazana', 'warning')
-    return redirect(url_for('main.home'))
+    flash('Transakcija je otkazana. Račun vaše platne kartice nije zadužen.', 'warning')
+    return render_template('transactions/cancel_url.html')
 
