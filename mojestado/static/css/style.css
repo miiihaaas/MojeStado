@@ -204,7 +204,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .livestock-8 { background: url(../images/hero-ostala-zivina.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
 .contactpage { background: url(../images/hero-kontakt.jpg) no-repeat center center; background-size: cover; }
 .faqpage { background: url(../images/hero-faq.jpg) no-repeat center center; background-size: cover; }
-.farmpage { background: url(../farm_image/hero-farma.jpg) no-repeat center center; background-size: cover; }
+.farmpage { background: url(../images/hero-farma.jpg) no-repeat center center; background-size: cover; }
 .registerfarmpage { background: url(../images/hero-register-2.jpg) no-repeat center center; background-size: cover; }
 .registerpage { background: url(../images/hero-register-1.jpg) no-repeat center center; background-size: cover; }
 .loginpage { background: url(../images/hero-login.jpg) no-repeat center center; background-size: cover; }
