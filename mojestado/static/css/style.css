@@ -93,6 +93,9 @@ header.hero .navbar .container { align-items: flex-start; }
 header.hero .navbar-nav .nav-link { text-transform: uppercase; margin-left: 20px; }
 header.hero .navbar-nav .nav-link { border-bottom: 3px solid transparent; }
 header.hero .navbar-nav .nav-link:focus, header.hero .navbar-nav .nav-link:hover, header.hero .navbar-nav .nav-link.active { border-bottom: 3px solid #e0bd5d;}
+.navbar-toggler { margin: 10px 0; }
+.navbar-dark .navbar-toggler { border-color: rgba(255, 255, 255, .6); }
+.navbar-dark .navbar-toggler-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28255%2C 255%2C 255%2C 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E"); }
 .home-hero { background: url(../images/home-hero.jpg) no-repeat center center; background-size: cover; /*padding-bottom: 50px;*/ }
 .home-hero { padding-bottom: 100px; margin-top: -191px; padding-top: 200px; }
 .home-hero-txt { color:#fff; font-weight: 600; text-shadow: 0 0 3px #000; font-size: 20px; }
@@ -204,7 +207,7 @@ section.registracija { padding: 80px 0 100px 0; background: #f8f2e9 url(../image
 .livestock-8 { background: url(../images/hero-ostala-zivina.jpg) no-repeat center center; background-size: cover; } /*! dodaj slike */
 .contactpage { background: url(../images/hero-kontakt.jpg) no-repeat center center; background-size: cover; }
 .faqpage { background: url(../images/hero-faq.jpg) no-repeat center center; background-size: cover; }
-.farmpage { background: url(../farm_image/hero-farma.jpg) no-repeat center center; background-size: cover; }
+.farmpage { background: url(../images/hero-farma.jpg) no-repeat center center; background-size: cover; }
 .registerfarmpage { background: url(../images/hero-register-2.jpg) no-repeat center center; background-size: cover; }
 .registerpage { background: url(../images/hero-register-1.jpg) no-repeat center center; background-size: cover; }
 .loginpage { background: url(../images/hero-login.jpg) no-repeat center center; background-size: cover; }
@@ -317,6 +320,7 @@ footer.footer .navbar-nav li a:hover { color: #e0bd5d; }
 footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 
 @media (min-width: 768px) {
+    .mob-only { display: none; }
     .border-right { border-right: 1px solid #5e4432; }
     .pl-50 { padding-left: 50px; }
     .pr-50 { padding-right: 50px; }
@@ -348,12 +352,14 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
     .navbar-toggler:focus { box-shadow: none; }
 }
 @media (max-width: 767px) {
+    .desk-only { display: none; }
     body { font-size: 16px; }
     body:not(.main\.home) nav.navbar-dark { background-color: #5e4432; }
     header.hero { position: fixed; width: -webkit-fill-available; z-index: 999;}
+    nav.navbar-dark { background-color: rgb(94 68 50 / 90%); }
     .navbar-nav.main-menu .nav-item a { color: #ffffff !important; }
     header nav .dropdown-menu { background-color: #4c3729; }
-    main { margin-top: 191px;}
+    main { margin-top: 187px;}
     section.page-hero { background-position-y: 160px; background-size: contain; padding-bottom: 0; }
     section.page-hero .container .row > .col-md-6 { margin-top: 26%; padding-top: 30px; /*background-color: #f8f2e9;*/ }
     section.page-hero .container .row > .col-md-6 .wht-text { color: #5e4432; text-shadow: none; }
@@ -383,7 +389,7 @@ footer.footer .copyright { color: #e0bd5d; font-size: 12px; padding-top: 30px; }
 }
 @media (max-width: 480px) {
     .top-bar { font-size: 12px; }
-    nav.navbar .navbar-brand img { max-width: 80%; height: auto; }
+    body:not(.shrink) nav.navbar .navbar-brand img { max-width: 70%; height: auto; }
 }
 
 /* dodao Mihas */
