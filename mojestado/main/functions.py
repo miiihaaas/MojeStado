@@ -49,9 +49,10 @@ def get_cart_total():
     Računa ukupnu cenu korpe, cenu na rate i cenu dostave.
     
     Logika:
-    - Ako je tov na rate, sabira samo proizvode, životinje i usluge
-    - Ako tov NIJE na rate, sabira sve (proizvode, životinje, usluge, tov)
+    - Ako je samo proizvod on ide preko kartice
     - Dostava se naplaćuje 500 din za porudžbine manje od 5000 din (samo za proizvode)
+    - Ako imamo životinju, uslugu ili tov, to ide preko uplatnice (jedna rata)
+    - Ako imamo životinju, uslugu i tov, moguće je odabrati na rate (dve ili više rata)
     
     Returns:
         tuple: (ukupna_cena, cena_na_rate, cena_dostave)
@@ -65,6 +66,7 @@ def get_cart_total():
         cart_total = 0
         installment_total = 0
         delivery_total = 0
+        #! implementirati cenu dostave životinje po kg: calculate_delivery_price(animal_weight):
         
         # Računanje cene proizvoda
         if 'products' in session and isinstance(session.get('products'), list):
@@ -88,7 +90,8 @@ def get_cart_total():
             app.logger.debug(f'Pronađeno {len(animals)} životinja u korpi')
             for animal in animals:
                 try:
-                    cart_total += float(animal['total_price'])
+                    # cart_total += float(animal['total_price']) #! ne dodaje se u korpu za uplatu preko kartice jer životinje ne moug preko kartice
+                    installment_total += float(animal['total_price']) #! ali se dodaje u vrednost na rate iako se životinje plaćaju u jednom koraku
                 except (ValueError, KeyError) as e:
                     app.logger.error(f'Greška pri računanju cene životinje: {str(e)}')
                     raise ValueError(f'Neispravna cena životinje: {animal.get("total_price")}')
@@ -99,12 +102,8 @@ def get_cart_total():
             app.logger.debug(f'Pronađeno {len(fattening_items)} stavki tova u korpi')
             for fattening in fattening_items:
                 try:
-                    if int(fattening['installment_options']) == 1:
-                        cart_total += float(fattening['fattening_price'])
-                        app.logger.debug(f'Dodata cena tova (jednokratno): {fattening["fattening_price"]}')
-                    else:
-                        installment_total += float(fattening['fattening_price'])
-                        app.logger.debug(f'Dodata cena tova (na rate): {fattening["fattening_price"]}')
+                    # cart_total += float(fattening['fattening_price']) #! ne dodaje se u korpu za uplatu preko kartice jer životinje ne moug preko kartice
+                    installment_total += float(fattening['fattening_price']) #! ali se dodaje u vrednost na rate iako se tova plaća u jednom koraku
                 except (ValueError, KeyError) as e:
                     app.logger.error(f'Greška pri računanju cene tova: {str(e)}')
                     raise ValueError(f'Neispravna cena tova: {fattening.get("fattening_price")}')
@@ -116,7 +115,8 @@ def get_cart_total():
             for service in services:
                 try:
                     service_total = float(service.get('slaughterPrice', 0)) + float(service.get('processingPrice', 0))
-                    cart_total += service_total
+                    # cart_total += service_total #! ne dodaje se u korpu za uplatu preko kartice jer usluge ne moug preko kartice
+                    installment_total += service_total #! ali se dodaje u vrednost na rate iako se usluge plaća u jednom koraku
                     app.logger.debug(f'Dodata cena usluge: {service_total}')
                 except (ValueError, KeyError) as e:
                     app.logger.error(f'Greška pri računanju cene usluge: {str(e)}')
