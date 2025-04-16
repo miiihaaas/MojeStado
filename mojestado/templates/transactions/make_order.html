@@ -310,7 +310,7 @@
         {% endif %}
         <input type="hidden" id="cartData" name="cartData" value="">
 
-        <form id="paymentForm" 
+        <form id="paymentForm"
             method="post" 
             action='https://test.nsgway.rs:50009/api/ecommerce/submit' 
             target="output_frame">
@@ -331,9 +331,28 @@
             <input type="hidden" name="timeout" value='600' />
             <input type="hidden" name="currentDate" id="currentDate" value="{{ current_date }}" />
 
-            <button class="btn btn-primary mb-20" type="submit">Nastavi ka uplati</button>
+            <div class="mb-4">
+                <input type="checkbox" id="saglasan" required>
+                <label for="saglasan">Saglasan/a sam sa <a href="{{ url_for('main.terms_and_conditions') }}" target="_blank"><u>uslovima kupovine</u></a></label>
+            </div>
+
+            <button id="submit-btn" class="btn btn-primary mb-20" type="submit" disabled>Nastavi ka uplati</button>
         </form>
     </div>
 </div>
 </section>
-{% endblock %}
+{% endblock content%}
+{% block scripts %}
+<script>
+    const checkbox = document.getElementById('saglasan');
+    const submitBtn = document.getElementById('submit-btn');
+  
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        submitBtn.disabled = false;
+      } else {
+        submitBtn.disabled = true;
+      }
+    });
+  </script>
+  {% endblock scripts %}
