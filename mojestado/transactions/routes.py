@@ -109,7 +109,7 @@ def make_order():
             flash('Vaša korpa je prazna.', 'warning')
             return redirect(url_for('main.home'))
             
-        # Provera da li je kupovina na rate
+        # Provera da li je kupovina na rate #! gost ne može na rate da kupuje => samo može GP da kupuje, za ostalo mora da napravi nalog
         _, installment_total, _ = get_cart_total()
         if installment_total > 0 and not current_user.is_authenticated:
             app.logger.warning('Gost korisnik pokušao kupovinu na rate')
@@ -150,7 +150,7 @@ def make_order():
             flash('Došlo je do greške pri učitavanju vaših podataka. Molimo pokušajte ponovo.', 'danger')
             return redirect(url_for('main.home'))
             
-        # Priprema podataka za plaćanje
+        #! Priprema podataka za plaćanje
         try:
             company_id = os.environ.get('PAYSPOT_COMPANY_ID')
             if not company_id:
@@ -162,7 +162,7 @@ def make_order():
             # Računanje ukupnog iznosa
             merchant_order_amount, installment_total, delivery_total = get_cart_total()
             
-            # Dodavanje troškova dostave ako je izabrana
+            # Dodavanje troškova dostave ako je izabrana #! implementirati cenu dostave životinje po kg: calculate_delivery_price(animal_weight):
             delivery_status = session.get('delivery', {}).get('delivery_status', False)
             if delivery_status:
                 merchant_order_amount += delivery_total
