@@ -1004,9 +1004,9 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             
             app.logger.debug(f'Iznos za farmera: {farmer_amount}, broj računa: {farm.farm_account_number if hasattr(farm, "farm_account_number") else "nije definisan"}')
             
-            # Provera da li je iznos veu0107i od 0
+            # Provera da li je iznos veći od 0
             if farmer_amount <= 0:
-                app.logger.warning(f'Iznos za farmera je 0 ili negativan: {farmer_amount}, preskaeu010dem kreiranje naloga')
+                app.logger.warning(f'Iznos za farmera je 0 ili negativan: {farmer_amount}, preskačem kreiranje naloga')
                 continue
             
             # Grupisanje po farm.id
