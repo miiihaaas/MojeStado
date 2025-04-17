@@ -82,6 +82,8 @@ button.close:hover { background-color: #5e4432; }
 .text-primary { color: #eb5151 !important; font-size: 1.2em; font-weight: 800; }
 .bg-primary { background-color: #e0bd5d !important; color: #5e4432 !important; }
 h1.plai-main-title { text-align: center; border-bottom: 1px solid #e0bd5d; padding-bottom: 10px; margin-bottom: 50px; }
+.textlink { text-decoration: underline; color: #e0bd5d; }
+.textlink:hover { color: #5e4432; }
 
 nav.navbar-dark { background-color: rgba(255, 255, 255, 0.5); }
 nav.navbar { padding-top: 0; }
