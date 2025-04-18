@@ -21,7 +21,7 @@ load_dotenv(env_path)
 # Podešavanje logovanja
 if not os.path.exists('app_logs'):
     os.mkdir('app_logs')
-file_handler = RotatingFileHandler('app_logs/mojestado.log', maxBytes=10240, backupCount=10, encoding='utf-8')
+file_handler = RotatingFileHandler('app_logs/mojestado.log', maxBytes=100240, backupCount=9, encoding='utf-8')
 file_handler.setFormatter(logging.Formatter(
     '%(asctime)s %(levelname)s in %(module)s [%(pathname)s:%(lineno)d]: %(message)s'
 ))

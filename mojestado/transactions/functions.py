@@ -966,17 +966,17 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
     '''
     Pomoćna funkcija za slanje zahteva ka PaySpot-u i upis u bazu.
     '''
-    url = "[https://test.nsgway.rs](https://test.nsgway.rs):50009/api/paymentorderinsert"
+    url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
     app.logger.debug(f'PaySpot URL: {url}')
     app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-    app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
+    app.logger.debug(f'Poslat PaySpot zahtev: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
 
     json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
     response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
     app.logger.debug(f'PaySpot status kod: {response.status_code}')
     try:
         response_text = response.text
-        app.logger.debug(f'PaySpot odgovor: {response_text}')
+        app.logger.debug(f'PaySpot odgovor: {json.dumps(response_text, indent=4, ensure_ascii=False)}')
         response_data = response.json()
     except Exception as e:
         app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
@@ -1144,11 +1144,11 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 quantity = 1
             elif item.invoice_item_type == 3:  # Usluga
                 item_name = item_details.get('service_name', 'Nepoznata usluga')
-                item_price = float(item_details.get('total_price', 0))
+                item_price = float(item_details.get('processingPrice', 0)) + float(item_details.get('slaughterPrice', 0)) #! cena usluga
                 quantity = int(item_details.get('quantity', 1))
             elif item.invoice_item_type == 4:  # Tov
                 item_name = item_details.get('fattening_name', 'Nepoznat tov')
-                item_price = float(item_details.get('total_price', 0))
+                item_price = float(item_details.get('fattening_price', 0)) #! cena tova
                 quantity = int(item_details.get('quantity', 1))
             else:
                 item_name = 'Nepoznata stavka'
@@ -1168,16 +1168,20 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 continue
 
             if item.invoice_item_type == 1:
+                app.logger.debug(f'Proizvod: {item_name}, iznos: {item_price}, iznos za farmera: {farmer_amount}')
                 target_dict = farm_orders_1
             elif item.invoice_item_type in [2, 3, 4]:
+                app.logger.debug(f'Životinja/usluga/tov: {item_name}, iznos: {item_price}, iznos za farmera: {farmer_amount}')
                 target_dict = farm_orders_7
             else:
                 continue
 
             if farm.id in target_dict:
+                app.logger.debug(f'Pronađen nalog za farmu {farm.id}, dodajem stavku')
                 target_dict[farm.id]['item_price'] += item_price
                 target_dict[farm.id]['farmer_amount'] += farmer_amount
             else:
+                app.logger.debug(f'Nalog za farmu {farm.id} nije pronađen, kreiram novi')
                 target_dict[farm.id] = {
                     'farm': farm,
                     'farmer': farmer,
@@ -1189,6 +1193,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
 
         # Kreiranje orders_data_1 iz farm_orders_1
         orders_data_1 = []
+        app.logger.debug(f'{farm_orders_1=}')
         for farm_id, farm_data in farm_orders_1.items():
             farm = farm_data['farm']
             farmer = farm_data['farmer']
@@ -1198,8 +1203,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "sequenceNo": sequence_no_1,
                 "merchantOrderReference": f"REF-{merchant_order_id}-F{farm.id}",
                 "debtorName": f"{user.name} {user.surname}",
-                "debtorAddress": farm_data['user_address'],
-                "debtorCity": farm_data['user_city'],
+                "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
+                "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
                 "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
@@ -1230,8 +1235,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "sequenceNo": sequence_no_1,
                 "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
                 "debtorName": f"{user.name} {user.surname}",
-                "debtorAddress": farm_data['user_address'],
-                "debtorCity": farm_data['user_city'],
+                "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
+                "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
                 "beneficiaryAccount": "325950070021477547", #! broj računa portala
                 "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
                 "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
@@ -1254,6 +1259,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             
         # Kreiranje orders_data_7 iz farm_orders_7
         orders_data_7 = []
+        app.logger.debug(f'{farm_orders_7=}')
         for farm_id, farm_data in farm_orders_7.items():
             farm = farm_data['farm']
             farmer = farm_data['farmer']
@@ -1263,8 +1269,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "sequenceNo": sequence_no_7,
                 "merchantOrderReference": f"REF-{merchant_order_id}-F{farm.id}",
                 "debtorName": f"{user.name} {user.surname}",
-                "debtorAddress": farm_data['user_address'],
-                "debtorCity": farm_data['user_city'],
+                "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
+                "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
                 "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
@@ -1361,8 +1367,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         # Logovanje zahteva pre slanja
         app.logger.debug(f'PaySpot URL: {url}')
         app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data_1, indent=2, ensure_ascii=False)}')
-        app.logger.debug(f'PaySpot zahtev: {json.dumps(request_data_7, indent=2, ensure_ascii=False)}')
+        app.logger.debug(f'izgled - PaySpot zahtev 1: {json.dumps(request_data_1, indent=4, ensure_ascii=False)}')
+        app.logger.debug(f'izgled - PaySpot zahtev 7: {json.dumps(request_data_7, indent=4, ensure_ascii=False)}')
         
         # Slanje zahteva ka PaySpot-u
         result_1, error_1 = send_payspot_request(request_data_1, merchant_order_id, invoice, orders_data_1, user, payment_type=1)
@@ -1472,7 +1478,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
             
             app.logger.debug(f'PaySpot URL: {url}')
             app.logger.debug(f'PaySpot companyID: {company_id}')
-            app.logger.debug(f'PaySpot zahtev za transakciju {transaction.payspot_transaction_id}: {json.dumps(request_data, indent=2, ensure_ascii=False)}')
+            app.logger.debug(f'PaySpot zahtev za transakciju {transaction.payspot_transaction_id}: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
             
             # Konvertovanje JSON-a u string sa UTF-8 kodiranjem
             json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')

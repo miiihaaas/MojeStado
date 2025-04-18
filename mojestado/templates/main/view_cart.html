@@ -253,7 +253,7 @@
                                     <th>Pol</th>
                                     <th>Trenutna masa</th>
                                     <th>Željena masa</th>
-                                    <th>Cena tova</th>
+                                    <th>Cena tova *</th>
                                     <th>Br dana</th>
                                     <th>Br rata</th>
                                     <th class="text-center">Akcija</th>
@@ -336,16 +336,27 @@
                             <h3 class="mb-0">Ukupno</h3>
                         </div>
                         <div class="card-body">
-                            {% if merchant_order_amount %}
+
+                            {% if merchant_order_amount and delivery_status %}
                             <div class="form-group mb-3">
-                                <label class="form-label">Ukupno za uplatu:</label>
+                                <label class="form-label">Ukupno za uplatu preko kartice:</label>
+                                <div class="total-price"><span class="amount">{{ merchant_order_amount + delivery_total }} </span> <span class="currency"> rsd</span></div>
+                            </div>
+                            {% elif merchant_order_amount %}
+                            <div class="form-group mb-3">
+                                <label class="form-label">Ukupno za uplatu preko kartice:</label>
                                 <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
+                            </div>
+                            {% elif delivery_status %}
+                            <div class="form-group mb-3">
+                                <label class="form-label">Ukupno za uplatu preko kartice:</label>
+                                <div class="total-price"><span class="amount">{{ merchant_order_amount + delivery_total }} </span> <span class="currency"> rsd</span></div>
                             </div>
                             {% endif %}
                             
                             {% if installment_total %}
                             <div class="form-group">
-                                <label class="form-label">Ukupno na rate:</label>
+                                <label class="form-label">Ukupno za uplatupreko uplatnica:</label>
                                 <div class="total-price"><span class="amount">{{ installment_total }} </span> <span class="currency"> rsd</span></div>
                             </div>
                             {% endif %}
