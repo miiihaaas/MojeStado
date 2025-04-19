@@ -16,8 +16,8 @@ class GuestForm(FlaskForm):
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Email adresa već postoji.')
+        if user and getattr(user, 'user_type', None) != 'guest':
+            raise ValidationError('Email adresa registrovanog korisnika već postoji.')
 
     def validate_name(self, name):
         if len(name.data) < 2:

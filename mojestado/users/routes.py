@@ -1,6 +1,8 @@
 import datetime
 import json
+import pandas as pd
 from operator import itemgetter
+from io import BytesIO
 import os
 from flask import Blueprint, current_app, jsonify
 from flask import  render_template, url_for, flash, redirect, request, abort
@@ -2210,20 +2212,66 @@ def admin_view_slips():
         app.logger.info(f'Pristup pregledu izvoda od strane {current_user.email}')
         
         try:
-            # Učitavanje svih izvoda
-            payment_statements = PaymentStatement.query.order_by(PaymentStatement.payment_date.desc()).all()
-            app.logger.debug(f'Učitano {len(payment_statements)} izvoda')
-            
-            # Računanje ukupnih iznosa
-            total_amount = sum(stmt.total_payment_amount for stmt in payment_statements)
-            total_errors = sum(stmt.number_of_errors for stmt in payment_statements)
-            app.logger.debug(f'Ukupan iznos svih uplata: {total_amount}, ukupno grešaka: {total_errors}')
-            
-            return render_template('users/admin_view_slips.html',
-                                title='Pregled izvoda',
-                                payment_statements=payment_statements,
-                                total_amount=total_amount,
-                                total_errors=total_errors)
+            if request.method == 'POST' and 'importButton' in request.form:
+                try:
+                    file = request.files.get('fileUpload')
+                    if file and file.filename.endswith('.xlsx'):
+                        # Header je u redu 5 (indeks 4), podaci kreću od reda 7 (indeks 6)
+                        df = pd.read_excel(BytesIO(file.read()), header=4, skiprows=[5])
+                        app.logger.debug(f'Kolone u fajlu: {df.columns.tolist()}')
+                        stavke = []
+                        for _, row in df.iterrows():
+                            if pd.isna(row['Referenca naloga']):
+                                continue
+                            stavke.append({
+                                'Rbr': row['Rbr.'],
+                                'ReferenceOrder': row['Referenca ordera'],
+                                'DatumOrdera': row['Datum ordera'],
+                                'ReferencaNaloga': row['Referenca naloga'],
+                                'BrutoIznos': row['Bruto iznos'],
+                                'UkupnaProvizija': row['Ukupna provizija'],
+                                'IznosPLNaloga': row['Iznos pl. naloga'],
+                                'MarketplaceProvizija': row['Marketplace provizija'],
+                                'PaySpotProvizija': row['PaySpot provizija'],
+                                'NaknadaPPA': row['Naknada PP-a'],
+                                'DatumUplateBanke': row['Datum uplate banke'],
+                                'DatumPotvrde': row['Datum potvrde'],
+                                'PrimalacUplate': row['Primalac uplate'],
+                                'RacunUplate': row['Racun uplate'],
+                                'PayspotReferenca': row['Payspot referenca'],
+                                'DatumValute': row['Datum valute'],
+                                'Dopuna': row['Dopuna'],
+                                'StatusObrade': row['Status obrade'],
+                            })
+                        return render_template('users/admin_view_slips.html',
+                                                title='Pregled izvoda',
+                                                stavke=stavke)
+                    else:
+                        flash('Niste izabrali validan xlsx fajl.', 'danger')
+                        return redirect(url_for('users.admin_view_slips'))
+                except Exception as e:
+                    app.logger.error(f'Greška pri učitavanju fajla: {str(e)}')
+                    flash('Došlo je do greške pri učitavanju fajla.', 'danger')
+                    return redirect(url_for('users.admin_view_slips'))
+            elif request.method == 'POST' and 'saveAndProcessButton' in request.form:
+                app.logger.info(f'Pritisnuto dugme "sačuvaj i rasknjiži uplate"')
+                #! dodati kod za rasknjižavanje uplate
+                return redirect(url_for('users.admin_view_slips'))
+            if request.method == 'GET':
+                # Učitavanje svih izvoda
+                payment_statements = PaymentStatement.query.order_by(PaymentStatement.payment_date.desc()).all()
+                app.logger.debug(f'Učitano {len(payment_statements)} izvoda')
+                
+                # Računanje ukupnih iznosa
+                total_amount = sum(stmt.total_payment_amount for stmt in payment_statements)
+                total_errors = sum(stmt.number_of_errors for stmt in payment_statements)
+                app.logger.debug(f'Ukupan iznos svih uplata: {total_amount}, ukupno grešaka: {total_errors}')
+                
+                return render_template('users/admin_view_slips.html',
+                                    title='Pregled izvoda',
+                                    payment_statements=payment_statements,
+                                    total_amount=total_amount,
+                                    total_errors=total_errors)
                                 
         except Exception as e:
             app.logger.error(f'Greška pri učitavanju izvoda: {str(e)}')
@@ -2234,6 +2282,9 @@ def admin_view_slips():
         app.logger.error(f'Neočekivana greška: {str(e)}')
         flash('Došlo je do greške. Molimo pokušajte ponovo.', 'danger')
         return redirect(url_for('main.home'))
+
+
+
 
 
 @users.route("/admin_edit_profile/<int:user_id>", methods=['GET', 'POST'])

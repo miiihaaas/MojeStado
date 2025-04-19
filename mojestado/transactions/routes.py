@@ -8,7 +8,7 @@ from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, generate_payment_slips_attach, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm
+from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
 
 
 transactions = Blueprint('transactions', __name__)
@@ -40,22 +40,51 @@ def user_payment_form():
             
             # Validacija forme za neregistrovane korisnike
             if not form.validate_on_submit():
-                app.logger.warning('Nevalidna forma za gost korisnika')
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        flash(f'Greška u polju {field}: {error}', 'danger')
-                return render_template('transactions/user_payment_form.html', form=form)
-            
-            # Pokušaj registracije gost korisnika
+                app.logger.debug(f'Form errors after validate_on_submit: {form.errors}')
+                # Provera specifično za email koji već postoji
+                email_error = False
+                if 'email' in form.errors:
+                    app.logger.debug(f'Email errors: {form.errors["email"]}')
+                    for error in form.errors['email']:
+                        app.logger.debug(f'Obrađujem grešku za email: {error}')
+                        if 'već postoji' in error:
+                            user = User.query.filter_by(email=form.email.data).first()
+                            app.logger.debug(f'Nađen korisnik za email {form.email.data}: {user}, user_type: {getattr(user, "user_type", None) if user else None}')
+                            if user and getattr(user, 'user_type', None) == 'guest':
+                                app.logger.info('Email pripada gostu, uklanjam grešku i nastavljam.')
+                                form.errors['email'] = [e for e in form.errors['email'] if 'već postoji' not in e]
+                                if not form.errors['email']:
+                                    del form.errors['email']
+                                email_error = True
+                app.logger.debug(f'email_error: {email_error}, preostale greške: {form.errors}')
+                if email_error and not form.errors:
+                    app.logger.info('Nema više grešaka, nastavljam proces za gosta.')
+                    pass  # Dozvoli nastavak procesa
+                else:
+                    app.logger.warning('Nevalidna forma za gost korisnika')
+                    for field, errors in form.errors.items():
+                        for error in errors:
+                            app.logger.debug(f'Flashujem grešku: Greška u polju {field}: {error}')
+                            flash(f'Greška u polju {field}: {error}', 'danger')
+                    return render_template('transactions/user_payment_form.html', form=form)
+
+            # Pokušaj registracije ili ažuriranja gost korisnika
             try:
-                new_user_id = register_guest_user(form.data)
-                if new_user_id:
-                    app.logger.info(f'Kreiran novi gost korisnik: {new_user_id}')
+                user = User.query.filter_by(email=form.email.data).first()
+                if user and getattr(user, 'user_type', None) == 'guest':
+                    # Ažuriraj podatke gosta
+                    new_user_id = edit_guest_user(form.data)
+                    app.logger.info(f'Ažuriran gost korisnik: {new_user_id}')
                     return redirect(url_for('transactions.make_order'))
                 else:
-                    app.logger.warning('Pokušaj registracije sa postojećim emailom')
-                    flash('Email adresa već postoji. Molimo vas da se prijavite.', 'danger')
-                    return redirect(url_for('users.login'))
+                    new_user_id = register_guest_user(form.data)
+                    if new_user_id:
+                        app.logger.info(f'Kreiran novi gost korisnik: {new_user_id}')
+                        return redirect(url_for('transactions.make_order'))
+                    else:
+                        app.logger.warning('Pokušaj registracije sa postojećim emailom')
+                        flash('Email adresa već postoji. Molimo vas da se prijavite.', 'danger')
+                        return redirect(url_for('users.login'))
             except Exception as e:
                 app.logger.error(f'Greška pri registraciji gost korisnika: {str(e)}')
                 flash('Došlo je do greške pri registraciji. Molimo pokušajte ponovo.', 'danger')
@@ -98,7 +127,7 @@ def make_order():
     try:
         app.logger.debug('Pristup kreiranju porudžbine')
         
-        # Provera da li ima stavki u korpi
+        #! Provera da li ima stavki u korpi
         animals = session.get('animals', [])
         products = session.get('products', [])
         fattening = session.get('fattening', [])
@@ -116,7 +145,7 @@ def make_order():
             flash('Za kupovinu na rate potrebno je da se registrujete.', 'warning')
             return redirect(url_for('users.register'))
             
-        # Kreiranje fakture
+        #! Kreiranje fakture
         try:
             new_invoice = create_invoice()
             app.logger.info(f'Kreirana nova faktura: {new_invoice.id}')
@@ -125,30 +154,10 @@ def make_order():
             flash('Došlo je do greške pri kreiranju porudžbine. Molimo pokušajte ponovo.', 'danger')
             return redirect(url_for('main.home'))
             
-        # Učitavanje korisnika
-        try:
-            if current_user.is_authenticated:
-                user_id = current_user.id
-            else:
-                guest_email = session.get('guest_email')
-                if not guest_email:
-                    app.logger.error('Nedostaje email gost korisnika')
-                    flash('Došlo je do greške sa vašom sesijom. Molimo prijavite se ponovo.', 'danger')
-                    return redirect(url_for('users.login'))
-                    
-                guest_user = User.query.filter_by(email=guest_email).first()
-                if not guest_user:
-                    app.logger.error(f'Gost korisnik nije pronađen: {guest_email}')
-                    flash('Došlo je do greške sa vašim nalogom. Molimo prijavite se ponovo.', 'danger')
-                    return redirect(url_for('users.login'))
-                user_id = guest_user.id
-                
-            user = User.query.get_or_404(user_id)
-            app.logger.debug(f'Učitan korisnik: {user_id}')
-        except Exception as e:
-            app.logger.error(f'Greška pri učitavanju korisnika: {str(e)}')
-            flash('Došlo je do greške pri učitavanju vaših podataka. Molimo pokušajte ponovo.', 'danger')
-            return redirect(url_for('main.home'))
+        #! Učitavanje korisnika
+        user = define_invoice_user()
+        if isinstance(user, tuple):
+            return user
             
         #! Priprema podataka za plaćanje
         try:
@@ -160,7 +169,7 @@ def make_order():
             merchant_order_id = f'PMS-{new_invoice.id:09}'
             
             # Računanje ukupnog iznosa
-            merchant_order_amount, installment_total, delivery_total = get_cart_total()
+            merchant_order_amount, installment_total, delivery_total = get_cart_total() 
             
             # Dodavanje troškova dostave ako je izabrana #! implementirati cenu dostave životinje po kg: calculate_delivery_price(animal_weight):
             delivery_status = session.get('delivery', {}).get('delivery_status', False)
@@ -173,6 +182,9 @@ def make_order():
             success, error_message = send_payment_order_insert(merchant_order_id, merchant_order_amount, user, new_invoice)
             
             if not success:
+                #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
+                #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
+                #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
                 flash(f'Greška pri pripremi podataka za plaćanje: {error_message}.', 'danger')
                 return redirect(url_for('main.view_cart'))
             
@@ -197,7 +209,9 @@ def make_order():
                                 rnd=rnd,
                                 hash_value=hash_value, 
                                 merchant_order_id=merchant_order_id, 
-                                merchant_order_amount=merchant_order_amount, 
+                                merchant_order_amount=merchant_order_amount,
+                                installment_total=installment_total,
+                                delivery_total=delivery_total,
                                 current_date=current_date)
                                 
         except ValueError as e:
@@ -280,7 +294,7 @@ def callback_url():
             # Deaktivacija životinja i proizvoda
             app.logger.info(f'{invoice_id=}')
 
-            deactivate_animals(invoice_id)
+            deactivate_animals(invoice_id) #! pošto ide preko uplatnice treba prvo da se bookira određeno vreme pa ako ne uplati onda da se ponovo aktivira, a ako uplati da se deaktivira
             deactivate_products(invoice_id)
             
             # Slanje email-a korisniku
@@ -294,19 +308,36 @@ def callback_url():
             app.logger.warning(f'Callback_url: Neuspešna transakcija za fakturu {invoice_id}, rezultat: {result}')
 
         db.session.commit()
-        return jsonify({"status": "success"}), 200
+        return jsonify({"status": "success", "message": "Transakcija uspešno obrađena"}), 200
         
     except Exception as e:
         app.logger.error(f'Greška u callback_url funkciji: {str(e)}')
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({"error": "Internal server error", "message": str(e)}), 500
 
 
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
     app.logger.info('Uspesno zavrsena transakcija')
+    user = User.query.get(current_user.id)
+    invoice = Invoice.query.get(session.get('invoice_id')) #?
+    cart_data = session
+    total_price = 0
+    for item in cart_data.get('products', []):
+        total_price += item['total_price']
+    for item in cart_data.get('animals', []):
+        total_price += item['total_price']
+    for item in cart_data.get('fattening', []):
+        total_price += item['total_price']
+    for item in cart_data.get('services', []):
+        total_price += item['total_price']
     clear_cart_session()
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
-    return render_template('transactions/success_url.html')
+    return render_template('transactions/success_url.html',
+                           user=user,
+                           invoice=invoice,
+                           cart_data=cart_data,
+                           total_price=total_price
+                           )
 
 
 @transactions.route('/error_url', methods=['GET'])
@@ -321,4 +352,3 @@ def cancel_url():
     app.logger.warning('Transakcija je otkazana')
     flash('Transakcija je otkazana. Račun vaše platne kartice nije zadužen.', 'warning')
     return render_template('transactions/cancel_url.html')
-

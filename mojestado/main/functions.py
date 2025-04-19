@@ -61,6 +61,7 @@ def get_cart_total():
         ValueError: Ako dođe do greške pri konverziji cena
         Exception: Za ostale neočekivane greške
     """
+    print(f'{session=}')
     try:
         app.logger.debug('Započeto računanje ukupne cene korpe')
         cart_total = 0
@@ -121,7 +122,33 @@ def get_cart_total():
                 except (ValueError, KeyError) as e:
                     app.logger.error(f'Greška pri računanju cene usluge: {str(e)}')
                     raise ValueError(f'Neispravna cena usluge: {service}')
-                    
+        
+        # Računanje cene dostave za životinje koje nisu u tovu
+        fattening_ids = set()
+        if 'fattening' in session and isinstance(session.get('fattening'), list):
+            fattening_ids = {int(f['id']) for f in session['fattening'] if 'id' in f}
+        
+        if 'animals' in session and isinstance(session.get('animals'), list):
+            for animal in session['animals']:
+                animal_id = int(animal['id'])
+                if animal_id not in fattening_ids:
+                    weight = animal.get('current_weight')
+                    if weight:
+                        try:
+                            delivery_total += calculate_delivery_price(weight)
+                        except Exception as e:
+                            app.logger.error(f'Greška pri računanju cene dostave za životinju: {e}')
+        
+        # Računanje cene dostave za tov (fattening)
+        if 'fattening' in session and isinstance(session.get('fattening'), list):
+            for f in session['fattening']:
+                desired_weight = f.get('desired_weight')
+                if desired_weight:
+                    try:
+                        delivery_total += calculate_delivery_price(desired_weight)
+                    except Exception as e:
+                        app.logger.error(f'Greška pri računanju cene dostave za tov: {e}')
+        
         app.logger.info(f'Ukupna cena korpe: {cart_total}, Na rate: {installment_total}, Dostava: {delivery_total}')
         return cart_total, installment_total, delivery_total
         

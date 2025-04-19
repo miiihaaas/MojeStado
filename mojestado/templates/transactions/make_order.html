@@ -292,24 +292,32 @@
         </div>
     </div>
     <div>
-        {% if merchant_order_amount %}
-        <legend>Ukupno za uplatu: </legend> 
-        <!--<input type="text" class="not-like-input" value="{{ merchant_order_amount }} rsd" disabled>-->
-        <div class="mb-3">
-            <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
+        <div class="row">
+            <div class="col">
+                {% if merchant_order_amount %}
+                <legend>Ukupno za uplatu preko kartice: </legend> 
+                <div class="mb-3">
+                    <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
+                </div>
+                {% endif %}
+        
+                {% if session.get('delivery')['delivery_status'] %}
+                <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
+                {% else %}
+                <p>Usluga dostave nije izabrana.</p>
+                {% endif %}
+            </div>
+            <div class="col">
+                {% if installment_total %}
+                <legend>Ukupno za uplatu preko uplatnice: </legend>
+                <div class="mb-3">
+                    <div class="total-price"><span class="amount">{{ installment_total }} </span> <span class="currency"> rsd</span></div>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
-        {% if session.get('delivery')['delivery_status'] %}
-        <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
-        {% else %}
-        <p>Usluga dostave nije izabrana.</p>
-        {% endif %}
-        {% if installment_total %}
-        <legend>Ukupno na rate: </legend>
-        <input type="text" class="form-control" value="{{ installment_total }} rsd" disabled>
-        {% endif %}
-        <input type="hidden" id="cartData" name="cartData" value="">
 
+        <input type="hidden" id="cartData" name="cartData" value="">
         <form id="paymentForm"
             method="post" 
             action='https://test.nsgway.rs:50009/api/ecommerce/submit' 

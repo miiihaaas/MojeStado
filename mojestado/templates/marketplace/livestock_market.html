@@ -1093,7 +1093,8 @@ $(document).ready(function() {
 <script>
     $(document).ready(function() {
         // Automatsko slanje forme kada se promeni bilo koji filter
-        $('.form-check-input, #municipality').change(function() {
+        // Menjamo selektor da cilja SAMO filtere u bou010dnom meniju (form#livestock)
+        $('#livestock .form-check-input, #municipality').change(function() {
             $('#livestock').submit();
         });
     });
