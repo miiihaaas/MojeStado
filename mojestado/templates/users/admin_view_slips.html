@@ -39,8 +39,8 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="fileUpload">Učitaj izvod (XML format):</label>
-                        <input type="file" class="form-control-file" id="fileUpload" name="fileUpload" accept=".xml">
+                        <label for="fileUpload">Učitaj izvod (xlsx format):</label>
+                        <input type="file" class="form-control-file" id="fileUpload" name="fileUpload" accept=".xlsx">
                     </div>
                     <button type="submit" class="btn btn-secondary" id="importButton" name="importButton" disabled>Učitaj izvod</button>
                     <button type="submit" class="btn btn-secondary" id="saveAndProcessButton" name="saveAndProcessButton" disabled>Sačuvaj i rasknjiži uplate</button>
@@ -69,21 +69,47 @@
             <table id="data" class="table table-striped dataTable no-footer invoices" role="grid" aria-describedby="data_info">
                 <thead>
                     <tr>
-                        <th>Broj bankovnog računa</th>
-                        <th>Uplatilac</th>
-                        <th>Iznos</th>
-                        <th>Poziv na broj</th>
-                        <th>Svrha uplate</th>
+                        <th>Rbr</th>
+                        <th>ReferenceOrder</th>
+                        <th>DatumOrdera</th>
+                        <th>ReferencaNaloga</th>
+                        <th>BrutoIznos</th>
+                        <th>UkupnaProvizija</th>
+                        <th>IznosPLNaloga</th>
+                        <th>MarketplaceProvizija</th>
+                        <th>PaySpotProvizija</th>
+                        <th>NaknadaPPA</th>
+                        <th>DatumUplateBanke</th>
+                        <th>DatumPotvrde</th>
+                        <th>PrimalacUplate</th>
+                        <th>RacunUplate</th>
+                        <th>PayspotReferenca</th>
+                        <th>DatumValute</th>
+                        <th>Dopuna</th>
+                        <th>StatusObrade</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in stavke %}
                     <tr>
-                        <td><input type="text" class="form-control" value="{{ item['RacunZaduzenja'] }}" readonly></td>
-                        <td><textarea name="uplatilac" class="form-control" readonly>{{ item['NazivZaduzenja'] }}</textarea></td>
-                        <td><input name="iznos" type="text" class="form-control" value="{{ item['Iznos'] }}" readonly></td>
-                        <td><input name="poziv_na_broj" type="text" class="form-control poziv-odobrenja-input {{ item['Validnost'] }}" value="{{ item['PozivNaBrojApp'] }}" readonly></td>
-                        <td><textarea name="svrha_uplate" class="form-control" readonly>{{ item['SvrhaDoznake'] }}</textarea></td>
+                        <td>{{ item['Rbr'] }}</td>
+                        <td>{{ item['ReferenceOrder'] }}</td>
+                        <td>{{ item['DatumOrdera'] }}</td>
+                        <td>{{ item['ReferencaNaloga'] }}</td>
+                        <td>{{ '%.2f'|format(item['BrutoIznos']) if item['BrutoIznos'] is not none else '' }}</td>
+                        <td>{{ '%.2f'|format(item['UkupnaProvizija']) if item['UkupnaProvizija'] is not none else '' }}</td>
+                        <td>{{ '%.2f'|format(item['IznosPLNaloga']) if item['IznosPLNaloga'] is not none else '' }}</td>
+                        <td>{{ '%.2f'|format(item['MarketplaceProvizija']) if item['MarketplaceProvizija'] is not none else '' }}</td>
+                        <td>{{ '%.2f'|format(item['PaySpotProvizija']) if item['PaySpotProvizija'] is not none else '' }}</td>
+                        <td>{{ '%.2f'|format(item['NaknadaPPA']) if item['NaknadaPPA'] is not none else '' }}</td>
+                        <td>{{ item['DatumUplateBanke'] }}</td>
+                        <td>{{ item['DatumPotvrde'] }}</td>
+                        <td>{{ item['PrimalacUplate'] }}</td>
+                        <td>{{ item['RacunUplate'] }}</td>
+                        <td>{{ item['PayspotReferenca'] }}</td>
+                        <td>{{ item['DatumValute'] }}</td>
+                        <td>{{ item['Dopuna'] }}</td>
+                        <td>{{ item['StatusObrade'] }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

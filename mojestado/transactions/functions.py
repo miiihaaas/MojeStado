@@ -8,7 +8,7 @@ import requests
 from PIL import Image
 
 from mojestado import db, mail, app
-from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User, PaySpotTransaction
+from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User, PaySpotTransaction, AnimalCategory
 
 from flask import flash, json, redirect, render_template, session, url_for
 from flask_login import current_user
@@ -43,28 +43,47 @@ def generate_payment_slips_attach(invoice_item):
     invoice_item_details = invoice_item.invoice_item_details
     # invoice_item_details = json.loads(invoice_item.invoice_item_details)
     print(f'{invoice_item_details=}')
-    broj_rata = int(invoice_item_details['installment_options'])
+    broj_rata = int(invoice_item_details['installment_options']) if 'installment_options' in invoice_item_details else 1
     print(f'** {broj_rata=}, {type(broj_rata)=}')
+    
     for i in range(1, broj_rata+1):
-        iznos_duga = float(invoice_item_details['fattening_price'])
-        iznos_rate = iznos_duga/broj_rata
+        if invoice_item.invoice_item_type == 4:
+            iznos_duga = float(invoice_item_details['fattening_price'])
+            iznos_rate = iznos_duga/broj_rata
+            if broj_rata > 1:
+                svrha_uplate = f'Uplata za uslugu tova - rata {i}'
+            else:
+                svrha_uplate = f'Uplata za uslugu tova'
+        elif invoice_item.invoice_item_type == 3:
+            iznos_duga = float(invoice_item.invoice_item_details['slaughterPrice'] + invoice_item.invoice_item_details['processingPrice'])
+            iznos_rate = iznos_duga
+            if invoice_item.invoice_item_details['slaughterPrice'] and invoice_item.invoice_item_details['processingPrice']:
+                svrha_uplate = f'Uplata za usluge klanja i obrade'
+            elif invoice_item.invoice_item_details['slaughterPrice']:
+                svrha_uplate = f'Uplata za uslugu klanja'
+            elif invoice_item.invoice_item_details['processingPrice']:
+                svrha_uplate = f'Uplata za uslugu obrade'
+        elif invoice_item.invoice_item_type == 2:
+            iznos_duga = float(invoice_item.invoice_item_details['total_price'])
+            iznos_rate = iznos_duga
+            svrha_uplate = f'Uplata za životinju: {AnimalCategory.query.get(invoice_item.invoice_item_details["animal_category_id"]).animal_category_name}'
         print(f'{iznos_duga=}, {broj_rata=}, {iznos_rate=}')
         uplatilac = invoice_item.invoice.user_invoice.name + ' ' + invoice_item.invoice.user_invoice.surname
         sifra_placanja = f'189'
-        model='00'
-        poziv_na_broj = f'{invoice_item.invoice.user_id:05d}-{invoice_item.id:07d}'
-        svrha_uplate = f'Uplata za uslugu tova - rata {i}'
-        
+        model='00' #! ili 97?
+        poziv_na_broj = f'K12345-{invoice_item.invoice.user_id:05d}-{invoice_item.id:07d}' #! pirlagoditi da ima i PaySpot deo "K12345-"
+        payspot_racun_primaoca = '325950070003803565' #! upisati realan racun primaoca PaySpot
+        primalac = 'PaySpot DOO, Branimira Ćosića 2, 21000 Novi Sad'
         new_data = {
             'user_id': invoice_item.invoice.user_invoice.id,
             'uplatilac': invoice_item.invoice.user_invoice.name + ' ' + invoice_item.invoice.user_invoice.surname,
-            'svrha_uplate': f'Uplata za uslugu tova - rata {i}',
-            'primalac': 'Naša imperija doo',
+            'svrha_uplate': svrha_uplate,
+            'primalac': primalac,
             'sifra_placanja': '189',
             'valuta': 'RSD',
             'iznos': round(iznos_rate, 2),
-            'racun_primaoca': '265178031000308698',
-            'model': '00', #! ili 97?
+            'racun_primaoca': payspot_racun_primaoca,
+            'model': model, 
             'poziv_na_broj': poziv_na_broj,
         }
         data_list.append(new_data)
@@ -76,8 +95,8 @@ def generate_payment_slips_attach(invoice_item):
             "K": "PR",
             "V": "01",
             "C": "1",
-            "R": "265178031000308698",
-            "N": "Naša imperija doo", #! da li treba adresa? Kneza Grbovića 10 || 14242 Mionica
+            "R": payspot_racun_primaoca,
+            "N": primalac, #! da li treba adresa PaySpota?
             "I": f'RSD{str(f"{round(iznos_rate, 2):.2f}").replace(".", ",")}',
             "P": uplatilac,
             "SF": sifra_placanja,
@@ -226,7 +245,7 @@ def generate_payment_slips_attach(invoice_item):
         pdf.line(10, 198, 200, 198)
         counter += 1
         
-    file_name = f'uplatnica_{invoice_item.id}.pdf'
+    file_name = f'uplatnica_{invoice_item.id:07d}.pdf'
     pdf.output(os.path.join(path, file_name))
         
     #! briše QR kodove nakon dodavanja na uplatnice
@@ -790,10 +809,13 @@ def deactivate_products(invoice_id):
         else:
             for invoice_item in invoice_items:
                 if invoice_item.invoice_item_type == 1:
+                    app.logger.info(f'Pronađen proizvod za umanjivanje količine: {invoice_item.invoice_item_details}')
                     product_id = invoice_item.invoice_item_details['id']
                     # product_id = json.loads(invoice_item.invoice_item_details)['id']
                     product_to_edit = Product.query.get(product_id)
+                    app.logger.info(f'Proizvod: {product_to_edit.name} treba da se umanji količina. početna količina {product_to_edit.quantity}')
                     product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
+                    app.logger.info(f'Proizvod: {product_to_edit.name} treba da se umanji količina. nova količina {product_to_edit.quantity}')
                     # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
                     db.session.commit()
                     app.logger.info(f'Za proizvod: {product_id} umanjena količina za {float(invoice_item.invoice_item_details["quantity"])}.')
@@ -811,19 +833,43 @@ def send_email(user, invoice_id):
     app.logger.debug(f'Pronađeno {len(invoice_items)} stavki fakture')
     
     for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 4:
-            fattening = invoice_item.invoice_item_details
-            app.logger.debug(f'Stavka tova: {fattening}')
-            
-            if int(fattening['installment_options']) > 1:
-                app.logger.info(f'Usluga na rate za stavku {invoice_item.id}')
-                create_debt(user, invoice_item)
-                new_payment_slip = generate_payment_slips_attach(invoice_item)
-                app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
-                payment_slips.append(new_payment_slip)
+        if invoice_item.invoice_item_type in [2, 3, 4]:
+            create_debt(user, invoice_item)
+            new_payment_slip = generate_payment_slips_attach(invoice_item)
+            app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
+            payment_slips.append(new_payment_slip)
         elif invoice_item.invoice_item_type == 1:
             app.logger.info(f'Slanje mejla za ažuriranje količine proizvoda za stavku {invoice_item.id}')
             send_email_to_update_product_quantity(invoice_item)
+        
+        # if invoice_item.invoice_item_type == 4:
+        #     fattening = invoice_item.invoice_item_details
+        #     app.logger.debug(f'Stavka tova: {fattening}')
+        #     if int(fattening['installment_options']) > 1:
+        #         app.logger.info(f'Usluga tova na rate za stavku {invoice_item.id}, prva rata se plaća odmah, ostalo na mesec dana')
+        #         create_debt(user, invoice_item)
+        #     else:
+        #         app.logger.info(f'Usluga tova na jednu ratu za stavku {invoice_item.id}, plaća se odmah')
+        #         create_debt(user, invoice_item)
+        #     new_payment_slip = generate_payment_slips_attach(invoice_item)
+        #     app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
+        #     payment_slips.append(new_payment_slip)
+        # elif invoice_item.invoice_item_type == 3:
+        #     app.logger.info(f'na posebnu uplatnicu se dodaje usluga klanja/obrade za određenu životinju')
+        #     create_debt(user, invoice_item)
+        #     new_payment_slip = generate_payment_slips_attach(invoice_item)
+        #     app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
+        #     payment_slips.append(new_payment_slip)
+        # elif invoice_item.invoice_item_type == 2:
+        #     app.logger.info(f'na posebnu uplatnicu se dodaje životinja za fakturu')
+        #     create_debt(user, invoice_item)
+        #     new_payment_slip = generate_payment_slips_attach(invoice_item)
+        #     app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
+        #     payment_slips.append(new_payment_slip)
+
+        # elif invoice_item.invoice_item_type == 1:
+        #     app.logger.info(f'Slanje mejla za ažuriranje količine proizvoda za stavku {invoice_item.id}')
+        #     send_email_to_update_product_quantity(invoice_item)
     
     app.logger.debug(f'Generisane uplatnice: {payment_slips}')
     
@@ -903,13 +949,31 @@ def send_email_to_update_product_quantity(invoice_item):
         app.logger.error(f'Greška prilikom slanja mejla: {e}')
 
 def create_debt(user, invoice_item):
-    new_debt = Debt(
-        invoice_item_id=invoice_item.id,
-        user_id=user.id,
-        # amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
-        amount=invoice_item.invoice_item_details['fattening_price'],
-        status='pending'
-    )
+    if invoice_item.invoice_item_type == 4:
+        app.logger.info(f'Usluga tova na jednu ili više rata za stavku {invoice_item.id}, prva rata se plaća odmah, ostalo na mesec dana')
+        new_debt = Debt(
+            invoice_item_id=invoice_item.id,
+            user_id=user.id,
+            # amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
+            amount=invoice_item.invoice_item_details['fattening_price'],
+            status='pending'
+        )
+    elif invoice_item.invoice_item_type == 3:
+        new_debt = Debt(
+            invoice_item_id=invoice_item.id,
+            user_id=user.id,
+            # amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
+            amount=invoice_item.invoice_item_details['slaughterPrice'] + invoice_item.invoice_item_details['processingPrice'],
+            status='pending'
+        )
+    elif invoice_item.invoice_item_type == 2:
+        new_debt = Debt(
+            invoice_item_id=invoice_item.id,
+            user_id=user.id,
+            # amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
+            amount=invoice_item.invoice_item_details['total_price'],
+            status='pending'
+        )
     db.session.add(new_debt)
     db.session.commit()
 
@@ -1096,8 +1160,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         
         
         if not invoice_items:
-            app.logger.warning(f'Faktura {invoice.id} nema stavke, nije moguu0107e kreirati naloge za plau0107anje')
-            return False, "Faktura nema stavke. Nije moguu0107e kreirati naloge za plau0107anje."
+            app.logger.warning(f'Faktura {invoice.id} nema stavke, nije moguće kreirati naloge za plaćanje')
+            return False, "Faktura nema stavke. Nije moguće kreirati naloge za plaćanje."
         
         #! Priprema podataka za nalog
         orders_data_1 = []

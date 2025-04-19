@@ -294,7 +294,7 @@ def callback_url():
             # Deaktivacija životinja i proizvoda
             app.logger.info(f'{invoice_id=}')
 
-            deactivate_animals(invoice_id)
+            deactivate_animals(invoice_id) #! pošto ide preko uplatnice treba prvo da se bookira određeno vreme pa ako ne uplati onda da se ponovo aktivira, a ako uplati da se deaktivira
             deactivate_products(invoice_id)
             
             # Slanje email-a korisniku
@@ -308,19 +308,36 @@ def callback_url():
             app.logger.warning(f'Callback_url: Neuspešna transakcija za fakturu {invoice_id}, rezultat: {result}')
 
         db.session.commit()
-        return jsonify({"status": "success"}), 200
+        return jsonify({"status": "success", "message": "Transakcija uspešno obrađena"}), 200
         
     except Exception as e:
         app.logger.error(f'Greška u callback_url funkciji: {str(e)}')
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({"error": "Internal server error", "message": str(e)}), 500
 
 
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
     app.logger.info('Uspesno zavrsena transakcija')
+    user = User.query.get(current_user.id)
+    invoice = Invoice.query.get(session.get('invoice_id')) #?
+    cart_data = session
+    total_price = 0
+    for item in cart_data.get('products', []):
+        total_price += item['total_price']
+    for item in cart_data.get('animals', []):
+        total_price += item['total_price']
+    for item in cart_data.get('fattening', []):
+        total_price += item['total_price']
+    for item in cart_data.get('services', []):
+        total_price += item['total_price']
     clear_cart_session()
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
-    return render_template('transactions/success_url.html')
+    return render_template('transactions/success_url.html',
+                           user=user,
+                           invoice=invoice,
+                           cart_data=cart_data,
+                           total_price=total_price
+                           )
 
 
 @transactions.route('/error_url', methods=['GET'])
