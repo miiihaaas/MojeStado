@@ -1876,7 +1876,7 @@ def admin_view_purchases():
             valid_statuses = ['confirmed', 'paid']  # TODO: Dodati ostale statuse kad budu definisani
             invoice_items = [
                 item for item in invoice_items 
-                if item.invoice.status in valid_statuses
+                if item.invoice.status in valid_statuses #! naći drugi način da se ovo proveri
             ]
             app.logger.debug(f'Učitano {len(invoice_items)} stavki faktura')
             
@@ -2243,9 +2243,17 @@ def admin_view_slips():
                                 'Dopuna': row['Dopuna'],
                                 'StatusObrade': row['Status obrade'],
                             })
+                        broj_izvoda_element = 'test' #! ovo treba da povuče podatke headera iz izvoda (excel fajla)
+                        datum_izvoda_element = 'test' #! ovo treba da povuče podatke headera iz izvoda (excel fajla)
+                        iznos_potrazuje_element = 'test' #! ovo treba da povuče podatke headera iz izvoda (excel fajla)
+                        broj_pojavljivanja = 'test' #! ovo treba da povuče podatke headera iz izvoda (excel fajla)
                         return render_template('users/admin_view_slips.html',
                                                 title='Pregled izvoda',
-                                                stavke=stavke)
+                                                stavke=stavke,
+                                                broj_izvoda_element=broj_izvoda_element,
+                                                datum_izvoda_element=datum_izvoda_element,
+                                                iznos_potrazuje_element=iznos_potrazuje_element,
+                                                broj_pojavljivanja=broj_pojavljivanja)
                     else:
                         flash('Niste izabrali validan xlsx fajl.', 'danger')
                         return redirect(url_for('users.admin_view_slips'))
@@ -2284,7 +2292,80 @@ def admin_view_slips():
         return redirect(url_for('main.home'))
 
 
+@users.route("/admin_check_debts", methods=['GET', 'POST'])
+def admin_check_debts():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    if current_user.user_type != 'admin':
+        flash('Nemate pravo pristupa', 'danger')
+        return redirect(url_for('main.home'))
+    debts = Debt.query.filter_by(status='pending').all()
+    overdued_debts = []
+    try:
+        for debt in debts:
+            app.logger.debug(f"Provera duga ID: {debt.id}, status: {debt.status}, datum: {debt.debt_date}, invoice_item_type: {getattr(debt.invoice_item, 'invoice_item_type', None)}")
+            if debt and debt.invoice_item and debt.invoice_item.invoice_item_type in [2, 3, 4]:
+                debt_time = debt.debt_date
+                try:
+                    delta = datetime.datetime.now() - debt_time
+                except Exception as e:
+                    app.logger.error(f"Greška pri računanju razlike vremena za debt_id={debt.id}: {str(e)}")
+                    flash('Došlo je do greške pri proveri neplatiša.', 'danger')
+                    db.session.rollback()
+                    return redirect(url_for('users.admin_view_overview'))
+                app.logger.debug(f"Debt ID {debt.id}: delta sekundi: {delta.total_seconds()}")
+                if delta.total_seconds() > 24*3600:
+                    debt.status = 'overdue'
+                    if debt.invoice_item.invoice_item_type == 2:
+                        animal_id = debt.invoice_item.invoice_item_details['id']
+                        app.logger.debug(f"Pokušaj dohvata životinje animal_id={animal_id} za debt_id={debt.id}")
+                        overdued_animal = Animal.query.get(animal_id)
+                        if overdued_animal:
+                            overdued_animal.active = True
+                            overdued_animal.fattening = False
+                            overdued_debt = {
+                                'animal': overdued_animal.animal_category.animal_category_name,
+                                'service': '-',
+                                'farm': overdued_animal.farm_animal.farm_name,
+                                'farm_id': overdued_animal.farm_animal.user_id,
+                                'customer': f'{User.query.get(debt.user_id).name} {User.query.get(debt.user_id).surname}',
+                                'user_id': debt.user_id
+                            }
+                            overdued_debts.append(overdued_debt)
+                        else:
+                            app.logger.warning(f"Životinja sa ID {animal_id} nije pronađena za debt_id={debt.id}.")
+                    elif debt.invoice_item.invoice_item_type == 3:
+                        animal_id = debt.invoice_item.invoice_item_details['id']
+                        if debt.invoice_item.invoice_item_details['slaughterService'] == True and debt.invoice_item.invoice_item_details['processingService'] == True:
+                            service = 'Klanje i obrada'
+                        elif debt.invoice_item.invoice_item_details['slaughterService'] == True:
+                            service = 'Klanje'
+                        app.logger.debug(f"Pokušaj dohvata životinje animal_id={animal_id} za debt_id={debt.id}")
+                        overdued_animal = Animal.query.get(animal_id)
+                        if overdued_animal:
+                            overdued_debt = {
+                                'animal': overdued_animal.animal_category.animal_category_name,
+                                'service': service,
+                                'farm': overdued_animal.farm_animal.farm_name,
+                                'farm_id': overdued_animal.farm_animal.user_id,
+                                'customer': f'{User.query.get(debt.user_id).name} {User.query.get(debt.user_id).surname}',
+                                'user_id': debt.user_id
+                            }
+                            overdued_debts.append(overdued_debt)
+                        else:
+                            app.logger.warning(f"Životinja sa ID {animal_id} nije pronađena za debt_id={debt.id}.")
+        db.session.commit()
+        app.logger.info(f"Provera neplatiša završena. Broj overdued_animals: {len(overdued_debts)}")
 
+    except Exception as e:
+        app.logger.error(f'Greška pri proveri neplatiša: {str(e)}')
+        flash('Došlo je do greške pri proveri neplatiša.', 'danger')
+        db.session.rollback()
+        return redirect(url_for('users.admin_view_slips'))
+            
+    return render_template('users/admin_view_slips.html', 
+                            title='Provera neplatiša', 
+                            overdued_debts=overdued_debts)
 
 
 @users.route("/admin_edit_profile/<int:user_id>", methods=['GET', 'POST'])

@@ -56,10 +56,15 @@
                         </div>
                         <div class="col">
                             <label for="statment_nubmer">Iznos potražuje</label>
-                            <input class="form-control mb-2" id="c" name="total_payment_amount" type="text" value="{{ iznos_potrazuje_element }}"  readonly>
+                            <input class="form-control mb-2" id="total_payment_amount" name="total_payment_amount" type="text" value="{{ iznos_potrazuje_element }}"  readonly>
                             <label for="number_of_items">Broj uplata</label>
                             <input class="form-control" id="number_of_items" name="number_of_items" type="text" value="{{ broj_pojavljivanja }}"  readonly>
                         </div>
+                    </div>
+                    {% else %}
+                    <div class="row">
+                        <h2>Provera neplatiša</h2>
+                        <a href="{{ url_for('users.admin_check_debts') }}" class="btn btn-primary">Proveri neplatiša</a>
                     </div>
                     {% endif %}
                 </div>
@@ -114,6 +119,29 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% elif overdued_debts %}
+                <h2>Spisak životinja i usluga koje nisu plaćene</h2>
+                <p>Životinje za koje uplate nisu evidentirane putem uplatnice ponovno su dostupne na portalu. Nenaplaćene usluge su otkazane.</p>
+                <table id="overdued_debts_data" class="table table-striped dataTable no-footer invoices" role="grid" aria-describedby="data_info" style="width: 968px;">
+                    <thead>
+                        <tr>
+                            <th>Životinja</th>
+                            <th>Usluga</th>
+                            <th>Farma</th>
+                            <th>Kupac</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in overdued_debts %}
+                        <tr>
+                            <td>{{ item.animal }}</td>
+                            <td>{{ item.service }}</td>
+                            <td><a href="{{ url_for('users.my_profile', user_id=item.farm_id) }}" target="_blank">{{ item.farm }}</a></td>
+                            <td><a href="{{ url_for('users.my_profile', user_id=item.user_id) }}" target="_blank">{{ item.customer }}</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             {% else %}
             <hr>
             {% if payment_statements %}
