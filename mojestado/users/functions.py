@@ -3,7 +3,8 @@ from fpdf import FPDF
 from flask import render_template, url_for, current_app
 from flask_mail import Message, Attachment
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
-from mojestado import mail
+from mojestado import mail, app
+from mojestado.models import Animal
 
 
 def generate_confirmation_token(user):
@@ -137,3 +138,60 @@ def farm_profile_completed_check(farm):
     else:
         farm_profile_completed = False
     return farm_profile_completed
+
+
+def process_overdued_debt(debt, customer):
+    """
+    Pomoćna funkcija koja obrađuje dug koji je prekoračio rok plaćanja
+    i vraća formatirane podatke za prikaz.
+    """
+    invoice_item_type = debt.invoice_item.invoice_item_type
+    invoice_details = debt.invoice_item.invoice_item_details
+    
+    # Podrazumevane vrednosti
+    overdued_debt = {
+        'animal': '',
+        'service': '',
+        'farm': '',
+        'farm_id': None,
+        'customer': customer,
+        'user_id': debt.user_id
+    }
+    
+    # Provera da li postoji ID životinje u detaljima fakture
+    if 'id' not in invoice_details:
+        app.logger.warning(f"Nedostaje ID životinje u detaljima fakture za debt_id={debt.id}")
+        return None
+        
+    animal_id = invoice_details['id']
+    app.logger.debug(f"Pokušaj dohvata životinje animal_id={animal_id} za debt_id={debt.id}")
+    
+    # Dohvatanje podataka o životinji
+    animal = Animal.query.get(animal_id)
+    if not animal:
+        app.logger.warning(f"Životinja sa ID {animal_id} nije pronađena za debt_id={debt.id}.")
+        return None
+        
+    # Popunjavanje osnovnih podataka o životinji i farmi
+    overdued_debt['animal'] = animal.animal_category.animal_category_name
+    overdued_debt['farm'] = animal.farm_animal.farm_name
+    overdued_debt['farm_id'] = animal.farm_animal.user_id
+    
+    # Obrada prema tipu fakturne stavke
+    if invoice_item_type == 2:  # Prodaja životinje
+        animal.active = True
+        animal.fattening = False
+        overdued_debt['service'] = '-'
+    
+    elif invoice_item_type == 3:  # Usluga klanja/obrade
+        if invoice_details.get('slaughterService', False) and invoice_details.get('processingService', False):
+            overdued_debt['service'] = 'Klanje i obrada'
+        elif invoice_details.get('slaughterService', False):
+            overdued_debt['service'] = 'Klanje'
+        else:
+            overdued_debt['service'] = 'Nepoznata usluga'
+    
+    elif invoice_item_type == 4:  # Usluga tova
+        overdued_debt['service'] = 'Tov'
+    
+    return overdued_debt

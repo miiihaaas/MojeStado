@@ -528,7 +528,7 @@
     });
 </script>
 
-<!-- JavaScript za brojau010d karaktera za opis proizvoda -->
+<!-- JavaScript za brojač karaktera za opis proizvoda -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var textarea = document.getElementById('product_description');
@@ -540,10 +540,10 @@
             countDisplay.textContent = currentLength + "/" + maxLength;
         }
         
-        // Pokretanje brojau010da kada korisnik kuca
+        // Pokretanje brojača kada korisnik kuca
         textarea.addEventListener("input", updateCharCount);
         
-        // Inicijalno pokretanje brojau010da
+        // Inicijalno pokretanje brojača
         updateCharCount();
     });
 </script>

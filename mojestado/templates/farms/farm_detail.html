@@ -713,7 +713,7 @@
                         $('#calculatedPrice').val(response.fattening_price.toFixed(2));
                         $('#feedingDays').val(response.number_of_fattening_days);
                         
-                        // Omoguu0107i/onemoguu0107i switch za plau0107anje na rate na osnovu broja dana hranjenja
+                        // Omogući/onemogući switch za plaćanje na rate na osnovu broja dana hranjenja
                         var feedingDays = parseInt(response.number_of_fattening_days);
                         if (feedingDays >= 60) {
                             $('#installmentPayment').prop('disabled', false);
@@ -724,7 +724,7 @@
                         populateInstallmentOptions();
                     },
                     error: function(xhr, status, error) {
-                        console.error("Greu0161ka pri izrau010dunavanju detalja tova:", error);
+                        console.error("Greška pri izračunavanju detalja tova:", error);
                         resetTovDetails();
                     }
                 });
@@ -858,7 +858,7 @@
                         $('#calculatedPrice_').val(response.fattening_price.toFixed(2));
                         $('#feedingDays_').val(response.number_of_fattening_days);
                         
-                        // Omoguu0107i/onemoguu0107i switch za plau0107anje na rate na osnovu broja dana hranjenja
+                        // Omogući/onemogući switch za plaćanje na rate na osnovu broja dana hranjenja
                         var feedingDays = parseInt(response.number_of_fattening_days);
                         if (feedingDays >= 60) {
                             $('#installmentPayment_').prop('disabled', false);
@@ -869,7 +869,7 @@
                         populateInstallmentOptions_();
                     },
                     error: function(xhr, status, error) {
-                        console.error("Greu0161ka pri izrau010dunavanju detalja tova:", error);
+                        console.error("Greška pri izračunavanju detalja tova:", error);
                         resetTovDetails_();
                     }
                 });
