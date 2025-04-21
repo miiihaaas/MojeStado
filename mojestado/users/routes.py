@@ -2264,6 +2264,7 @@ def admin_view_slips():
             elif request.method == 'POST' and 'saveAndProcessButton' in request.form:
                 app.logger.info(f'Pritisnuto dugme "sačuvaj i rasknjiži uplate"')
                 #! dodati kod za rasknjižavanje uplate
+                
                 return redirect(url_for('users.admin_view_slips'))
             if request.method == 'GET':
                 # Učitavanje svih izvoda

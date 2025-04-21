@@ -111,6 +111,34 @@
                                 <a class="nav-link" href="{{ url_for('main.contact') }}">Kontakt</a>
                             </li>
                         </ul>
+                        <!-- Dodato: User actions u sticky navbaru, prikazuju se samo kad je sticky -->
+                        <ul class="navbar-nav navbar-user-actions-sticky ms-auto d-none">
+                            {% if current_user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="navbar-brand" href="{{ url_for('users.logout') }}" title="Odjavi se"><i class="fa-solid fa-right-from-bracket"></i><span class="icon-label">Odjavi se</span></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="navbar-brand" href="{{ url_for('users.my_profile', user_id=current_user.id) }}" title="Moj nalog"><i class="fa-solid fa-user"></i><span class="icon-label">Moj nalog</span></a>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a class="navbar-brand" href="{{ url_for('users.login') }}" title="Uloguj se"><i class="fa-solid fa-right-to-bracket"></i><span class="icon-label">Uloguj se</span></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="navbar-brand" href="#registracija" title="Registracija"><i class="fa-solid fa-pen"></i><span class="icon-label">Registracija</span></a>
+                            </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="navbar-brand" href="{{ url_for('main.view_cart')}}" title="Korpa">
+                                    {% if session.get('products') or session.get('animals') or session.get('fattening') or session.get('services') %}
+                                        <i class="fa-solid fa-basket-shopping fa-bounce"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-basket-shopping faded"></i>
+                                    {% endif %}
+                                    <span class="icon-label">Korpa</span>
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </nav>
@@ -178,6 +206,7 @@
             <a href="https://rs.visa.com/pay-with-visa/security-and-assistance/protected-everywhere.html" target="_blanc"><img src="{{ url_for('static', filename='images/visa-secure-logo.png') }}" alt="Visa secure logo"></a>
             <a href="https://www.payspot.rs/en/homepage/" target="_blanc"><img src="{{ url_for('static', filename='images/payspot-logo.png') }}" alt="Payspot logo"></a>
         </div>
+
         <footer class="footer bg-mosta">
             <div class="container">
                 <div class="row">
@@ -210,11 +239,20 @@
                     </div>
                 </div>
                 <div class="copyright text-center">
-                    © Copyright {{ current_year }} Moje stado | All rights reserved.
+                    &copy; Copyright {{ current_year }} Moje stado | All rights reserved.
                 </div>
             </div>
         </footer>
-
+        {% if not request.cookies.get('cookie_consent') %}
+        <div id="cookie-banner" class="cookie-banner d-flex align-items-center justify-content-center gap-20 font-size-14">
+            <span>
+                Ovaj sajt koristi kolačiće za analizu posećenosti. Klikom na "Prihvatam" pristajete na korišćenje kolačića.
+            </span>
+            <button onclick="acceptCookies()" class="btn btn-secondary">Prihvatam</button>
+            <button onclick="declineCookies()" class="btn btn-alt">Odbijam</button>
+        </div>
+        {% endif %}
+        
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -233,6 +271,42 @@
         
 
         {% block scripts %}{% endblock %}
+        <script>
+            function acceptCookies() {
+                document.cookie = "cookie_consent=accepted;path=/;max-age=" + (60*60*24*365);
+                removeCookieBanner();
+                loadAnalytics();
+            }
+            function declineCookies() {
+                document.cookie = "cookie_consent=declined;path=/;max-age=" + (60*60*24*365);
+                removeCookieBanner();
+            }
+            function removeCookieBanner() {
+                var banner = document.getElementById('cookie-banner');
+                if (banner) {
+                    banner.classList.add('fade-out');
+                    setTimeout(function() { banner.remove(); }, 500);
+                }
+            }
+            // Automatski učitaj Analytics ako je već prihvaćeno ranije
+            window.onload = function() {
+                if (document.cookie.indexOf('cookie_consent=accepted') !== -1) {
+                    loadAnalytics();
+                }
+            };
+            function loadAnalytics() {
+                // Dinamički ubaci Google Analytics skriptu
+                var ga = document.createElement('script');
+                ga.async = true;
+                ga.src = 'https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID';
+                document.head.appendChild(ga);
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                window.gtag = gtag;
+                gtag('js', new Date());
+                gtag('config', 'GA_MEASUREMENT_ID');
+            }
+            </script>
 <!-- 
         <script>
             const cartBtn = document.getElementById("cartBtn");
@@ -382,6 +456,50 @@
             document.addEventListener('click', (event) => {
                 if (!event.target.classList.contains('clickable-image')) {
                     document.querySelectorAll('.popup-id').forEach(popup => popup.style.display = 'none');
+                }
+            });
+        </script>
+        <style>
+            /* Sticky navbar user actions - samo kad je sticky */
+            .navbar-user-actions-sticky {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+            }
+            .navbar-user-actions-sticky .icon-label {
+                display: none;
+            }
+            .navbar.sticky .navbar-user-actions-sticky {
+                display: flex !important;
+            }
+            .navbar.sticky .navbar-user-actions-sticky .icon-label {
+                display: none;
+            }
+            /* Mobilni prikaz: uvek u jednom redu, samo ikonice */
+            @media (max-width: 991.98px) {
+                .navbar-user-actions-sticky {
+                    flex-direction: row;
+                    justify-content: flex-end;
+                    width: 100%;
+                }
+                .navbar-user-actions-sticky .icon-label {
+                    display: none !important;
+                }
+            }
+        </style>
+        <script>
+            // Dodaj/ukloni sticky klasu i prikaz user actions
+            window.addEventListener('scroll', function() {
+                var navbar = document.querySelector('.navbar.navbar-expand-lg');
+                var userActions = document.querySelector('.navbar-user-actions-sticky');
+                if (!navbar || !userActions) return;
+                if (window.scrollY > 60) {
+                    navbar.classList.add('sticky');
+                    userActions.classList.remove('d-none');
+                } else {
+                    navbar.classList.remove('sticky');
+                    userActions.classList.add('d-none');
                 }
             });
         </script>
