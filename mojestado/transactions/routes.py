@@ -320,7 +320,34 @@ def success_url():
     app.logger.info('Uspesno zavrsena transakcija')
     user = User.query.get(current_user.id)
     invoice = Invoice.query.get(session.get('invoice_id')) #?
-    cart_data = session
+
+    # Prvo sačuvaj podatke iz korpe i podatke o kupcu, ako već nisu sačuvani
+    if 'cart_data_success' not in session or 'buyer_data_success' not in session:
+        cart_data = {
+            'products': session.get('products', []),
+            'animals': session.get('animals', []),
+            'fattening': session.get('fattening', []),
+            'services': session.get('services', [])
+        }
+        session['cart_data_success'] = cart_data
+
+        # Priprema podataka o kupcu
+        buyer_data = {
+            'id': user.id,
+            'email': user.email,
+            'ime': user.name,
+            'prezime': user.surname,
+            'telefon': user.phone,
+            'adresa': user.address,
+            'mesto': user.city,
+            'postanski_broj': user.zip_code,
+            'tip_korisnika': user.user_type
+        }
+        session['buyer_data_success'] = buyer_data
+    else:
+        cart_data = session['cart_data_success']
+        buyer_data = session['buyer_data_success']
+
     total_price = 0
     for item in cart_data.get('products', []):
         total_price += item['total_price']
@@ -330,14 +357,20 @@ def success_url():
         total_price += item['total_price']
     for item in cart_data.get('services', []):
         total_price += item['total_price']
-    clear_cart_session()
+
+    clear_cart_session()  # Brisanje korpe iz sesije
+    # Očisti i privremeno sačuvane podatke nakon prikaza
+    session.pop('cart_data_success', None)
+    session.pop('buyer_data_success', None)
+
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
     return render_template('transactions/success_url.html',
-                           user=user,
-                           invoice=invoice,
-                           cart_data=cart_data,
-                           total_price=total_price
-                           )
+                            user=user,
+                            invoice=invoice,
+                            cart_data=cart_data,
+                            buyer_data=buyer_data,
+                            total_price=total_price
+                            )
 
 
 @transactions.route('/error_url', methods=['GET'])
