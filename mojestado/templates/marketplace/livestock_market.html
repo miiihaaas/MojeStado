@@ -597,7 +597,7 @@ $(document).ready(function() {
                     $('#calculatedPrice_').val(response.fattening_price.toFixed(2));
                     $('#feedingDays_').val(response.number_of_fattening_days);
                     
-                    // Omoguu0107i/onemoguu0107i switch za plau0107anje na rate na osnovu broja dana hranjenja
+                    // Omogući/onemogući switch za plaćanje na rate na osnovu broja dana hranjenja
                     var feedingDays = parseInt(response.number_of_fattening_days);
                     if (feedingDays >= 60) {
                         $('#installmentPayment_').prop('disabled', false);
@@ -608,7 +608,7 @@ $(document).ready(function() {
                     populateInstallmentOptions_();
                 },
                 error: function(xhr, status, error) {
-                    console.error("Greu0161ka pri izrau010dunavanju detalja tova:", error);
+                    console.error("Greška pri izračunavanju detalja tova:", error);
                     resetTovDetails_();
                 }
             });
@@ -644,12 +644,12 @@ $(document).ready(function() {
         var feedingDays = parseInt($('#feedingDays_').val()) || 0;
         var calculatedPrice = parseFloat($('#calculatedPrice_').val()) || 0;
         
-        // Izrau010dunaj broj moguu0107ih rata na osnovu dana hranjenja i cene
+        // Izračunaj broj mogućih rata na osnovu dana hranjenja i cene
         var maxInstallments = Math.min(Math.floor(feedingDays / 30), 6);
         var minInstallmentValue = 1000; // Minimalna vrednost rate u RSD
         maxInstallments = Math.min(maxInstallments, Math.floor(calculatedPrice / minInstallmentValue));
         
-        // Popuni padajuu0107i meni sa opcijama za rate
+        // Popuni padajući meni sa opcijama za rate
         var select = $('#installmentOptions_');
         select.empty();
         
@@ -682,7 +682,7 @@ $(document).ready(function() {
                     $('#calculatedPrice').val(response.fattening_price.toFixed(2));
                     $('#feedingDays').val(response.number_of_fattening_days);
                     
-                    // Omoguu0107i/onemoguu0107i switch za plau0107anje na rate na osnovu broja dana hranjenja
+                    // Omogući/onemogući switch za plaćanje na rate na osnovu broja dana hranjenja
                     var feedingDays = parseInt(response.number_of_fattening_days);
                     if (feedingDays >= 60) {
                         $('#installmentPayment').prop('disabled', false);
@@ -693,7 +693,7 @@ $(document).ready(function() {
                     populateInstallmentOptions();
                 },
                 error: function(xhr, status, error) {
-                    console.error("Greu0161ka pri izrau010dunavanju detalja tova:", error);
+                    console.error("Greška pri izračunavanju detalja tova:", error);
                     resetTovDetails();
                 }
             });
@@ -729,12 +729,12 @@ $(document).ready(function() {
         var feedingDays = parseInt($('#feedingDays').val()) || 0;
         var calculatedPrice = parseFloat($('#calculatedPrice').val()) || 0;
         
-        // Izrau010dunaj broj moguu0107ih rata na osnovu dana hranjenja i cene
+        // Izračunaj broj mogućih rata na osnovu dana hranjenja i cene
         var maxInstallments = Math.min(Math.floor(feedingDays / 30), 6);
         var minInstallmentValue = 1000; // Minimalna vrednost rate u RSD
         maxInstallments = Math.min(maxInstallments, Math.floor(calculatedPrice / minInstallmentValue));
         
-        // Popuni padajuu0107i meni sa opcijama za rate
+        // Popuni padajući meni sa opcijama za rate
         var select = $('#installmentOptions');
         select.empty();
         
@@ -1093,7 +1093,7 @@ $(document).ready(function() {
 <script>
     $(document).ready(function() {
         // Automatsko slanje forme kada se promeni bilo koji filter
-        // Menjamo selektor da cilja SAMO filtere u bou010dnom meniju (form#livestock)
+        // Menjamo selektor da cilja SAMO filtere u bočnom meniju (form#livestock)
         $('#livestock .form-check-input, #municipality').change(function() {
             $('#livestock').submit();
         });

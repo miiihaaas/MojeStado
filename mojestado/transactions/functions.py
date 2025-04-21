@@ -272,6 +272,7 @@ def generate_payment_slips_attach(invoice_item):
 
 def generate_invoice_attach(invoice_id):
     '''
+    !!Ova funkcija se ne koristi više!!
     generiše fakturu. dokument će biti attachovan u emali.
     '''
     app.logger.info(f'Započeto generisanje fakture za invoice_id: {invoice_id}')
@@ -842,47 +843,15 @@ def send_email(user, invoice_id):
             app.logger.info(f'Slanje mejla za ažuriranje količine proizvoda za stavku {invoice_item.id}')
             send_email_to_update_product_quantity(invoice_item)
         
-        # if invoice_item.invoice_item_type == 4:
-        #     fattening = invoice_item.invoice_item_details
-        #     app.logger.debug(f'Stavka tova: {fattening}')
-        #     if int(fattening['installment_options']) > 1:
-        #         app.logger.info(f'Usluga tova na rate za stavku {invoice_item.id}, prva rata se plaća odmah, ostalo na mesec dana')
-        #         create_debt(user, invoice_item)
-        #     else:
-        #         app.logger.info(f'Usluga tova na jednu ratu za stavku {invoice_item.id}, plaća se odmah')
-        #         create_debt(user, invoice_item)
-        #     new_payment_slip = generate_payment_slips_attach(invoice_item)
-        #     app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
-        #     payment_slips.append(new_payment_slip)
-        # elif invoice_item.invoice_item_type == 3:
-        #     app.logger.info(f'na posebnu uplatnicu se dodaje usluga klanja/obrade za određenu životinju')
-        #     create_debt(user, invoice_item)
-        #     new_payment_slip = generate_payment_slips_attach(invoice_item)
-        #     app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
-        #     payment_slips.append(new_payment_slip)
-        # elif invoice_item.invoice_item_type == 2:
-        #     app.logger.info(f'na posebnu uplatnicu se dodaje životinja za fakturu')
-        #     create_debt(user, invoice_item)
-        #     new_payment_slip = generate_payment_slips_attach(invoice_item)
-        #     app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
-        #     payment_slips.append(new_payment_slip)
-
-        # elif invoice_item.invoice_item_type == 1:
-        #     app.logger.info(f'Slanje mejla za ažuriranje količine proizvoda za stavku {invoice_item.id}')
-        #     send_email_to_update_product_quantity(invoice_item)
-    
     app.logger.debug(f'Generisane uplatnice: {payment_slips}')
     
-    invoice_attach = generate_invoice_attach(invoice_id)
-    app.logger.debug(f'Generisan prilog fakture: {invoice_attach}')
-
     to = [user.email]
     bcc = [os.environ.get('MAIL_ADMIN')]
     subject = 'Potvrda kupovine na portalu "Moje stado"'
 
     if payment_slips:
         app.logger.info('Faktura je na rate - prilažem uplatnice')
-        attachments = [invoice_attach] + payment_slips
+        attachments = payment_slips
         na_rate = True
     else:
         app.logger.info('Faktura nije na rate - prilažem samo fakturu')

@@ -14,7 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from mojestado import bcrypt, db, app, mail
 from mojestado.animals.functions import get_animal_categorization
 from mojestado.users.forms import AddAnimalForm, AddProductForm, EditFarmForm, EditProfileForm, LoginForm, RequestResetForm, ResetPasswordForm, RegistrationUserForm, RegistrationFarmForm
-from mojestado.users.functions import farm_profile_completed_check, confirm_token, send_confirmation_email, send_contract_to_farmer
+from mojestado.users.functions import farm_profile_completed_check, confirm_token, send_confirmation_email, send_contract_to_farmer, process_overdued_debt
 from mojestado.models import Animal, AnimalCategorization, AnimalCategory, AnimalRace, Debt, Invoice, Payment, PaymentStatement, Product, ProductCategory, ProductSection, ProductSubcategory, User, Farm, Municipality, InvoiceItems
 
 users = Blueprint('users', __name__)
@@ -1876,7 +1876,7 @@ def admin_view_purchases():
             valid_statuses = ['confirmed', 'paid']  # TODO: Dodati ostale statuse kad budu definisani
             invoice_items = [
                 item for item in invoice_items 
-                if item.invoice.status in valid_statuses #! naći drugi način da se ovo proveri
+                if item.invoice_item_type == 1 and item.invoice.status in valid_statuses #! naći drugi način da se ovo proveri da obuhvati i [2,3,4]
             ]
             app.logger.debug(f'Učitano {len(invoice_items)} stavki faktura')
             
@@ -2294,78 +2294,71 @@ def admin_view_slips():
 
 @users.route("/admin_check_debts", methods=['GET', 'POST'])
 def admin_check_debts():
+    """
+    Proverava dugove koji su prekoračili rok plaćanja (24h) i ažurira njihov status.
+    Samo administratori imaju pristup ovoj funkciji.
+    """
+    # Provera autentikacije i autorizacije
     if not current_user.is_authenticated:
         return redirect(url_for('main.home'))
+    
     if current_user.user_type != 'admin':
         flash('Nemate pravo pristupa', 'danger')
         return redirect(url_for('main.home'))
-    debts = Debt.query.filter_by(status='pending').all()
-    overdued_debts = []
+    
     try:
+        # Dohvatanje dugova u statusu 'pending'
+        debts = Debt.query.filter_by(status='pending').all()
+        overdued_debts = []
+        
         for debt in debts:
-            app.logger.debug(f"Provera duga ID: {debt.id}, status: {debt.status}, datum: {debt.debt_date}, invoice_item_type: {getattr(debt.invoice_item, 'invoice_item_type', None)}")
-            if debt and debt.invoice_item and debt.invoice_item.invoice_item_type in [2, 3, 4]:
-                debt_time = debt.debt_date
-                try:
-                    delta = datetime.datetime.now() - debt_time
-                except Exception as e:
-                    app.logger.error(f"Greška pri računanju razlike vremena za debt_id={debt.id}: {str(e)}")
-                    flash('Došlo je do greške pri proveri neplatiša.', 'danger')
-                    db.session.rollback()
-                    return redirect(url_for('users.admin_view_overview'))
+            app.logger.debug(f"Provera duga ID: {debt.id}, status: {debt.status}, datum: {debt.debt_date}, "
+                            f"invoice_item_type: {getattr(debt.invoice_item, 'invoice_item_type', None)}")
+            
+            # Provera da li je tip fakturne stavke odgovarajući (2, 3 ili 4)
+            if not (debt and debt.invoice_item and debt.invoice_item.invoice_item_type in [2, 3, 4]):
+                continue
+                
+            # Provera da li je istekao rok od 24h
+            try:
+                delta = datetime.datetime.now() - debt.debt_date
                 app.logger.debug(f"Debt ID {debt.id}: delta sekundi: {delta.total_seconds()}")
-                if delta.total_seconds() > 24*3600:
-                    debt.status = 'overdue'
-                    if debt.invoice_item.invoice_item_type == 2:
-                        animal_id = debt.invoice_item.invoice_item_details['id']
-                        app.logger.debug(f"Pokušaj dohvata životinje animal_id={animal_id} za debt_id={debt.id}")
-                        overdued_animal = Animal.query.get(animal_id)
-                        if overdued_animal:
-                            overdued_animal.active = True
-                            overdued_animal.fattening = False
-                            overdued_debt = {
-                                'animal': overdued_animal.animal_category.animal_category_name,
-                                'service': '-',
-                                'farm': overdued_animal.farm_animal.farm_name,
-                                'farm_id': overdued_animal.farm_animal.user_id,
-                                'customer': f'{User.query.get(debt.user_id).name} {User.query.get(debt.user_id).surname}',
-                                'user_id': debt.user_id
-                            }
-                            overdued_debts.append(overdued_debt)
-                        else:
-                            app.logger.warning(f"Životinja sa ID {animal_id} nije pronađena za debt_id={debt.id}.")
-                    elif debt.invoice_item.invoice_item_type == 3:
-                        animal_id = debt.invoice_item.invoice_item_details['id']
-                        if debt.invoice_item.invoice_item_details['slaughterService'] == True and debt.invoice_item.invoice_item_details['processingService'] == True:
-                            service = 'Klanje i obrada'
-                        elif debt.invoice_item.invoice_item_details['slaughterService'] == True:
-                            service = 'Klanje'
-                        app.logger.debug(f"Pokušaj dohvata životinje animal_id={animal_id} za debt_id={debt.id}")
-                        overdued_animal = Animal.query.get(animal_id)
-                        if overdued_animal:
-                            overdued_debt = {
-                                'animal': overdued_animal.animal_category.animal_category_name,
-                                'service': service,
-                                'farm': overdued_animal.farm_animal.farm_name,
-                                'farm_id': overdued_animal.farm_animal.user_id,
-                                'customer': f'{User.query.get(debt.user_id).name} {User.query.get(debt.user_id).surname}',
-                                'user_id': debt.user_id
-                            }
-                            overdued_debts.append(overdued_debt)
-                        else:
-                            app.logger.warning(f"Životinja sa ID {animal_id} nije pronađena za debt_id={debt.id}.")
+                
+                # Ako nije prošlo više od 24h, preskoči ovaj dug
+                if delta.total_seconds() <= 24*3600:
+                    continue
+                    
+                # Ako je prošlo više od 24h, označi dug kao 'overdue'
+                debt.status = 'overdue'
+                
+                # Dobavljanje osnovnih podataka o korisniku
+                user = User.query.get(debt.user_id)
+                customer = f'{user.name} {user.surname}' if user else 'Nepoznat korisnik'
+                
+                # Kreiranje objekta za prikaz prema tipu fakturne stavke
+                overdued_debt = process_overdued_debt(debt, customer)
+                
+                if overdued_debt:
+                    overdued_debts.append(overdued_debt)
+                    
+            except Exception as e:
+                app.logger.error(f"Greška pri obradi duga ID={debt.id}: {str(e)}")
+                # Nastavlja sa sledećim dugom umesto da prekine celu funkciju
+                continue
+                
+        # Sačuvaj promene u bazi
         db.session.commit()
         app.logger.info(f"Provera neplatiša završena. Broj overdued_animals: {len(overdued_debts)}")
-
+        
+        return render_template('users/admin_view_slips.html', 
+                                title='Provera neplatiša', 
+                                overdued_debts=overdued_debts)
+                                
     except Exception as e:
         app.logger.error(f'Greška pri proveri neplatiša: {str(e)}')
         flash('Došlo je do greške pri proveri neplatiša.', 'danger')
         db.session.rollback()
         return redirect(url_for('users.admin_view_slips'))
-            
-    return render_template('users/admin_view_slips.html', 
-                            title='Provera neplatiša', 
-                            overdued_debts=overdued_debts)
 
 
 @users.route("/admin_edit_profile/<int:user_id>", methods=['GET', 'POST'])

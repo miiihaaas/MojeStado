@@ -32,3 +32,11 @@ def make_celery(app):
     return celery
 
 celery = make_celery(app)
+
+celery.conf.beat_schedule = {
+    'daily-weight-update': {
+        'task': 'mojestado.animals.tasks.daily_weight_gain_task',
+        'schedule': 86400.0,  # jednom dnevno u sekundama
+        'options': {'expires': 3600}  # istekne ako se ne izvrši u roku od sat vremena
+    },
+}
