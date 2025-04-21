@@ -206,6 +206,7 @@
             <a href="https://rs.visa.com/pay-with-visa/security-and-assistance/protected-everywhere.html" target="_blanc"><img src="{{ url_for('static', filename='images/visa-secure-logo.png') }}" alt="Visa secure logo"></a>
             <a href="https://www.payspot.rs/en/homepage/" target="_blanc"><img src="{{ url_for('static', filename='images/payspot-logo.png') }}" alt="Payspot logo"></a>
         </div>
+
         <footer class="footer bg-mosta">
             <div class="container">
                 <div class="row">
@@ -242,7 +243,16 @@
                 </div>
             </div>
         </footer>
-
+        {% if not request.cookies.get('cookie_consent') %}
+        <div id="cookie-banner" class="cookie-banner d-flex align-items-center justify-content-center gap-20 font-size-14">
+            <span>
+                Ovaj sajt koristi kolačiće za analizu posećenosti. Klikom na "Prihvatam" pristajete na korišćenje kolačića.
+            </span>
+            <button onclick="acceptCookies()" class="btn btn-secondary">Prihvatam</button>
+            <button onclick="declineCookies()" class="btn btn-alt">Odbijam</button>
+        </div>
+        {% endif %}
+        
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -261,6 +271,42 @@
         
 
         {% block scripts %}{% endblock %}
+        <script>
+            function acceptCookies() {
+                document.cookie = "cookie_consent=accepted;path=/;max-age=" + (60*60*24*365);
+                removeCookieBanner();
+                loadAnalytics();
+            }
+            function declineCookies() {
+                document.cookie = "cookie_consent=declined;path=/;max-age=" + (60*60*24*365);
+                removeCookieBanner();
+            }
+            function removeCookieBanner() {
+                var banner = document.getElementById('cookie-banner');
+                if (banner) {
+                    banner.classList.add('fade-out');
+                    setTimeout(function() { banner.remove(); }, 500);
+                }
+            }
+            // Automatski učitaj Analytics ako je već prihvaćeno ranije
+            window.onload = function() {
+                if (document.cookie.indexOf('cookie_consent=accepted') !== -1) {
+                    loadAnalytics();
+                }
+            };
+            function loadAnalytics() {
+                // Dinamički ubaci Google Analytics skriptu
+                var ga = document.createElement('script');
+                ga.async = true;
+                ga.src = 'https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID';
+                document.head.appendChild(ga);
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                window.gtag = gtag;
+                gtag('js', new Date());
+                gtag('config', 'GA_MEASUREMENT_ID');
+            }
+            </script>
 <!-- 
         <script>
             const cartBtn = document.getElementById("cartBtn");
