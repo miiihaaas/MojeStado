@@ -10,10 +10,13 @@
                         <hr>
                         <h4 class="mb-3">Podaci o potrošaču</h4>
                         <ul class="list-unstyled mb-4">
-                            <li><strong>Ime i prezime:</strong> {{ user.name }} {{ user.surname }}</li>
-                            <li><strong>Email:</strong> {{ user.email }}</li>
-                            <li><strong>Adresa:</strong> {{ user.address }}</li>
-                            <li><strong>Adresa za dostavu:</strong> {{ user.address }}</li>
+                            <li><strong>Ime i prezime:</strong> {{ buyer_data.ime }} {{ buyer_data.prezime }}</li>
+                            <li><strong>Email:</strong> {{ buyer_data.email }}</li>
+                            <li><strong>Telefon:</strong> {{ buyer_data.telefon }}</li>
+                            <li><strong>Adresa:</strong> {{ buyer_data.adresa }}</li>
+                            <li><strong>Mesto:</strong> {{ buyer_data.mesto }}</li>
+                            <li><strong>Poštanski broj:</strong> {{ buyer_data.postanski_broj }}</li>
+                            <li><strong>Tip korisnika:</strong> {{ buyer_data.tip_korisnika }}</li>
                         </ul>
                         <h4 class="mb-3">Podaci o narudžbini</h4>
                         <ul class="list-unstyled mb-4">
