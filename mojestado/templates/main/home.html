@@ -59,7 +59,7 @@
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">{{ product.product_name }}</h5>
-                            <p class="card-text"><strong>{{ product.farm_product.farm_name }}</strong>, {{ product.farm_product.farm_city }}</p>
+                            <p class="card-text"><strong><a href="{{ url_for('farms.farm_detail', farm_id=product.farm_id) }}">{{ product.farm_product.farm_name }}</a></strong>, {{ product.farm_product.farm_city }}</p>
                             <p class="card-text"><strong>{{ '{:.2f}'.format(product.product_price_per_unit) }} rsd/{{ product.unit_of_measurement }}</strong></p>
                             <a href="{{ url_for('marketplace.product_detail', product_id=product.id) }}" class="btn btn-secondary">Kupi</a>
                         </div>
