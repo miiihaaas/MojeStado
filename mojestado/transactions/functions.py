@@ -1083,7 +1083,7 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
         return False, f"HTTP greška: {response.status_code}"
 
 
-def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, invoice):
+def send_payment_order_insert(merchant_order_id, merchant_order_amount, installment_total, user, invoice):
     """
     Šalje PaymentOrderInsert (MsgType=101) zahtev ka PaySpot-u pre plaćanja
     
@@ -1102,7 +1102,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
     
     try:
         app.logger.info(f'Započinjem slanje PaymentOrderInsert za narudžbinu {merchant_order_id}')
-        app.logger.debug(f'Parametri: merchant_order_id={merchant_order_id}, merchant_order_amount={merchant_order_amount}')
+        app.logger.debug(f'Parametri: {merchant_order_id=}, {merchant_order_amount=}, {installment_total=}')
         app.logger.debug(f'Korisnik: id={user.id}, name={user.name}, surname={user.surname}')
         
         # Generisanje random stringa za hash
@@ -1259,10 +1259,10 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
         app.logger.debug(f'Ukupan iznos svih naloga: {total_amount_1}')
         
         #! Provera da li je aktivirana opcija dostave, ako jeste, dodajem nalog za dostavu
-        if session.get('delivery')['delivery_status']:
-            delivery_total = session.get('delivery')['delivery_total']
+        if session.get('delivery')['delivery_product_status']:
+            delivery_product_total = session.get('delivery')['delivery_product_total']
             
-            app.logger.debug(f'Dodajem nalog za dostavu u iznosu od {delivery_total} din')
+            app.logger.debug(f'Dodajem nalog za dostavu preko kartice u iznosu od {delivery_product_total} din')
             # Dodavanje naloga za dostavu
             delivery_order = {
                 "sequenceNo": sequence_no_1,
@@ -1274,9 +1274,9 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
                 "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
                 "beneficiaryCity": "Mionica", #! grad portala
-                "amountTrans": round(delivery_total, 2), #? koliko kupac plaća za dostavu
+                "amountTrans": round(delivery_product_total, 2), #? koliko kupac plaća za dostavu
                 "senderFeeAmount": 0, #? Provizija (platforma + payspot)
-                "beneficiaryAmount": delivery_total, #? koliko portal dobija za dostavu
+                "beneficiaryAmount": delivery_product_total, #? koliko portal dobija za dostavu
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
                 "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
@@ -1320,11 +1320,36 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
             orders_data_7.append(order)
             sequence_no_7 += 1
 
+        if session.get('delivery', {}).get('delivery_animal_status', False):
+            delivery_animal_total = session.get('delivery', {}).get('delivery_animal_total', 0)
             
-            # Ažuriranje ukupnog iznosa svih naloga
-            total_amount_7 = sum(order["amountTrans"] for order in orders_data_7)
-            app.logger.debug(f'Ukupan iznos svih naloga nakon dodavanja dostave: {total_amount_7}')
-        
+            app.logger.debug(f'Dodajem nalog za dostavu preko uplatnice u iznosu od {delivery_animal_total} din')
+            # Dodavanje naloga za dostavu
+            delivery_order = {
+                "sequenceNo": sequence_no_1,
+                "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
+                "debtorName": f"{user.name} {user.surname}",
+                "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
+                "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
+                "beneficiaryAccount": "325950070021477547", #! broj računa portala
+                "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
+                "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
+                "beneficiaryCity": "Mionica", #! grad portala
+                "amountTrans": round(delivery_animal_total, 2), #? koliko kupac plaća za dostavu
+                "senderFeeAmount": 0, #? Provizija (platforma + payspot)
+                "beneficiaryAmount": delivery_animal_total, #? koliko portal dobija za dostavu
+                "beneficiaryCurrency": 941,  # RSD
+                "purposeCode": 289,  # Kod plaćanja
+                "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
+                "isUrgent": 2,  # Nije hitno
+                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
+            }
+            orders_data_7.append(delivery_order)
+            
+        # Ažuriranje ukupnog iznosa svih naloga            
+        total_amount_7 = sum(order["amountTrans"] for order in orders_data_7)
+        app.logger.debug(f'Ukupan iznos svih naloga nakon dodavanja dostave: {total_amount_7}')
+            
         # Priprema podataka za zahtev
         request_data_1 = {
             "data": {
@@ -1366,7 +1391,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, user, in
                 "body": {
                     "paymentOrderGroup": {
                         "merchantOrderID": merchant_order_id,
-                        "merchantOrderAmount": float(merchant_order_amount),
+                        "merchantOrderAmount": float(installment_total),
                         "merchantCurrencyCode": 941,  # RSD
                         "paymentType": 7,  # Plaćanje karticom
                         "actionType": "I",  # Insert

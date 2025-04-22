@@ -301,8 +301,8 @@
                 </div>
                 {% endif %}
         
-                {% if session.get('delivery')['delivery_status'] %}
-                <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
+                {% if session.get('delivery')['delivery_product_status'] %}
+                <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_product_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
                 {% else %}
                 <p>Usluga dostave nije izabrana.</p>
                 {% endif %}
@@ -313,6 +313,11 @@
                 <div class="mb-3">
                     <div class="total-price"><span class="amount">{{ installment_total }} </span> <span class="currency"> rsd</span></div>
                 </div>
+                {% if session.get('delivery')['delivery_animal_status'] %}
+                <p>Usluga dostave životinja za koje je izabrana usluga klanja ili obrade je izabrana i cena od {{session.get('delivery')['delivery_animal_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
+                {% else %}
+                <p>Usluga dostave nije izabrana.</p>
+                {% endif %}
                 {% endif %}
             </div>
         </div>

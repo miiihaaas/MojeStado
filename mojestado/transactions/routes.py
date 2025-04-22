@@ -139,7 +139,7 @@ def make_order():
             return redirect(url_for('main.home'))
             
         # Provera da li je kupovina na rate #! gost ne može na rate da kupuje => samo može GP da kupuje, za ostalo mora da napravi nalog
-        _, installment_total, _ = get_cart_total()
+        _, installment_total, _, _ = get_cart_total()
         if installment_total > 0 and not current_user.is_authenticated:
             app.logger.warning('Gost korisnik pokušao kupovinu na rate')
             flash('Za kupovinu na rate potrebno je da se registrujete.', 'warning')
@@ -168,18 +168,27 @@ def make_order():
             rnd = generate_random_string()
             merchant_order_id = f'PMS-{new_invoice.id:09}'
             
-            # Računanje ukupnog iznosa
-            merchant_order_amount, installment_total, delivery_total = get_cart_total() 
+            # Računanje ukupnog iznosa 
+            #! merchant_order_amount je ukupan iznos za naplatu preko kartice
+            #! installment_total je ukupan iznos za naplatu preko uplatnice
+            #! delivery_product_total je trošak dostave za proizvode
+            #! delivery_animal_total je trošak dostave za životinje
             
-            # Dodavanje troškova dostave ako je izabrana #! implementirati cenu dostave životinje po kg: calculate_delivery_price(animal_weight):
-            delivery_status = session.get('delivery', {}).get('delivery_status', False)
-            if delivery_status:
-                merchant_order_amount += delivery_total
-                
+            merchant_order_amount, installment_total, delivery_product_total, delivery_animal_total = get_cart_total() 
+            
+            # Dodavanje troškova dostave ako je izabrana
+            delivery_product_status = session.get('delivery', {}).get('delivery_product_status', False)
+            if delivery_product_status:
+                merchant_order_amount += delivery_product_total #! preko kartice mogu samo biti proizvodi i trošak dostave za proizvode
+            
+            delivery_animal_status = session.get('delivery', {}).get('delivery_animal_status', False)
+            if delivery_animal_status:
+                installment_total += delivery_animal_total #! preko uplatnice mogu samo biti proizvodi i trošak dostave za životinje
+            
             app.logger.debug(f'Ukupan iznos za naplatu: {merchant_order_amount}')
             
             # Slanje PaymentOrderInsert zahteva (za split transakcije)
-            success, error_message = send_payment_order_insert(merchant_order_id, merchant_order_amount, user, new_invoice)
+            success, error_message = send_payment_order_insert(merchant_order_id, merchant_order_amount, installment_total, user, new_invoice)
             
             if not success:
                 #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
@@ -211,7 +220,8 @@ def make_order():
                                 merchant_order_id=merchant_order_id, 
                                 merchant_order_amount=merchant_order_amount,
                                 installment_total=installment_total,
-                                delivery_total=delivery_total,
+                                delivery_product_total=delivery_product_total,
+                                delivery_animal_total=delivery_animal_total,
                                 current_date=current_date)
                                 
         except ValueError as e:

@@ -306,24 +306,41 @@
                             <h3 class="mb-0">Dostava</h3>
                         </div>
                         <div class="card-body">
-                            {% if delivery_total == 0 %}
-                                <div class="alert alert-success mb-0">
-                                    <i class="fa-solid fa-truck me-2"></i> Dostava je besplatna.
-                                </div>
-                            {% else %}
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Cena dostave sadržaja korpe</label>
-                                    <div class="delivery-price"><span class="amount">{{ delivery_total }}.00  </span> <span class="currency"> rsd</span></div>
-                                </div>
-                            {% endif %}
                             <form id="deliveryForm" action="{{ url_for('main.view_cart') }}" method="POST">
-                                <div class="form-check">
-                                    {% if delivery_status %}
-                                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total" checked>
-                                    {% else %}
-                                    <input type="checkbox" class="form-check-input" id="delivery_total" name="delivery_total">
-                                    {% endif %}
-                                    <label for="delivery_total" class="form-check-label">Želim dostavu</label>
+                                <div class="row">
+                                    <div class="col-12">
+                                        {% if products and delivery_product_total == 0 %}
+                                            <div class="alert alert-success mb-0">
+                                                <i class="fa-solid fa-truck me-2"></i> Dostava gotovih proizvoda je besplatna.
+                                            </div>
+                                        {% elif products %}
+                                            <div class="form-group mb-3">
+                                                <label class="form-label">Cena dostave gotovih proizvoda</label>
+                                                <div class="delivery-price"><span class="amount">{{ delivery_product_total }}.00  </span> <span class="currency"> rsd</span></div>
+                                            </div>
+                                        {% endif %}
+                                        {% if products %}
+                                        <div class="form-check mb-3">
+                                            <input type="checkbox" class="form-check-input" id="delivery_product_total" name="delivery_product_total" {% if delivery_product_status %}checked{% endif %}>
+                                            <label for="delivery_product_total" class="form-check-label">Želim dostavu gotovih proizvoda</label>
+                                        </div>
+                                        {% endif %}
+                                        <hr>
+                                        {% if animals and delivery_animal_total == 0 %}
+                                            <div class="alert alert-warning mb-0">
+                                                <i class="fa-solid fa-truck me-2"></i> Nije moguća dostava životinja za koje je izabrana usluga klanja ili obrade.
+                                            </div>
+                                        {% elif animals %}
+                                            <div class="form-group mb-3">
+                                                <label class="form-label">Cena dostave životinja za koje je izabrana usluga klanja ili obrade</label>
+                                                <div class="delivery-price"><span class="amount">{{ delivery_animal_total }}.00  </span> <span class="currency"> rsd</span></div>
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="delivery_animal_total" name="delivery_animal_total" {% if delivery_animal_status %}checked{% endif %}>
+                                                <label for="delivery_animal_total" class="form-check-label">Želim dostavu životinja</label>
+                                            </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -337,10 +354,10 @@
                         </div>
                         <div class="card-body">
 
-                            {% if merchant_order_amount and delivery_status %}
+                            {% if merchant_order_amount and (delivery_product_status) %}
                             <div class="form-group mb-3">
                                 <label class="form-label">Ukupno za uplatu preko kartice:</label>
-                                <div class="total-price"><span class="amount">{{ merchant_order_amount + delivery_total }} </span> <span class="currency"> rsd</span></div>
+                                <div class="total-price"><span class="amount">{{ merchant_order_amount + delivery_product_total }} </span> <span class="currency"> rsd</span></div>
                             </div>
                             {% elif merchant_order_amount %}
                             <div class="form-group mb-3">
@@ -350,7 +367,7 @@
                             {% elif delivery_status %}
                             <div class="form-group mb-3">
                                 <label class="form-label">Ukupno za uplatu preko kartice:</label>
-                                <div class="total-price"><span class="amount">{{ merchant_order_amount + delivery_total }} </span> <span class="currency"> rsd</span></div>
+                                <div class="total-price"><span class="amount">{{ merchant_order_amount + delivery_product_total }} </span> <span class="currency"> rsd</span></div>
                             </div>
                             {% endif %}
                             
@@ -437,11 +454,18 @@
         console.log("DOM fully loaded");
         updateCartData();
         
-        // Auto-submit delivery form when checkbox changes
-        var deliveryCheckbox = document.getElementById('delivery_total');
-        if (deliveryCheckbox) {
-            deliveryCheckbox.addEventListener('change', function() {
-                document.getElementById('deliveryForm').submit();
+        // Auto-submit delivery form when any checkbox changes
+        var deliveryForm = document.getElementById('deliveryForm');
+        var deliveryProductCheckbox = document.getElementById('delivery_product_total');
+        var deliveryAnimalCheckbox = document.getElementById('delivery_animal_total');
+        if (deliveryProductCheckbox) {
+            deliveryProductCheckbox.addEventListener('change', function() {
+                deliveryForm.submit();
+            });
+        }
+        if (deliveryAnimalCheckbox) {
+            deliveryAnimalCheckbox.addEventListener('change', function() {
+                deliveryForm.submit();
             });
         }
         

@@ -15,7 +15,8 @@ class RegistrationUserForm(FlaskForm):
     address = StringField('Adresa', validators=[DataRequired(), Length(min=2, max=20)])
     city = StringField('Mesto', validators=[DataRequired(), Length(min=2, max=20)])
     zip_code = StringField('Poštanski broj', validators=[DataRequired(), Length(min=5, max=5)])
-    jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
+    # jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
+    newsletter = BooleanField('Želim da primam newsletter')
     submit = SubmitField('Registrujte se')
 
 
@@ -26,7 +27,8 @@ class EditProfileForm(FlaskForm):
     address = StringField('Adresa', validators=[DataRequired(), Length(min=2, max=20)])
     city = StringField('Mesto', validators=[DataRequired(), Length(min=2, max=20)])
     zip_code = StringField('Poštanski broj', validators=[DataRequired(), Length(min=5, max=5)])
-    jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
+    # jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
+    newsletter = BooleanField('Želim da primam newsletter')
     submit = SubmitField('Sačuvaj izmene')
 
 

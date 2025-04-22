@@ -55,7 +55,7 @@ def get_cart_total():
     - Ako imamo životinju, uslugu i tov, moguće je odabrati na rate (dve ili više rata)
     
     Returns:
-        tuple: (ukupna_cena, cena_na_rate, cena_dostave)
+        tuple: (ukupna_cena, cena_na_rate, cena_dostave_proizvoda, cena_dostave_zivotinje)
         
     Raises:
         ValueError: Ako dođe do greške pri konverziji cena
@@ -66,7 +66,8 @@ def get_cart_total():
         app.logger.debug('Započeto računanje ukupne cene korpe')
         cart_total = 0
         installment_total = 0
-        delivery_total = 0
+        delivery_product_total = 0
+        delivery_animal_total = 0
         #! implementirati cenu dostave životinje po kg: calculate_delivery_price(animal_weight):
         
         # Računanje cene proizvoda
@@ -80,9 +81,9 @@ def get_cart_total():
                     app.logger.error(f'Greška pri računanju cene proizvoda: {str(e)}')
                     raise ValueError(f'Neispravna cena proizvoda: {product.get("total_price")}')
                     
-        # Računanje dostave za proizvode
-        if 'products' in session and cart_total < 5000 and not session.get('animals', []):
-            delivery_total = 500
+        #! Računanje dostave za proizvode bez obzira da li imamo životinje
+        if 'products' in session and cart_total < 5000: #! ako treba da se računa nao osnovu ukupne cene (proizvoda i životinja) dodaj ovaj deo u if: and not session.get('animals', []):
+            delivery_product_total = 500
             app.logger.debug('Dodata cena dostave od 500 din (porudžbina manja od 5000 din)')
             
         # Računanje cene životinja
@@ -123,34 +124,39 @@ def get_cart_total():
                     app.logger.error(f'Greška pri računanju cene usluge: {str(e)}')
                     raise ValueError(f'Neispravna cena usluge: {service}')
         
-        # Računanje cene dostave za životinje koje nisu u tovu
+        # Računanje cene dostave za životinje koje nisu u tovu a za koje su odabrane usluge klanja ili obrade
         fattening_ids = set()
         if 'fattening' in session and isinstance(session.get('fattening'), list):
             fattening_ids = {int(f['id']) for f in session['fattening'] if 'id' in f}
+        services_ids = set()
+        if 'services' in session and isinstance(session.get('services'), list):
+            services_ids = {int(s['id']) for s in session['services'] if 'id' in s}
         
         if 'animals' in session and isinstance(session.get('animals'), list):
             for animal in session['animals']:
                 animal_id = int(animal['id'])
-                if animal_id not in fattening_ids:
+                if animal_id not in fattening_ids and animal_id in services_ids:
                     weight = animal.get('current_weight')
                     if weight:
                         try:
-                            delivery_total += calculate_delivery_price(weight)
+                            delivery_animal_total += calculate_delivery_price(weight) #! nema dostave ako nema usluge klanja ili obrade!
                         except Exception as e:
                             app.logger.error(f'Greška pri računanju cene dostave za životinju: {e}')
         
-        # Računanje cene dostave za tov (fattening)
-        if 'fattening' in session and isinstance(session.get('fattening'), list):
+        # Računanje cene dostave za tov (fattening) a za koje su odabrane usluge klanja ili obrade
+        services_fattening_ids = services_ids & fattening_ids
+        if services_fattening_ids and 'fattening' in session and isinstance(session.get('fattening'), list):
             for f in session['fattening']:
-                desired_weight = f.get('desired_weight')
-                if desired_weight:
-                    try:
-                        delivery_total += calculate_delivery_price(desired_weight)
-                    except Exception as e:
-                        app.logger.error(f'Greška pri računanju cene dostave za tov: {e}')
+                if f['id'] in services_fattening_ids:
+                    desired_weight = f.get('desired_weight')
+                    if desired_weight:
+                        try:
+                            delivery_animal_total += calculate_delivery_price(desired_weight) #! nema dostave ako nema usluge klanja ili obrade!
+                        except Exception as e:
+                            app.logger.error(f'Greška pri računanju cene dostave za tov: {e}')
         
-        app.logger.info(f'Ukupna cena korpe: {cart_total}, Na rate: {installment_total}, Dostava: {delivery_total}')
-        return cart_total, installment_total, delivery_total
+        app.logger.info(f'Ukupna cena korpe: {cart_total}, Na rate: {installment_total}, Dostava proizvoda: {delivery_product_total}, Dostava životinja: {delivery_animal_total}')
+        return cart_total, installment_total, delivery_product_total, delivery_animal_total
         
     except Exception as e:
         app.logger.error(f'Neočekivana greška pri računanju ukupne cene: {str(e)}', exc_info=True)
