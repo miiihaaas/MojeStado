@@ -352,8 +352,7 @@
 
             <button id="submit-btn" class="btn btn-primary mb-20" type="submit" disabled>Nastavi ka uplati</button>
         </form>
-        {% endif %}
-        {% if installment_total %}
+        {% elif installment_total %}
         <a href="" class="btn btn-primary">Dugme koje će da pošalje uplatnice i započne ostale funkcionalnosti</a>
         {% endif %}
     </div>
