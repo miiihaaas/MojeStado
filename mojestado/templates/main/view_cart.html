@@ -325,10 +325,12 @@
                                             <label for="delivery_product_total" class="form-check-label">Želim dostavu gotovih proizvoda</label>
                                         </div>
                                         {% endif %}
+                                        {% if animals %}
                                         <hr>
+                                        {% endif %}
                                         {% if animals and delivery_animal_total == 0 %}
                                             <div class="alert alert-warning mb-0">
-                                                <i class="fa-solid fa-truck me-2"></i> Nije moguća dostava životinja za koje je izabrana usluga klanja ili obrade.
+                                                <i class="fa-solid fa-truck me-2"></i> Nije moguća dostava životinja za koje nije izabrana usluga klanja ili obrade.
                                             </div>
                                         {% elif animals %}
                                             <div class="form-group mb-3">
@@ -364,16 +366,16 @@
                                 <label class="form-label">Ukupno za uplatu preko kartice:</label>
                                 <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
                             </div>
-                            {% elif delivery_status %}
-                            <div class="form-group mb-3">
-                                <label class="form-label">Ukupno za uplatu preko kartice:</label>
-                                <div class="total-price"><span class="amount">{{ merchant_order_amount + delivery_product_total }} </span> <span class="currency"> rsd</span></div>
-                            </div>
                             {% endif %}
                             
-                            {% if installment_total %}
-                            <div class="form-group">
-                                <label class="form-label">Ukupno za uplatupreko uplatnica:</label>
+                            {% if installment_total and (delivery_animal_status) %}
+                            <div class="form-group mb-3">
+                                <label class="form-label">Ukupno za uplatu preko uplatnica:</label>
+                                <div class="total-price"><span class="amount">{{ installment_total + delivery_animal_total }} </span> <span class="currency"> rsd</span></div>
+                            </div>
+                            {% elif installment_total %}
+                            <div class="form-group mb-3">
+                                <label class="form-label">Ukupno za uplatu preko uplatnica:</label>
                                 <div class="total-price"><span class="amount">{{ installment_total }} </span> <span class="currency"> rsd</span></div>
                             </div>
                             {% endif %}

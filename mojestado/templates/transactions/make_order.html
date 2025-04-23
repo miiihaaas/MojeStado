@@ -295,33 +295,34 @@
         <div class="row">
             <div class="col">
                 {% if merchant_order_amount %}
-                <legend>Ukupno za uplatu preko kartice: </legend> 
-                <div class="mb-3">
-                    <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
-                </div>
+                    <legend>Ukupno za uplatu putem platnih kartica: </legend> 
+                    <div class="mb-3">
+                        <div class="total-price"><span class="amount">{{ merchant_order_amount }} </span> <span class="currency"> rsd</span></div>
+                    </div>
+                    {% if session.get('delivery')['delivery_product_status'] %}
+                        <p>Usluga dostave gotovih proizvoda je izabrana i cena od {{session.get('delivery')['delivery_product_total']}} rsd je uračunata u iznos za uplatu putem platnih kartica.</p>
+                    {% else %}
+                        <p>Usluga dostave gotovih proizvoda nije izabrana.</p>
+                    {% endif %}
                 {% endif %}
         
-                {% if session.get('delivery')['delivery_product_status'] %}
-                <p>Usluga dostave je izabrana i cena od {{session.get('delivery')['delivery_product_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
-                {% else %}
-                <p>Usluga dostave nije izabrana.</p>
-                {% endif %}
             </div>
             <div class="col">
                 {% if installment_total %}
-                <legend>Ukupno za uplatu preko uplatnice: </legend>
-                <div class="mb-3">
-                    <div class="total-price"><span class="amount">{{ installment_total }} </span> <span class="currency"> rsd</span></div>
-                </div>
-                {% if session.get('delivery')['delivery_animal_status'] %}
-                <p>Usluga dostave životinja za koje je izabrana usluga klanja ili obrade je izabrana i cena od {{session.get('delivery')['delivery_animal_total']}} rsd je uračunata u ukupan iznos za uplatu.</p>
-                {% else %}
-                <p>Usluga dostave nije izabrana.</p>
-                {% endif %}
+                    <legend>Ukupno za uplatu putem uplatnica: </legend>
+                    <div class="mb-3">
+                        <div class="total-price"><span class="amount">{{ installment_total }} </span> <span class="currency"> rsd</span></div>
+                    </div>
+                    {% if session.get('delivery')['delivery_animal_status'] %}
+                        <p>Usluga dostave životinja (za koje je uključena usluga klanja ili obrade) je izabrana i cena od {{session.get('delivery')['delivery_animal_total']}} rsd je uračunata u iznos za uplatu.</p>
+                    {% else %}
+                        <p>Usluga dostave obrađenih životinja nije izabrana.</p>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
 
+        {% if merchant_order_amount %}
         <input type="hidden" id="cartData" name="cartData" value="">
         <form id="paymentForm"
             method="post" 
@@ -351,6 +352,10 @@
 
             <button id="submit-btn" class="btn btn-primary mb-20" type="submit" disabled>Nastavi ka uplati</button>
         </form>
+        {% endif %}
+        {% if installment_total %}
+        <a href="" class="btn btn-primary">Dugme koje će da pošalje uplatnice i započne ostale funkcionalnosti</a>
+        {% endif %}
     </div>
 </div>
 </section>
