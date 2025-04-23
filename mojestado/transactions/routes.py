@@ -218,9 +218,10 @@ def make_order():
                     raise ValueError('Nedostaje PAYSPOT_SECRET_KEY')
                     
                 plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
-                hash_value = calculate_hash(plaintext)
+                hash_value_products = calculate_hash(plaintext)
                 
-                app.logger.debug('Uspešno pripremljeni podaci za plaćanje')
+                
+                app.logger.debug(f'Uspešno pripremljeni podaci za plaćanje: {hash_value_products=}')
             
             if new_invoice_animals:
                 # rnd_animals = generate_random_string()
@@ -243,7 +244,8 @@ def make_order():
                     return redirect(url_for('main.view_cart'))
 
             # Uvek dodeljujemo current_date pre render_template
-            current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if not current_date:
+                current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             return render_template('transactions/make_order.html',
                                 animals=animals,
                                 products=products,
@@ -252,7 +254,7 @@ def make_order():
                                 user=user,
                                 company_id=company_id,
                                 rnd=rnd,
-                                hash_value=hash_value, 
+                                hash_value=hash_value_products, 
                                 merchant_order_id=merchant_order_id, 
                                 merchant_order_amount=merchant_order_amount,
                                 installment_total=installment_total,
