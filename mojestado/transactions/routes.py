@@ -8,7 +8,7 @@ from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoice, send_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
+from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoices, send_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
 
 
 transactions = Blueprint('transactions', __name__)
@@ -127,6 +127,20 @@ def make_order():
     try:
         app.logger.debug('Pristup kreiranju porudžbine')
         
+        # Inicijalizacija svih promenjivih koje se koriste kasnije
+        new_invoice_products = None
+        new_invoice_animals = None
+        merchant_order_amount = None
+        installment_total = None
+        delivery_product_total = None
+        delivery_animal_total = None
+        user = None
+        rnd = None
+        hash_value = None
+        merchant_order_id = None
+        success = None
+        error_message = None
+        
         #! Provera da li ima stavki u korpi
         animals = session.get('animals', [])
         products = session.get('products', [])
@@ -139,16 +153,17 @@ def make_order():
             return redirect(url_for('main.home'))
             
         # Provera da li je kupovina na rate #! gost ne može na rate da kupuje => samo može GP da kupuje, za ostalo mora da napravi nalog
-        _, installment_total, _ = get_cart_total()
+        _, installment_total, _, _ = get_cart_total()
         if installment_total > 0 and not current_user.is_authenticated:
             app.logger.warning('Gost korisnik pokušao kupovinu na rate')
             flash('Za kupovinu na rate potrebno je da se registrujete.', 'warning')
             return redirect(url_for('users.register'))
             
-        #! Kreiranje fakture
+        #! Kreiranje faktura (i stavki faktura) za proizvode i životinje
         try:
-            new_invoice = create_invoice()
-            app.logger.info(f'Kreirana nova faktura: {new_invoice.id}')
+            new_invoice_products, new_invoice_animals = create_invoices()
+            app.logger.info(f'Kreirana nova faktura proizvoda: {new_invoice_products.id}') if new_invoice_products else app.logger.info(f'Nije kreirana nova faktura proizvoda')
+            app.logger.info(f'Kreirana nova faktura životinja: {new_invoice_animals.id}') if new_invoice_animals else app.logger.info(f'Nije kreirana nova faktura životinja')
         except Exception as e:
             app.logger.error(f'Greška pri kreiranju fakture: {str(e)}')
             flash('Došlo je do greške pri kreiranju porudžbine. Molimo pokušajte ponovo.', 'danger')
@@ -159,46 +174,76 @@ def make_order():
         if isinstance(user, tuple):
             return user
             
-        #! Priprema podataka za plaćanje
+        #! Priprema podataka za plaćanje preko kartice (samo proizvodi)
         try:
+            # Računanje ukupnog iznosa 
+            #! merchant_order_amount je ukupan iznos za naplatu preko kartice
+            #! installment_total je ukupan iznos za naplatu preko uplatnice
+            #! delivery_product_total je trošak dostave za proizvode
+            #! delivery_animal_total je trošak dostave za životinje
+            merchant_order_amount, installment_total, delivery_product_total, delivery_animal_total = get_cart_total() 
             company_id = os.environ.get('PAYSPOT_COMPANY_ID')
             if not company_id:
                 raise ValueError('Nedostaje PAYSPOT_COMPANY_ID')
+            
+            # Dodavanje troškova dostave ako je izabrana
+            delivery_product_status = session.get('delivery', {}).get('delivery_product_status', False)
+            if delivery_product_status:
+                merchant_order_amount += delivery_product_total #! preko kartice mogu samo biti proizvodi i trošak dostave za proizvode
+            
+            #? nastaviti podatke za plaćanje preko uplatnice (samo životinje i usluge vezane za životinje)
+            delivery_animal_status = session.get('delivery', {}).get('delivery_animal_status', False)
+            if delivery_animal_status:
+                installment_total += delivery_animal_total #! preko uplatnice mogu samo biti proizvodi i trošak dostave za životinje
+            
+            if new_invoice_products:
+                rnd = generate_random_string()
+                merchant_order_id = f'PMS-{new_invoice_products.id:09}'
+                app.logger.debug(f'Ukupan iznos za naplatu preko kartice: {merchant_order_amount}')
                 
-            rnd = generate_random_string()
-            merchant_order_id = f'PMS-{new_invoice.id:09}'
+                # Slanje PaymentOrderInsert zahteva (za split transakcije)
+                success, error_message = send_payment_order_insert(merchant_order_id, merchant_order_amount, 'kartica', user, new_invoice_products)
             
-            # Računanje ukupnog iznosa
-            merchant_order_amount, installment_total, delivery_total = get_cart_total() 
+                if not success:
+                    #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
+                    #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
+                    #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
+                    flash(f'Greška pri pripremi podataka za plaćanje preko kartice: {error_message}.', 'danger')
+                    return redirect(url_for('main.view_cart'))
             
-            # Dodavanje troškova dostave ako je izabrana #! implementirati cenu dostave životinje po kg: calculate_delivery_price(animal_weight):
-            delivery_status = session.get('delivery', {}).get('delivery_status', False)
-            if delivery_status:
-                merchant_order_amount += delivery_total
+                # Generisanje hash vrednosti
+                current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
+                if not secret_key:
+                    raise ValueError('Nedostaje PAYSPOT_SECRET_KEY')
+                    
+                plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
+                hash_value = calculate_hash(plaintext)
                 
-            app.logger.debug(f'Ukupan iznos za naplatu: {merchant_order_amount}')
+                app.logger.debug('Uspešno pripremljeni podaci za plaćanje')
             
-            # Slanje PaymentOrderInsert zahteva (za split transakcije)
-            success, error_message = send_payment_order_insert(merchant_order_id, merchant_order_amount, user, new_invoice)
-            
-            if not success:
-                #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
-                #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
-                #! napraviti kod da samo kreira uplatnicu bez da se ide na proveru stanja kartice
-                flash(f'Greška pri pripremi podataka za plaćanje: {error_message}.', 'danger')
-                return redirect(url_for('main.view_cart'))
-            
-            # Generisanje hash vrednosti
+            if new_invoice_animals:
+                # rnd_animals = generate_random_string()
+                merchant_order_id_animals = f'ZMS-{new_invoice_animals.id:09}'
+                app.logger.debug(f'Ukupan iznos za naplatu preko uplatnice: {installment_total}')
+                
+                #? Slanje PaymentOrderInsert zahteva (za uplatnice)
+                success, error_message = send_payment_order_insert(merchant_order_id_animals, installment_total, 'uplatnica', user, new_invoice_animals)
+                if success:
+                    success_animals, error_message = send_payment_order_confirm(merchant_order_id_animals, None, new_invoice_animals.id)
+                    if not success_animals:
+                        app.logger.error(f'Greška pri slanju PaymentOrderConfirm za životinje preko uplatnice: {error_message}')
+                        flash(f'Greška pri slanju PaymentOrderConfirm za životinje preko uplatnice: {error_message}.', 'danger')
+                        return redirect(url_for('main.view_cart'))
+                    #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
+                    #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
+                    #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
+                else:
+                    flash(f'Greška pri pripremi podataka za plaćanje preko uplatnice: {error_message}.', 'danger')
+                    return redirect(url_for('main.view_cart'))
+
+            # Uvek dodeljujemo current_date pre render_template
             current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            secret_key = os.environ.get('PAYSPOT_SECRET_KEY')
-            if not secret_key:
-                raise ValueError('Nedostaje PAYSPOT_SECRET_KEY')
-                
-            plaintext = f"{rnd}|{current_date}|{merchant_order_id}|{merchant_order_amount:.2f}|{secret_key}"
-            hash_value = calculate_hash(plaintext)
-            
-            app.logger.debug('Uspešno pripremljeni podaci za plaćanje')
-            
             return render_template('transactions/make_order.html',
                                 animals=animals,
                                 products=products,
@@ -211,7 +256,8 @@ def make_order():
                                 merchant_order_id=merchant_order_id, 
                                 merchant_order_amount=merchant_order_amount,
                                 installment_total=installment_total,
-                                delivery_total=delivery_total,
+                                delivery_product_total=delivery_product_total,
+                                delivery_animal_total=delivery_animal_total,
                                 current_date=current_date)
                                 
         except ValueError as e:

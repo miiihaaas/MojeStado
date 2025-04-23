@@ -402,7 +402,12 @@ def view_cart():
             'products': session.get('products', []),
             'fattening': session.get('fattening', []),
             'services': session.get('services', []),
-            'delivery': session.get('delivery', {'delivery_total': 0, 'delivery_status': False})
+            'delivery': session.get('delivery', {
+                                                    'delivery_product_total': 0, 
+                                                    'delivery_animal_total': 0, 
+                                                    'delivery_product_status': False, 
+                                                    'delivery_animal_status': False
+                                                })
         }
         
         app.logger.debug(f'View cart sadržaj: {cart_contents}')
@@ -438,8 +443,8 @@ def view_cart():
                     break
 
         try:
-            merchant_order_amount, installment_total, delivery_total = get_cart_total()
-            app.logger.debug(f'Cart totals: merchant_order_amount={merchant_order_amount}, installment_total={installment_total}, delivery_total={delivery_total}')
+            merchant_order_amount, installment_total, delivery_product_total, delivery_animal_total = get_cart_total()
+            app.logger.debug(f'Cart totals: {merchant_order_amount=}, {installment_total=}, {delivery_product_total=}, {delivery_animal_total=}')
         except Exception as e:
             app.logger.error(f'Greška pri računanju ukupne cene korpe: {str(e)}')
             flash('Došlo je do greške pri računanju ukupne cene. Molimo pokušajte ponovo.', 'danger')
@@ -447,23 +452,28 @@ def view_cart():
         
         if request.method == 'POST':
             app.logger.debug(f'POST DELIVERY: {request.form}')
-            delivery_status = request.form.get('delivery_total') == 'on'
+            delivery_product_status = request.form.get('delivery_product_total') == 'on'
+            delivery_animal_status = request.form.get('delivery_animal_total') == 'on'
             session['delivery'] = {
-                "delivery_total": delivery_total,
-                "delivery_status": delivery_status
+                "delivery_product_total": delivery_product_total,
+                "delivery_animal_total": delivery_animal_total,
+                "delivery_product_status": delivery_product_status,
+                "delivery_animal_status": delivery_animal_status,
             }
             cart_contents['delivery'] = session['delivery']
             return redirect(url_for('main.view_cart'))
             
         if 'delivery' not in session:
             session['delivery'] = {
-                "delivery_total": delivery_total,
-                "delivery_status": False
+                "delivery_product_total": 0,
+                "delivery_animal_total": 0,
+                "delivery_product_status": False,
+                "delivery_animal_status": False
             }
             cart_contents['delivery'] = session['delivery']
             
-        delivery_status = cart_contents['delivery']['delivery_status']
-        app.logger.debug(f'Delivery status: {delivery_status}')
+        delivery_product_status = cart_contents['delivery']['delivery_product_status']
+        delivery_animal_status = cart_contents['delivery']['delivery_animal_status']
         
         current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
@@ -477,8 +487,10 @@ def view_cart():
                                 delivery=delivery,
                                 merchant_order_amount=merchant_order_amount,
                                 installment_total=installment_total,
-                                delivery_total=delivery_total,
-                                delivery_status=delivery_status,
+                                delivery_product_total=delivery_product_total,
+                                delivery_animal_total=delivery_animal_total,
+                                delivery_product_status=delivery_product_status,
+                                delivery_animal_status=delivery_animal_status,
                                 current_date=current_date)
     except Exception as e:
         app.logger.error(f'Neočekivana greška pri pregledu korpe: {str(e)}')

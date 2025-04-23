@@ -201,7 +201,8 @@ def register_user():
                         city=form.city.data,
                         zip_code=form.zip_code.data,
                         phone=form.phone.data,
-                        JMBG=form.jmbg.data,
+                        # JMBG=form.jmbg.data,
+                        newsletter=form.newsletter.data,
                         user_type='user_unverified',
                         registration_date=datetime.date.today()
                     )
