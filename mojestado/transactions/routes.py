@@ -8,7 +8,7 @@ from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, provera_validnosti_poziva_na_broj, register_guest_user, create_invoices, send_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
+from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, send_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
 
 
 transactions = Blueprint('transactions', __name__)
@@ -194,7 +194,7 @@ def make_order():
             #? nastaviti podatke za plaćanje preko uplatnice (samo životinje i usluge vezane za životinje)
             delivery_animal_status = session.get('delivery', {}).get('delivery_animal_status', False)
             if delivery_animal_status:
-                installment_total += delivery_animal_total #! preko uplatnice mogu samo biti proizvodi i trošak dostave za životinje
+                installment_total += delivery_animal_total #! preko uplatnice mogu samo biti životinje i trošak dostave za životinje
             
             if new_invoice_products:
                 rnd = generate_random_string()

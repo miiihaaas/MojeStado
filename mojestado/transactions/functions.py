@@ -885,6 +885,73 @@ def deactivate_products(invoice_id):
     return True, None
 
 
+def send_success_email(invoice_id):
+    '''
+    Slanje mejla korisniku o uspešnom plaćanju preko kartice nakon callback_url
+    '''
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    #! nastaviti kod!!!
+
+
+def send_payments_email(user, invoice_id):
+    '''
+    Slanje mejla korisniku o uspešnom plaćanju preko uplatnice nakon ...
+    '''
+    app.logger.info(f'Započinjem slanje email-a za korisnika {user.email}, faktura {invoice_id}')
+    payment_slips = []
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    app.logger.debug(f'Pronađeno {len(invoice_items)} stavki fakture')
+    
+    for invoice_item in invoice_items:
+        if invoice_item.invoice_item_type in [2, 3, 4]:
+            create_debt(user, invoice_item)
+            new_payment_slip = generate_payment_slips_attach(invoice_item)
+            app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
+            payment_slips.append(new_payment_slip)
+    app.logger.debug(f'Generisane uplatnice: {payment_slips}')
+    to = [user.email]
+    bcc = [os.environ.get('MAIL_ADMIN')]
+    subject = 'Potvrda kupovine preko uplatnica na portalu "Moje stado"'
+    
+    if payment_slips:
+        app.logger.info('Faktura je na rate - prilažem uplatnice')
+        attachments = payment_slips
+        na_rate = True
+    else:
+        app.logger.info('Nema ni jedna uplatnica!')
+        return False, 'Nema ni jedna uplatnica!'
+        
+    message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
+    message.html = render_template('message_html_confirm_invoice.html', na_rate=na_rate)
+    
+    app.logger.debug(f'Prilozi za slanje: {attachments}')
+    
+    # Provera postojanja fajlova pre pripajanja
+    for attachment in attachments:
+        if not os.path.exists(attachment):
+            app.logger.error(f'Fajl {attachment} ne postoji!')
+            continue
+        try:
+            with open(attachment, 'rb') as f:
+                app.logger.debug(f'Uspešno pročitan fajl: {attachment}, veličina: {len(f.read())} bajtova')
+                file_content = f.read()
+                message.attach(os.path.basename(attachment), "application/pdf", file_content)
+                app.logger.debug(f'Uspešno dodat prilog: {os.path.basename(attachment)}')
+        except Exception as e:
+            app.logger.error(f'Greška pri prilazu fajla {attachment}: {str(e)}')
+            continue
+            
+    try:
+        mail.send(message)
+        app.logger.info(f'Email uspešno poslat korisniku {user.email}')
+    except Exception as e:
+        app.logger.error(f'Greška pri slanju email-a: {str(e)}')
+        return False, str(e)
+    return True, None
+
+
+
+
 def send_email(user, invoice_id):
     app.logger.info(f'Započinjem slanje email-a za korisnika {user.email}, faktura {invoice_id}')
     
@@ -1006,28 +1073,6 @@ def create_debt(user, invoice_item):
     db.session.commit()
 
 
-def provera_validnosti_poziva_na_broj(podaci):
-    debts = Debt.query.all()
-    all_reference_numbers = [f'{record.user_id:05d}-{record.invoice_item_id:06d}' for record in debts]
-    
-    if len(podaci['PozivNaBrojApp']) == 11:  # Format bez crtice: '00052000138'
-        # Formatira string u oblik sa crticom (5 brojeva - 6 brojeva)
-        formated_poziv_odobrenja = f"{podaci['PozivNaBrojApp'][:5]}-{podaci['PozivNaBrojApp'][5:]}"
-        if formated_poziv_odobrenja in all_reference_numbers:
-            podaci['Validnost'] = True
-        else:
-            podaci['Validnost'] = False
-    elif len(podaci['PozivNaBrojApp']) == 12 and '-' in podaci['PozivNaBrojApp']:  # Format: '00052-000138'
-        if podaci['PozivNaBrojApp'] in all_reference_numbers:
-            podaci['Validnost'] = True
-        else:
-            podaci['Validnost'] = False
-    else:
-        # Poziv na broj nije u ispravnom formatu (treba da bude 11 cifara ili format 5-6 cifara)
-        podaci['Validnost'] = False
-    return podaci
-
-
 ###########################
 ### PaySpot integration ###
 ###########################
@@ -1065,6 +1110,8 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
 
     json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
     response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
+    log_payspot_request_response(merchant_order_id, request_data, response=response, request_type="request")
+    
     app.logger.debug(f'PaySpot status kod: {response.status_code}')
     try:
         response_text = response.text
@@ -1307,6 +1354,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
+                "beneficiaryReference": None if payment_type == 'kartica' else f'K12345-{user.id:05d}-{invoice_item.id:07d}',
                 "amountTrans": round(item_price, 2),
                 "senderFeeAmount": round(item_price, 2) - round(farmer_amount, 2), #! Provizija (platforma + payspot)
                 "beneficiaryAmount": farmer_amount,
@@ -1340,6 +1388,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
                 "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
                 "beneficiaryCity": "Mionica", #! grad portala
+                "beneficiaryReference": None,
                 "amountTrans": round(delivery_product_total, 2), #? koliko kupac plaća za dostavu
                 "senderFeeAmount": 0, #? Provizija (platforma + payspot)
                 "beneficiaryAmount": delivery_product_total, #? koliko portal dobija za dostavu
@@ -1364,6 +1413,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
                 "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
                 "beneficiaryCity": "Mionica", #! grad portala
+                "beneficiaryReference": None, #! ovde treba da se stavi poziv na broj sa uplatnice
                 "amountTrans": round(delivery_animal_total, 2), #? koliko kupac plaća za dostavu
                 "senderFeeAmount": 0, #? Provizija (platforma + payspot)
                 "beneficiaryAmount": delivery_animal_total, #? koliko portal dobija za dostavu
@@ -1623,6 +1673,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
             
             # Slanje zahteva sa eksplicitnim UTF-8 kodiranjem
             response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
+            log_payspot_request_response(merchant_order_id, request_data, response=response, request_type="request-confirm")
             
             # Logovanje odgovora
             app.logger.debug(f'PaySpot status kod za transakciju {transaction.payspot_transaction_id}: {response.status_code}')
@@ -1684,3 +1735,35 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
     except Exception as e:
         app.logger.error(f'Izuzetak pri slanju PaymentOrderConfirm: {str(e)}')
         return False, str(e)
+
+
+def log_payspot_request_response(merchant_order_id, payload, response=None, request_type="request"):
+    """
+    Loguje poslate zahteve i primljene odgovore za određeni nalog (merchant_order_id) u folder app_logs/payspot_requests.
+    Ako folder ne postoji, kreira ga. Ako fajl ne postoji, kreira ga. Ako postoji, dopisuje nove podatke.
+
+    Args:
+        merchant_order_id (str): ID naloga (npr. PMS-000000357)
+        payload (dict/str): Podaci koji se šalju ili primaju (request ili response)
+        response (dict/str, optional): Odgovor koji je primljen (ako postoji)
+        request_type (str): "request" ili "response" (ili custom oznaka)
+    """
+    base_dir = os.path.join(os.getcwd(), "app_logs", "payspot_requests")
+    os.makedirs(base_dir, exist_ok=True)
+    log_file = os.path.join(base_dir, f"{merchant_order_id}.log")
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(f"\n===== {request_type.upper()} =====\n")
+        f.write(f"Vreme: {now}\n")
+        if isinstance(payload, dict):
+            f.write("Podaci:\n")
+            f.write(json.dumps(payload, ensure_ascii=False, indent=4))
+        else:
+            f.write(f"Podaci: {payload}\n")
+        if response is not None:
+            f.write("\n--- ODGOVOR ---\n")
+            if isinstance(response, dict):
+                f.write(json.dumps(response, ensure_ascii=False, indent=4))
+            else:
+                f.write(str(response))
+        f.write("\n==============================\n")
