@@ -890,6 +890,8 @@ def send_success_email(invoice_id):
     Slanje mejla korisniku o uspešnom plaćanju preko kartice nakon callback_url
     '''
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    app.logger.debug(f'Pronađeno {len(invoice_items)} stavki fakture')
+    app.logger.info(f'Nastaviti implementaciju funkcionalnosti za slanje mejla korisniku o uspešnom plaćanju preko kartice nakon callback_url')
     #! nastaviti kod!!!
 
 
@@ -1241,17 +1243,11 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         
         #! Priprema podataka za nalog
         orders_data = []
-        # orders_data_1 = []
-        # orders_data_7 = []
         sequence_no = 1
-        # sequence_no_1 = 1
-        # sequence_no_7 = 1
         app.logger.debug(f'Počinjem kreiranje naloga za plaćanje za {len(invoice_items)} stavki')
         
         # Rečnik za grupisanje stavki po farm.id
         farm_orders = {}
-        # farm_orders_1 = {}
-        # farm_orders_7 = {}
         
         for item in invoice_items:
             # Dobavljanje podataka o farmi
@@ -1313,15 +1309,13 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
             if item.invoice_item_type == 1:
                 app.logger.debug(f'Proizvod: {item_name}, iznos: {item_price}, iznos za farmera: {farmer_amount}')
                 target_dict = farm_orders
-                # target_dict = farm_orders_1
             elif item.invoice_item_type in [2, 3, 4]:
                 app.logger.debug(f'Životinja/usluga/tov: {item_name}, iznos: {item_price}, iznos za farmera: {farmer_amount}')
                 target_dict = farm_orders
-                # target_dict = farm_orders_7
             else:
                 continue
 
-            if farm.id in target_dict:
+            if farm.id in target_dict and payment_type == 'kartica': #! Ako je tip plaćanja kartica onda grupise po farmama, ako je uplatnica onda radi stavku po stavku
                 app.logger.debug(f'Pronađen nalog za farmu {farm.id}, dodajem stavku')
                 target_dict[farm.id]['item_price'] += item_price
                 target_dict[farm.id]['farmer_amount'] += farmer_amount
@@ -1331,6 +1325,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                     'farm': farm,
                     'farmer': farmer,
                     'item_price': item_price,
+                    'item_id': item.id,
                     'farmer_amount': farmer_amount,
                     'user_address': user_address,
                     'user_city': user_city
@@ -1343,6 +1338,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
             farm = farm_data['farm']
             farmer = farm_data['farmer']
             item_price = farm_data['item_price']
+            item_id = farm_data['item_id']
             farmer_amount = farm_data['farmer_amount']
             order = {
                 "sequenceNo": sequence_no,
@@ -1354,7 +1350,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
-                "beneficiaryReference": None if payment_type == 'kartica' else f'K12345-{user.id:05d}-variable',
+                "beneficiaryReference": None if payment_type == 'kartica' else f'K12345-{user.id:05d}-{item_id:07d}',
                 "amountTrans": round(item_price, 2),
                 "senderFeeAmount": round(item_price, 2) - round(farmer_amount, 2), #! Provizija (platforma + payspot)
                 "beneficiaryAmount": round(farmer_amount, 2),

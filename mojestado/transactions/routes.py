@@ -8,7 +8,7 @@ from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import Animal, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, send_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
+from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, send_email, send_success_email, send_payments_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
 
 
 transactions = Blueprint('transactions', __name__)
@@ -231,7 +231,7 @@ def make_order():
                 #? Slanje PaymentOrderInsert zahteva (za uplatnice)
                 success, error_message = send_payment_order_insert(merchant_order_id_animals, installment_total, 'uplatnica', user, new_invoice_animals)
                 if success:
-                    success_animals, error_message = send_payment_order_confirm(merchant_order_id_animals, None, new_invoice_animals.id)
+                    success_animals, error_message = send_payment_order_confirm(merchant_order_id_animals, None, new_invoice_animals.id, invoice_item_id)
                     if not success_animals:
                         app.logger.error(f'Greška pri slanju PaymentOrderConfirm za životinje preko uplatnice: {error_message}')
                         flash(f'Greška pri slanju PaymentOrderConfirm za životinje preko uplatnice: {error_message}.', 'danger')
@@ -239,6 +239,8 @@ def make_order():
                     #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
                     #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
                     #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
+                    send_payments_email(user, new_invoice_animals.id)
+
                 else:
                     flash(f'Greška pri pripremi podataka za plaćanje preko uplatnice: {error_message}.', 'danger')
                     return redirect(url_for('main.view_cart'))
@@ -348,8 +350,8 @@ def callback_url():
             # Slanje email-a korisniku
             user = User.query.get(invoice.user_id)
             if user:
-                send_email(user, invoice_id)
-                
+                # send_email(user, invoice_id) #! treba da se promeni da stiže samo mejl o potvrdi kupovine za proizvode (ako ima životinja to ide na drugom mestu)
+                send_success_email(invoice_id)
             app.logger.info(f'Callback_url: Uspešna transakcija za fakturu {invoice_id}')
         else:
             invoice.status = 'failed'
