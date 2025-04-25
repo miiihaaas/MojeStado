@@ -1354,7 +1354,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
-                "beneficiaryReference": None if payment_type == 'kartica' else f'K12345-{user.id:05d}-{invoice_item.id:07d}',
+                "beneficiaryReference": None if payment_type == 'kartica' else f'K12345-{user.id:05d}-variable',
                 "amountTrans": round(item_price, 2),
                 "senderFeeAmount": round(item_price, 2) - round(farmer_amount, 2), #! Provizija (platforma + payspot)
                 "beneficiaryAmount": round(farmer_amount, 2),
