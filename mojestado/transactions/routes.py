@@ -231,7 +231,7 @@ def make_order():
                 #? Slanje PaymentOrderInsert zahteva (za uplatnice)
                 success, error_message = send_payment_order_insert(merchant_order_id_animals, installment_total, 'uplatnica', user, new_invoice_animals)
                 if success:
-                    success_animals, error_message = send_payment_order_confirm(merchant_order_id_animals, None, new_invoice_animals.id, invoice_item_id)
+                    success_animals, error_message = send_payment_order_confirm(merchant_order_id_animals, None, new_invoice_animals.id)
                     if not success_animals:
                         app.logger.error(f'Greška pri slanju PaymentOrderConfirm za životinje preko uplatnice: {error_message}')
                         flash(f'Greška pri slanju PaymentOrderConfirm za životinje preko uplatnice: {error_message}.', 'danger')
