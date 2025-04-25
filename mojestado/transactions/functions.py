@@ -1357,7 +1357,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "beneficiaryReference": None if payment_type == 'kartica' else f'K12345-{user.id:05d}-{invoice_item.id:07d}',
                 "amountTrans": round(item_price, 2),
                 "senderFeeAmount": round(item_price, 2) - round(farmer_amount, 2), #! Provizija (platforma + payspot)
-                "beneficiaryAmount": farmer_amount,
+                "beneficiaryAmount": round(farmer_amount, 2),
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
                 "paymentPurpose": f"Plaćanje za {farm.farm_name} po fakturi sa brojem {invoice.id}",
@@ -1384,14 +1384,14 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "debtorName": f"{user.name} {user.surname}",
                 "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
                 "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-                "beneficiaryAccount": "325950070021477547", #! broj računa portala
+                "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
                 "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
                 "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
                 "beneficiaryCity": "Mionica", #! grad portala
                 "beneficiaryReference": None,
                 "amountTrans": round(delivery_product_total, 2), #? koliko kupac plaća za dostavu
-                "senderFeeAmount": 0, #? Provizija (platforma + payspot)
-                "beneficiaryAmount": delivery_product_total, #? koliko portal dobija za dostavu
+                "senderFeeAmount": round(0, 2), #? Provizija (platforma + payspot)
+                "beneficiaryAmount": round(delivery_product_total, 2), #? koliko portal dobija za dostavu
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
                 "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
@@ -1409,14 +1409,14 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "debtorName": f"{user.name} {user.surname}",
                 "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
                 "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-                "beneficiaryAccount": "325950070021477547", #! broj računa portala
+                "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
                 "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
                 "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
                 "beneficiaryCity": "Mionica", #! grad portala
                 "beneficiaryReference": None, #! ovde treba da se stavi poziv na broj sa uplatnice
                 "amountTrans": round(delivery_animal_total, 2), #? koliko kupac plaća za dostavu
                 "senderFeeAmount": 0, #? Provizija (platforma + payspot)
-                "beneficiaryAmount": delivery_animal_total, #? koliko portal dobija za dostavu
+                "beneficiaryAmount": round(delivery_animal_total, 2), #? koliko portal dobija za dostavu
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
                 "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
@@ -1430,66 +1430,6 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         # Ažuriranje ukupnog iznosa svih naloga
         total_amount = sum(order["amountTrans"] for order in orders_data)
         app.logger.debug(f'Ukupan iznos svih naloga nakon dodavanja dostave: {total_amount}')
-            
-        # Kreiranje orders_data_7 iz farm_orders_7
-        # orders_data_7 = []
-        # app.logger.debug(f'{farm_orders_7=}')
-        # for farm_id, farm_data in farm_orders_7.items():
-        #     farm = farm_data['farm']
-        #     farmer = farm_data['farmer']
-        #     item_price = farm_data['item_price']
-        #     farmer_amount = farm_data['farmer_amount']
-        #     order = {
-        #         "sequenceNo": sequence_no_7,
-        #         "merchantOrderReference": f"REF-{merchant_order_id}-F{farm.id}",
-        #         "debtorName": f"{user.name} {user.surname}",
-        #         "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
-        #         "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-        #         "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",
-        #         "beneficiaryName": f"{farmer.name} {farmer.surname}",
-        #         "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
-        #         "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
-        #         "amountTrans": round(item_price, 2),
-        #         "senderFeeAmount": round(item_price, 2) - farmer_amount,
-        #         "beneficiaryAmount": farmer_amount,
-        #         "beneficiaryCurrency": 941,
-        #         "purposeCode": 289,
-        #         "paymentPurpose": f"Plaćanje za {farm.farm_name} po fakturi sa brojem {invoice.id}",
-        #         "isUrgent": 2,
-        #         "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-        #     }
-        #     orders_data_7.append(order)
-        #     sequence_no_7 += 1
-
-        # if session.get('delivery', {}).get('delivery_animal_status', False):
-        #     delivery_animal_total = session.get('delivery', {}).get('delivery_animal_total', 0)
-            
-        #     app.logger.debug(f'Dodajem nalog za dostavu preko uplatnice u iznosu od {delivery_animal_total} din')
-        #     # Dodavanje naloga za dostavu
-        #     delivery_order = {
-        #         "sequenceNo": sequence_no_1,
-        #         "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
-        #         "debtorName": f"{user.name} {user.surname}",
-        #         "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
-        #         "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-        #         "beneficiaryAccount": "325950070021477547", #! broj računa portala
-        #         "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
-        #         "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
-        #         "beneficiaryCity": "Mionica", #! grad portala
-        #         "amountTrans": round(delivery_animal_total, 2), #? koliko kupac plaća za dostavu
-        #         "senderFeeAmount": 0, #? Provizija (platforma + payspot)
-        #         "beneficiaryAmount": delivery_animal_total, #? koliko portal dobija za dostavu
-        #         "beneficiaryCurrency": 941,  # RSD
-        #         "purposeCode": 289,  # Kod plaćanja
-        #         "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
-        #         "isUrgent": 2,  # Nije hitno
-        #         "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-        #     }
-        #     orders_data_7.append(delivery_order)
-            
-        # # Ažuriranje ukupnog iznosa svih naloga            
-        # total_amount_7 = sum(order["amountTrans"] for order in orders_data_7)
-        # app.logger.debug(f'Ukupan iznos svih naloga nakon dodavanja dostave: {total_amount_7}')
             
         # Priprema podataka za zahtev
         request_data = {
@@ -1505,11 +1445,11 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "body": {
                     "paymentOrderGroup": {
                         "merchantOrderID": merchant_order_id,
-                        "merchantOrderAmount": float(merchant_order_amount),
+                        "merchantOrderAmount": round(merchant_order_amount, 2),
                         "merchantCurrencyCode": 941,  # RSD
-                        "paymentType": 1 if payment_type == 'kartica' else 7,  # 1 -> Plaćanje karticom, 7 -> Plaćanje uplatnicom
+                        "paymentType": 1 if payment_type == 'kartica' else 3,  # 1 -> Plaćanje karticom, 3 -> Plaćanje uplatnicom
                         "actionType": "I",  # Insert
-                        "sumOfOrders": total_amount,  #! Ukupan iznos svih naloga, u našem slučaju treba da je isti kao merchantOrderAmount
+                        "sumOfOrders": round(total_amount, 2),  #! Ukupan iznos svih naloga, u našem slučaju treba da je isti kao merchantOrderAmount
                         "numberOfOrders": len(orders_data),  #! spajaj uplate po farmama jer će jeftinije biti u odnosu na pojedinačne proizvode/životinje
                         "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'IN001807'), #! ovo treba banka da da, a ako neme u .env učitava potak iz dokumentacije 'IN001807'
                         "transtype": "Auth",
@@ -1518,33 +1458,6 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 }
             }
         }
-        
-        # request_data_7 = {
-        #     "data": {
-        #         "header": {
-        #             "companyID": os.environ.get('PAYSPOT_COMPANY_ID'),
-        #             "requestDateTime": request_date_time,
-        #             "msgType": 101,
-        #             "rnd": rnd,
-        #             "hash": "",  # Biće izračunat kasnije
-        #             "language": 1  # Srpski jezik
-        #         },
-        #         "body": {
-        #             "paymentOrderGroup": {
-        #                 "merchantOrderID": merchant_order_id,
-        #                 "merchantOrderAmount": float(installment_total),
-        #                 "merchantCurrencyCode": 941,  # RSD
-        #                 "paymentType": 7,  # Plaćanje karticom
-        #                 "actionType": "I",  # Insert
-        #                 "sumOfOrders": total_amount_7,  #! Ukupan iznos svih naloga, u našem slučaju treba da bude isti kao merchantOrderAmount
-        #                 "numberOfOrders": len(orders_data_7),  #! spajaj uplate po farmama jer će jeftinije biti u odnosu na pojedinačne proizvode/životinje
-        #                 "terminalID": os.environ.get('PAYSPOT_TERMINAL_ID', 'IN001807'), #! ovo treba banka da da, a ako neme u .env učitava potak iz dokumentacije 'IN001807'
-        #                 "transtype": "Auth",
-        #                 "orders": orders_data_7
-        #             }
-        #         }
-        #     }
-        # }
         
         # Izračunavanje hash-a
         # companyID, msgType (101), rnd, secretKey
@@ -1610,6 +1523,9 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
         
         # Slanje posebnog zahteva za svaku transakciju
         for transaction in payspot_transactions:
+            if transaction.order_confirmation:
+                app.logger.debug(f'Verifikacija za transakciju {transaction.id} je već izvršena, sprečeno slanje zahteva za već verifikovanu transakciju.')
+                continue
             # Generisanje random stringa za hash za svaki zahtev
             rnd = generate_random_string()
             
@@ -1640,7 +1556,7 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
                 "payspotGroupID": transaction.payspot_group_id,
                 "payspotTransactionID": transaction.payspot_transaction_id,
                 "beneficiaryAccount": farm.farm_account_number,
-                "beneficiaryAmount": beneficiary_amount,
+                "beneficiaryAmount": round(beneficiary_amount, 2),
                 "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             }
             
@@ -1703,6 +1619,9 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
                 
                 if error_code == 0:
                     app.logger.info(f'Uspešno poslat PaymentOrderConfirm za transakciju {transaction.payspot_transaction_id}')
+                    transaction.order_confirmation = True
+                    db.session.commit()
+                    app.logger.info(f'Verifikacija za transakciju {transaction.id} je uspešno izvršena, {transaction.payspot_transaction_id=}')
                 else:
                     # Prvo pokušaj da nađeš error message u statusu
                     error_message = status.get("errorMessage") if status else None

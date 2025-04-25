@@ -292,6 +292,7 @@ class PaySpotTransaction(db.Model):
     create_time = db.Column(db.String(10), nullable=True)
     sender_fee = db.Column(db.Float, nullable=True)
     beneficiary_amount = db.Column(db.Float, nullable=True)
+    order_confirmation = db.Column(db.Boolean, nullable=True, default=False)
     
     # Relacija
     invoice = db.relationship('Invoice')

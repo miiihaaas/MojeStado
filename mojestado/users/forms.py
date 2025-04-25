@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import FloatField, IntegerField, StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Regexp
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from mojestado.models import User
 
@@ -43,7 +43,13 @@ class RegistrationFarmForm(FlaskForm):
     # zip_code = StringField('Poštanski broj', validators=[DataRequired(), Length(min=5, max=5)])
     municipality = SelectField('Opština', choices=[])
     phone = StringField('Telefon', validators=[DataRequired(), Length(min=9, max=10)])
-    account_number = StringField('Broj računa', validators=[DataRequired(), Length(min=20, max=20)])
+    account_number = StringField(
+        'Broj računa',
+        validators=[
+            DataRequired(message="Broj računa je obavezan."),
+            Regexp(r'^\d{3}-\d{13}-\d{2}$', message="Broj računa mora biti u formatu xxx-xxxxxxxxxxxxx-xx.")
+        ]
+    )
     # jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
     bpg = StringField('BPG', validators=[DataRequired(), Length(min=12, max=12)])
     mb = StringField('MB', validators=[DataRequired(), Length(min=10, max=10)])
@@ -60,7 +66,8 @@ class EditFarmForm(FlaskForm):
     city = StringField('Mesto', validators=[DataRequired(), Length(min=2, max=20)])
     municipality = SelectField('Opština', choices=[])
     phone = StringField('Telefon', validators=[DataRequired(), Length(min=9, max=10)])
-    account_number = StringField('Broj računa', validators=[DataRequired(), Length(min=20, max=20)])
+    account_number = StringField('Broj računa', validators=[DataRequired(), Length(min=20, max=20),
+        Regexp(r'^\d{3}-\d{13}-\d{2}$', message="Broj računa mora biti u formatu xxx-xxxxxxxxxxxxx-xx.")])
     # jmbg = StringField('JMBG', validators=[DataRequired(), Length(min=13, max=13)])
     bpg = StringField('BPG', validators=[DataRequired(), Length(min=12, max=12)])
     mb = StringField('MB', validators=[DataRequired(), Length(min=10, max=10)])
