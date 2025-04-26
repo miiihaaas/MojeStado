@@ -935,14 +935,26 @@ def deactivate_products(invoice_id):
     return True, None
 
 
-def send_success_email(invoice_id):
+def send_success_email(invoice, auth_number, transaction_id, total_price):
     '''
     Slanje mejla korisniku o uspešnom plaćanju preko kartice nakon callback_url
     '''
-    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    user = User.query.get(invoice.user_id)
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice.id).all()
     app.logger.debug(f'Pronađeno {len(invoice_items)} stavki fakture')
     app.logger.info(f'Nastaviti implementaciju funkcionalnosti za slanje mejla korisniku o uspešnom plaćanju preko kartice nakon callback_url')
-    #! nastaviti kod!!!
+    to = [user.email]
+    bcc = [os.environ.get('MAIL_ADMIN')]
+    subject = 'Potvrda kupovine preko kartice na portalu "Moje stado"'
+    message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
+    message.html = render_template('message_html_success_url.html', 
+                                    user=user, 
+                                    invoice=invoice, 
+                                    invoice_items=invoice_items, 
+                                    auth_number=auth_number, 
+                                    transaction_id=transaction_id, 
+                                    total_price=total_price)
+    mail.send(message)
 
 
 def send_payments_email(user, invoice_id):
@@ -1442,66 +1454,6 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         total_amount = sum(order["amountTrans"] for order in orders_data)
         app.logger.debug(f'Ukupan iznos svih naloga: {total_amount}')
         
-        # #! Provera da li je aktivirana opcija dostave, ako jeste, dodajem nalog za dostavu
-        # delivery_order = None
-        # if session.get('delivery')['delivery_product_status'] and payment_type == 'kartica':
-        #     delivery_product_total = session.get('delivery')['delivery_product_total']
-            
-        #     app.logger.debug(f'Dodajem nalog za dostavu preko kartice u iznosu od {delivery_product_total} din')
-        #     # Dodavanje naloga za dostavu
-        #     delivery_order = {
-        #         "sequenceNo": sequence_no,
-        #         "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
-        #         "debtorName": f"{user.name} {user.surname}",
-        #         "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
-        #         "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-        #         "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
-        #         "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
-        #         "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
-        #         "beneficiaryCity": "Mionica", #! grad portala
-        #         "beneficiaryReference": None,
-        #         "amountTrans": round(delivery_product_total, 2), #? koliko kupac plaća za dostavu
-        #         "senderFeeAmount": round(0, 2), #? Provizija (platforma + payspot)
-        #         "beneficiaryAmount": round(delivery_product_total, 2), #? koliko portal dobija za dostavu
-        #         "beneficiaryCurrency": 941,  # RSD
-        #         "purposeCode": 289,  # Kod plaćanja
-        #         "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
-        #         "isUrgent": 2,  # Nije hitno
-        #         "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-        #     }
-        # elif session.get('delivery')['delivery_animal_status'] and payment_type == 'uplatnica':
-        #     delivery_animal_total = session.get('delivery')['delivery_animal_total']
-        #     app.logger.debug(f'Dodajem nalog za dostavu preko uplatnice u iznosu od {delivery_animal_total} din')
-            
-        #     # Dodavanje naloga za dostavu
-        #     delivery_order = {
-        #         "sequenceNo": sequence_no,
-        #         "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
-        #         "debtorName": f"{user.name} {user.surname}",
-        #         "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
-        #         "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-        #         "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
-        #         "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
-        #         "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
-        #         "beneficiaryCity": "Mionica", #! grad portala
-        #         "beneficiaryReference": f'K12345-{user.id:05d}-{invoice.id:07d}', #! Nisam siguran da je ovo dobar poziv na broj
-        #         "amountTrans": round(delivery_animal_total, 2), #? koliko kupac plaća za dostavu
-        #         "senderFeeAmount": 0, #? Provizija (platforma + payspot)
-        #         "beneficiaryAmount": round(delivery_animal_total, 2), #? koliko portal dobija za dostavu
-        #         "beneficiaryCurrency": 941,  # RSD
-        #         "purposeCode": 289,  # Kod plaćanja
-        #         "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
-        #         "isUrgent": 2,  # Nije hitno
-        #         "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-        #     }
-        # if delivery_order:
-        #     orders_data.append(delivery_order)
-        #     sequence_no += 1
-            
-        # Ažuriranje ukupnog iznosa svih naloga
-        total_amount = sum(order["amountTrans"] for order in orders_data)
-        app.logger.debug(f'Ukupan iznos svih naloga nakon dodavanja dostave: {total_amount}')
-            
         # Priprema podataka za zahtev
         request_data = {
             "data": {

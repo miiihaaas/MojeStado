@@ -505,6 +505,8 @@ def remove_animal_from_cart(animal_id):
         if 'animals' not in session or not isinstance(session.get('animals'), list):
             app.logger.warning('Korpa je prazna ili je došlo do greške sa sesijom')
             flash('Korpa je prazna ili je došlo do greške.', 'info')
+            session['delivery']['delivery_animal_status'] = False
+            session['delivery']['delivery_animal_total'] = 0
             return redirect(url_for('main.view_cart'))
             
         try:
@@ -527,6 +529,10 @@ def remove_animal_from_cart(animal_id):
 
         session.modified = True
         
+        if session.get('animals') == []:
+            session['delivery']['delivery_animal_status'] = False
+            session['delivery']['delivery_animal_total'] = 0
+        
         app.logger.info(f'Životinja {animal_id} je uspešno uklonjena iz korpe')
         flash('Uspešno ste obrisali ovu životinju iz korpe.', 'success')
         return redirect(url_for('main.view_cart'))
@@ -544,6 +550,8 @@ def remove_product_from_cart(product_id):
         if 'products' not in session or not isinstance(session.get('products'), list):
             app.logger.warning('Korpa je prazna ili je došlo do greške sa sesijom')
             flash('Korpa je prazna ili je došlo do greške.', 'info')
+            session['delivery']['delivery_product_status'] = False
+            session['delivery']['delivery_product_total'] = 0
             return redirect(url_for('main.view_cart'))
             
         try:
@@ -558,6 +566,9 @@ def remove_product_from_cart(product_id):
 
         session['products'] = [product for product in session['products'] if product.get('id') != product_id]
         session.modified = True
+        if session.get('products') == []:
+            session['delivery']['delivery_product_status'] = False
+            session['delivery']['delivery_product_total'] = 0
         
         app.logger.info(f'Proizvod {product_id} je uspešno uklonjen iz korpe')
         flash('Uspešno ste obrisali ovaj proizvod iz korpe.', 'success')
