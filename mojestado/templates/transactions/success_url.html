@@ -9,15 +9,22 @@
                         <h2 class="mb-4 text-success text-center">Transakcija je uspešna. Račun vaše platne kartice je zadužen.</h2>
                         <hr>
                         <h4 class="mb-3">Podaci o potrošaču</h4>
-                        <ul class="list-unstyled mb-4">
-                            <li><strong>Ime i prezime:</strong> {{ buyer_data.ime }} {{ buyer_data.prezime }}</li>
-                            <li><strong>Email:</strong> {{ buyer_data.email }}</li>
-                            <li><strong>Telefon:</strong> {{ buyer_data.telefon }}</li>
-                            <li><strong>Adresa:</strong> {{ buyer_data.adresa }}</li>
-                            <li><strong>Mesto:</strong> {{ buyer_data.mesto }}</li>
-                            <li><strong>Poštanski broj:</strong> {{ buyer_data.postanski_broj }}</li>
-                            <li><strong>Tip korisnika:</strong> {{ buyer_data.tip_korisnika }}</li>
-                        </ul>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled mb-4">
+                                    <li><strong>Ime i prezime:</strong> {{ user.name }} {{ user.surname }}</li>
+                                    <li><strong>Email:</strong> {{ user.email }}</li>
+                                    <li><strong>Telefon:</strong> {{ user.phone }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled mb-4">
+                                    <li><strong>Adresa:</strong> {{ user.address }}</li>
+                                    <li><strong>Mesto:</strong> {{ user.city }}</li>
+                                    <li><strong>Poštanski broj:</strong> {{ user.zip_code }}</li>
+                                </ul>
+                            </div>
+                        </div>
                         <h4 class="mb-3">Podaci o narudžbini</h4>
                         <ul class="list-unstyled mb-4">
                             <li><strong>OID porudžbine:</strong> {{ invoice.invoice_number }}</li>
@@ -33,36 +40,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in cart_data['products'] %}
+                                    {% for item in invoice_items %}
                                     <tr>
-                                        <td>{{ item.product_name }}</td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td>{{ item.product_price_per_unit }}</td>
-                                        <td>{{ item.total_price }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% for item in cart_data['animals'] %}
-                                    <tr>
-                                        <td>{{ item.animal_category_id }}</td>
-                                        <td>1</td>
-                                        <td>{{ item.total_price }}</td>
-                                        <td>{{ item.total_price }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% for item in cart_data['fattening'] %}
-                                    <tr>
-                                        <td>{{ item.fattening_name }}</td>
-                                        <td>1</td>
-                                        <td>{{ item.total_price }}</td>
-                                        <td>{{ item.total_price }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% for item in cart_data['services'] %}
-                                    <tr>
-                                        <td>{{ item.service_name }}</td>
-                                        <td>1</td>
-                                        <td>{{ item.total_price }}</td>
-                                        <td>{{ item.total_price }}</td>
+                                        <td>{{ item.invoice_item_details["product_name"] }}</td>
+                                        <td>{{ item.invoice_item_details["quantity"] }}</td>
+                                        <td>{{ item.invoice_item_details["product_price_per_unit"] }}</td>
+                                        <td>{{ item.invoice_item_details["total_price"] }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -76,19 +59,25 @@
                         </div>
                         <div class="cart-notice mb-2">*PDV je uključen u cenu.</div>
                         <div class="cart-notice mb-4">**Sve cene su prikazane u dinarima (RSD).</div>
-                        <h4 class="mb-3">Podaci o trgovcu</h4>
-                        <ul class="list-unstyled mb-4">
-                            <li><strong>Naziv trgovca:</strong> Naša Imperija DOO</li>
-                            <li><strong>PIB:</strong> 114244045</li>
-                            <li><strong>Adresa trgovca:</strong> Kneza Grbovića 10, 14242 Mionica</li>
-                        </ul>
-                        <h4 class="mb-3">Podaci o transakciji</h4>
-                        <ul class="list-unstyled mb-4">
-                            <li><strong>Datum i vreme:</strong> ____</li>
-                            <li><strong>Approval code:</strong> ____</li>
-                            <li><strong>Ref. broj:</strong> ____</li>
-                            <li><strong>Status:</strong> ____</li>
-                        </ul>
+                        <div class="row">
+                            <div class="col-md-7">
+                                <h4 class="mb-3">Podaci o trgovcu</h4>
+                                <ul class="list-unstyled mb-4">
+                                    <li><strong>Naziv trgovca:</strong> Naša Imperija DOO</li>
+                                    <li><strong>PIB:</strong> 114244045</li>
+                                    <li><strong>Adresa trgovca:</strong> Kneza Grbovića 10, 14242 Mionica</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-5">
+                                <h4 class="mb-3">Podaci o transakciji</h4>
+                                <ul class="list-unstyled mb-4">
+                                    <li><strong>Datum i vreme:</strong> {{ invoice.datetime.strftime('%d.%m.%Y %H:%M:%S') }}</li>
+                                    <li><strong>Approval code:</strong> {{ auth_number }}</li>
+                                    <li><strong>Ref. broj:</strong> {{ transaction_id }}</li>
+                                    <li><strong>Status:</strong> {{ invoice.status }}</li>
+                                </ul>
+                            </div>
+                        </div>
                         <div class="text-center mt-4">
                             <a href="{{ url_for('main.home') }}" class="btn btn-primary">Povratak na početnu</a>
                         </div>

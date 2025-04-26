@@ -10,19 +10,20 @@
                         <hr>
                         <h4 class="mb-3">Podaci o pokušaju plaćanja</h4>
                         <ul class="list-unstyled mb-4">
-                            <li><strong>Ime i prezime:</strong> ____</li>
-                            <li><strong>Email:</strong> ____</li>
-                            <li><strong>OID porudžbine:</strong> ____</li>
+                            <li><strong>Ime i prezime: </strong> ____</li>
+                            <li><strong>Email: </strong> ____</li>
+                            <li><strong>OID porudžbine: </strong> ____</li>
                         </ul>
                         <h4 class="mb-3">Podaci o trgovcu</h4>
                         <ul class="list-unstyled mb-4">
-                            <li><strong>Naziv trgovca:</strong> ____</li>
-                            <li><strong>PIB:</strong> ____</li>
+                            <li><strong>Naziv trgovca: </strong>Naša Imperija DOO</li>
+                            <li><strong>PIB: </strong>114244045</li>
+                            <li><strong>Adresa trgovca: </strong>Kneza Grbovića 10, 14242 Mionica</li>
                         </ul>
                         <h4 class="mb-3">Podaci o transakciji</h4>
                         <ul class="list-unstyled mb-4">
-                            <li><strong>Datum i vreme:</strong> ____</li>
-                            <li><strong>Status:</strong> Otkazana</li>
+                            <li><strong>Datum i vreme: </strong>{{ now.strftime('%d.%m.%Y %H:%M:%S') }}</li>
+                            <li><strong>Status: </strong>Otkazana</li>
                         </ul>
                         <div class="text-center mt-4">
                             <a href="{{ url_for('main.home') }}" class="btn btn-primary">Povratak na početnu</a>
