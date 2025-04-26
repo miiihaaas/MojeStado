@@ -6,7 +6,7 @@
             <div class="col-md-8">
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <h2 class="mb-4 text-success text-center">Transakcija je uspešna. Račun vaše platne kartice je zadužen.</h2>
+                        <h2 class="mb-4 text-success text-center">Potvrda narudžbine za životinje</h2>
                         <hr>
                         <h4 class="mb-3">Podaci o potrošaču</h4>
                         <div class="row">
@@ -33,29 +33,20 @@
                             <table class="table table-striped table-hover">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Stavka</th>
+                                        <th>Životinja</th>
                                         <th>Količina</th>
                                         <th>Cena/jed.</th>
                                         <th>Ukupno</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in invoice_items %}
-                                    {% if item.invoice_item_details["product_name"] %}
+                                    {% for item in item_data %}
                                     <tr>
-                                        <td>{{ item.invoice_item_details["product_name"] }}</td>
-                                        <td>{{ item.invoice_item_details["quantity"] }}</td>
-                                        <td>{{ item.invoice_item_details["product_price_per_unit"] }}</td>
-                                        <td>{{ item.invoice_item_details["total_price"] }}</td>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>{{ item.price_per_unit }}</td>
+                                        <td>{{ item.total_price }}</td>
                                     </tr>
-                                    {% else %}
-                                    <tr>
-                                        <td>Dostava</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>{{ item.invoice_item_details["total_price"] }}</td>
-                                    </tr>
-                                    {% endif %}
                                     {% endfor %}
                                 </tbody>
                                 <tfoot>
@@ -78,16 +69,10 @@
                                 </ul>
                             </div>
                             <div class="col-md-5">
-                                <h4 class="mb-3">Podaci o transakciji</h4>
+                                <h4 class="mb-3">Podaci o narudžbini</h4>
                                 <ul class="list-unstyled mb-4">
                                     <li><strong>Datum i vreme: </strong>{{ invoice.datetime.strftime('%d.%m.%Y %H:%M:%S') }}</li>
-                                    <li><strong>Approval code: </strong>{{ auth_number }}</li>
-                                    <li><strong>Ref. broj: </strong>{{ transaction_id }}</li>
-                                    {% if invoice.status == 'paid' %}
-                                    <li><strong>Status: </strong>plaćen</li>
-                                    {% else %}
-                                    <li><strong>Status: </strong>ne plaćen!?</li>
-                                    {% endif %}
+                                    <li><strong>Status: </strong>{{ invoice.status }}</li>
                                 </ul>
                             </div>
                         </div>

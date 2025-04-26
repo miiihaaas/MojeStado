@@ -9,11 +9,12 @@
             <p>
                 {{ user.name }} {{ user.surname }}<br>
                 {{ user.email }}<br>
-                {{ user.address }}, {{ user.city }}
+                {{ user.address }}, {{ user.zip_code }} {{ user.city }}
             </p>
         </div>
         <div class="col-12 mb-5"> 
             {% if products %}
+            {{ merchant_order_id }}
             <h3>Gotovi proizvodi</h3>
             <div class="table-responsive-2">
                 <table class="table table-striped mb--1" id="productsTable">
@@ -77,7 +78,9 @@
             <div class="cart-notice mb-4">**Sve cene su prikazane u dinarima (RSD).</div>
             <input type="hidden" name="product_count" value="{{ products|length }}">
             {% endif %}
-
+            {% if animals %}
+            {{ merchant_order_id_animals }}
+            {% endif %}
             {% if animals %}
             <h3>Živa vaga</h3>
             <div class="table-responsive-2">
@@ -349,11 +352,14 @@
                 <input type="checkbox" id="saglasan" required>
                 <label for="saglasan">Saglasan/a sam sa <a href="{{ url_for('main.terms_and_conditions') }}" target="_blank"><u>uslovima kupovine</u></a></label>
             </div>
-
+            {% if new_invoice_animals_id %}
+            <button id="submit-btn" class="btn btn-primary mb-20" type="submit" disabled>Nastavi ka uplati i potvrdi kupovinu putem uplatnica</button>
+            {% else %}
             <button id="submit-btn" class="btn btn-primary mb-20" type="submit" disabled>Nastavi ka uplati</button>
+            {% endif %}
         </form>
-        {% elif installment_total %}
-        <a href="" class="btn btn-primary">Dugme koje će da pošalje uplatnice i započne ostale funkcionalnosti</a>
+        {% elif new_invoice_animals_id %}
+        <a href="{{ url_for('transactions.confirm_animals_order', invoice_id=new_invoice_animals_id) }}" class="btn btn-primary">Potvrdi kupovinu putem uplatnica</a>
         {% endif %}
     </div>
 </div>
@@ -363,13 +369,13 @@
 <script>
     const checkbox = document.getElementById('saglasan');
     const submitBtn = document.getElementById('submit-btn');
-  
+    
     checkbox.addEventListener('change', () => {
-      if (checkbox.checked) {
-        submitBtn.disabled = false;
-      } else {
-        submitBtn.disabled = true;
-      }
+        if (checkbox.checked) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
     });
-  </script>
-  {% endblock scripts %}
+</script>
+{% endblock scripts %}
