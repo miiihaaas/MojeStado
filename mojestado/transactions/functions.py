@@ -657,7 +657,7 @@ def create_invoices():
     
     Faktura sadrži:
     - Datum i vreme transakcije
-    - Jedinstveni broj fakture (format: YYYY-NNNNNN)
+    - Jedinstveni broj fakture (format: PMS-NNNNNN | ZMS-NNNNNN)
     - ID korisnika (može biti registrovani korisnik ili gost)
     - Status fakture (unconfirmed, confirmed, paid, cancelled)
     
@@ -665,21 +665,27 @@ def create_invoices():
     - ID farme
     - ID fakture
     - Detalje stavke u JSON formatu
-    - Tip stavke (1: proizvod, 2: životinja, 3: usluga, 4: tov)
+    - Tip stavke (1: proizvod, 2: životinja, 3: usluga, 4: tov, 5: dostava)
     
     Returns:
         tuple: (new_invoice_products, new_invoice_animals)
     '''
-    app.logger.debug(f'[DEBUG] --- POČETAK create_invoices ---')
-    app.logger.debug(f'[DEBUG] session: {dict(session)}')
+    app.logger.debug(f'--- POČETAK create_invoices ---')
+    app.logger.debug(f'session: {dict(session)}')
     if 'products' not in session and 'animals' not in session:
-        app.logger.debug('[DEBUG] Nema proizvoda ni životinja u sesiji, izlazim iz funkcije')
+        app.logger.debug('Nema proizvoda ni životinja u sesiji, izlazim iz funkcije')
         return None, None
     
     products = session.get('products', [])
     animals = session.get('animals', [])
-    app.logger.debug(f'[DEBUG] products: {products}')
-    app.logger.debug(f'[DEBUG] animals: {animals}')
+    delivery_products_status = session.get('delivery', None).get('delivery_product_status', None)
+    delivery_products_total = session.get('delivery', None).get('delivery_product_total', None)
+    delivery_animals_status = session.get('delivery', None).get('delivery_animal_status', None)
+    delivery_animals_total = session.get('delivery', None).get('delivery_animal_total', None)
+    app.logger.debug(f'products: {products}')
+    app.logger.debug(f'animals: {animals}')
+    app.logger.debug(f'{delivery_products_status=}, {delivery_products_total=}')
+    app.logger.debug(f'{delivery_animals_status=}, {delivery_animals_total=}')
     new_invoice_products = None
     new_invoice_animals = None
     
@@ -690,118 +696,162 @@ def create_invoices():
             user_id = current_user.id
         else:
             guest_email = session.get('guest_email')
-            app.logger.debug(f'[DEBUG] guest_email iz sesije: {guest_email}')
+            app.logger.debug(f'guest_email iz sesije: {guest_email}')
             guest_user = User.query.filter_by(email=guest_email).first()
-            app.logger.debug(f'[DEBUG] guest_user objekat: {guest_user}')
+            app.logger.debug(f'guest_user objekat: {guest_user}')
             if not guest_user:
-                app.logger.error(f'[DEBUG] GOST korisnik nije pronađen u bazi za email: {guest_email}')
+                app.logger.error(f'GOST korisnik nije pronađen u bazi za email: {guest_email}')
                 return None, None
             user_id = guest_user.id
-        app.logger.debug(f'[DEBUG] user_id koji se koristi za fakturu: {user_id}')
+        app.logger.debug(f'user_id koji se koristi za fakturu: {user_id}')
     except Exception as e:
-        app.logger.error(f'[DEBUG] Greška pri dohvatanju korisnika za fakturu: {str(e)}')
+        app.logger.error(f'Greška pri dodeljivanju korisnika za fakturu: {str(e)}')
         return None, None
     
     try:
         last_invoice = Invoice.query.order_by(Invoice.id.desc()).first()
-        app.logger.debug(f'[DEBUG] last_invoice objekat: {last_invoice}')
+        app.logger.debug(f'last_invoice objekat: {last_invoice}')
         if last_invoice:
             last_invoice_number = int(last_invoice.id)
         else:
             last_invoice_number = 0
-        app.logger.debug(f'[DEBUG] last_invoice_number: {last_invoice_number}')
+        app.logger.debug(f'last_invoice_number: {last_invoice_number}')
     except Exception as e:
-        app.logger.error(f'[DEBUG] Greška pri dohvatanju poslednje fakture: {str(e)}')
+        app.logger.error(f'Greška pri dohvatanju poslednje fakture: {str(e)}')
         last_invoice_number = 0
     
     if products:
         try:
             last_invoice_number += 1
             new_invoice_number = f'PMS-{last_invoice_number:09d}'
-            app.logger.debug(f'[DEBUG] Novi broj fakture za proizvode: {new_invoice_number}')
+            app.logger.debug(f'Novi broj fakture za proizvode: {new_invoice_number}')
             new_invoice_products = create_single_invoice(new_invoice_number, user_id)
-            app.logger.debug(f'[DEBUG] new_invoice_products objekat: {new_invoice_products}')
+            app.logger.debug(f'new_invoice_products objekat: {new_invoice_products}')
             if new_invoice_products:
                 app.logger.info(f'Kreirana nova faktura proizvoda: {new_invoice_products.id}')
             else:
-                app.logger.error('[DEBUG] new_invoice_products je None!')
-            for product in products:
-                app.logger.debug(f'[DEBUG] Dodajem product u InvoiceItems: {product}')
-                new_invoice_item = InvoiceItems(
-                    farm_id=product['farm_id'],
-                    invoice_id=new_invoice_products.id if new_invoice_products else None,
-                    invoice_item_details=product,
-                    invoice_item_type=1
-                )
-                app.logger.debug(f'[DEBUG] Kreiran InvoiceItems objekat: {new_invoice_item}')
-                db.session.add(new_invoice_item)
+                app.logger.error('new_invoice_products je None!')
+            try:
+                for product in products:
+                    app.logger.debug(f'Dodajem product u InvoiceItems: {product}')
+                    new_invoice_item = InvoiceItems(
+                        farm_id=product['farm_id'],
+                        invoice_id=new_invoice_products.id if new_invoice_products else None,
+                        invoice_item_details=product,
+                        invoice_item_type=1
+                    )
+                    app.logger.debug(f'Kreiran InvoiceItems objekat: {new_invoice_item}')
+                    db.session.add(new_invoice_item)
+            except Exception as e:
+                db.session.rollback()
+                app.logger.error(f'Greška pri dodavanju proizvoda u fakturu: {str(e)}')
             db.session.commit()
-            app.logger.debug('[DEBUG] Commit za InvoiceItems proizvoda uspešan')
+            app.logger.debug('Commit za InvoiceItems proizvoda uspešan')
+            try:
+                if delivery_products_status and delivery_products_total > 0:
+                    app.logger.debug('Dodajem dostavu proizvoda u fakturu')
+                    delivery_product_details = {
+                        "farm_id": 0, #! dostava se uplaćuje na portal (farm_id=0)
+                        "total_price": delivery_products_total
+                    }
+                    new_invoice_item = InvoiceItems(
+                        farm_id=delivery_product_details['farm_id'],
+                        invoice_id=new_invoice_products.id if new_invoice_products else None,
+                        invoice_item_details=delivery_product_details,
+                        invoice_item_type=5
+                    )
+                    app.logger.debug(f'Kreiran InvoiceItems objekat: {new_invoice_item}')
+                    db.session.add(new_invoice_item)
+                    db.session.commit()
+                    app.logger.debug('Commit za InvoiceItems dostave proizvoda uspešan')
+            except Exception as e:
+                db.session.rollback()
+                app.logger.error(f'Greška pri dodavanju dostave proizvoda u fakturu: {str(e)}')
         except Exception as e:
             db.session.rollback()
             app.logger.error(f'Greška pri dodavanju proizvoda u fakturu: {str(e)}')
+        
     
     if animals:
         try:
             last_invoice_number += 1
             new_invoice_number = f'ZMS-{last_invoice_number:09d}'
-            app.logger.debug(f'[DEBUG] Novi broj fakture za životinje: {new_invoice_number}')
+            app.logger.debug(f'Novi broj fakture za životinje: {new_invoice_number}')
             new_invoice_animals = create_single_invoice(new_invoice_number, user_id)
-            app.logger.debug(f'[DEBUG] new_invoice_animals objekat: {new_invoice_animals}')
+            app.logger.debug(f'new_invoice_animals objekat: {new_invoice_animals}')
             if new_invoice_animals:
                 app.logger.info(f'Kreirana nova faktura životinja: {new_invoice_animals.id}')
             else:
-                app.logger.error('[DEBUG] new_invoice_animals je None!')
+                app.logger.error('new_invoice_animals je None!')
             for animal in animals:
-                app.logger.debug(f'[DEBUG] Dodajem animal u InvoiceItems: {animal}')
+                app.logger.debug(f'Dodajem animal u InvoiceItems: {animal}')
                 new_invoice_item = InvoiceItems(
                     farm_id=animal['farm_id'],
                     invoice_id=new_invoice_animals.id if new_invoice_animals else None,
                     invoice_item_details=animal,
                     invoice_item_type=2
                 )
-                app.logger.debug(f'[DEBUG] Kreiran InvoiceItems objekat: {new_invoice_item}')
+                app.logger.debug(f'Kreiran InvoiceItems objekat: {new_invoice_item}')
                 db.session.add(new_invoice_item)
             db.session.commit()
-            app.logger.debug('[DEBUG] Commit za InvoiceItems životinja uspešan')
+            app.logger.debug('Commit za InvoiceItems životinja uspešan')
         except Exception as e:
             db.session.rollback()
             app.logger.error(f'Greška pri dodavanju životinja u fakturu: {str(e)}')
         # Usluge
         try:
             for service in session.get('services', []):
-                app.logger.debug(f'[DEBUG] Dodajem service u InvoiceItems: {service}')
+                app.logger.debug(f'Dodajem service u InvoiceItems: {service}')
                 new_invoice_item = InvoiceItems(
                     farm_id=service['farm_id'],
                     invoice_id=new_invoice_animals.id if new_invoice_animals else None,
                     invoice_item_details=service,
                     invoice_item_type=3
                 )
-                app.logger.debug(f'[DEBUG] Kreiran InvoiceItems objekat: {new_invoice_item}')
+                app.logger.debug(f'Kreiran InvoiceItems objekat: {new_invoice_item}')
                 db.session.add(new_invoice_item)
             db.session.commit()
-            app.logger.debug('[DEBUG] Commit za InvoiceItems usluga uspešan')
+            app.logger.debug('Commit za InvoiceItems usluga uspešan')
         except Exception as e:
             db.session.rollback()
             app.logger.error(f'Greška pri dodavanju usluga u fakturu: {str(e)}')
         # Tov
         try:
             for fattening in session.get('fattening', []):
-                app.logger.debug(f'[DEBUG] Dodajem fattening u InvoiceItems: {fattening}')
+                app.logger.debug(f'Dodajem fattening u InvoiceItems: {fattening}')
                 new_invoice_item = InvoiceItems(
                     farm_id=fattening['farm_id'],
                     invoice_id=new_invoice_animals.id if new_invoice_animals else None,
                     invoice_item_details=fattening,
                     invoice_item_type=4
                 )
-                app.logger.debug(f'[DEBUG] Kreiran InvoiceItems objekat: {new_invoice_item}')
+                app.logger.debug(f'Kreiran InvoiceItems objekat: {new_invoice_item}')
                 db.session.add(new_invoice_item)
             db.session.commit()
-            app.logger.debug('[DEBUG] Commit za InvoiceItems tov uspešan')
+            app.logger.debug('Commit za InvoiceItems tov uspešan')
         except Exception as e:
             db.session.rollback()
             app.logger.error(f'Greška pri dodavanju tova u fakturu: {str(e)}')
-    app.logger.debug(f'[DEBUG] --- KRAJ create_invoices ---')
+        try:
+            if delivery_animals_status and delivery_animals_total >0:
+                delivery_animal_details = {
+                    "farm_id": 0, #! dostava se uplaćuje na portal (farm_id=0)
+                    "total_price": delivery_animals_total
+                }
+                new_invoice_item = InvoiceItems(
+                    farm_id=delivery_animal_details['farm_id'],
+                    invoice_id=new_invoice_animals.id if new_invoice_animals else None,
+                    invoice_item_details=delivery_animal_details,
+                    invoice_item_type=5
+                )
+                app.logger.debug(f'Kreiran InvoiceItems objekat: {new_invoice_item}')
+                db.session.add(new_invoice_item)
+                db.session.commit()
+                app.logger.debug('Commit za InvoiceItems dostave životinja uspešan')
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f'Greška pri dodavanju dostave životinja u fakturu: {str(e)}')
+    app.logger.debug(f'--- KRAJ create_invoices ---')
     return new_invoice_products, new_invoice_animals
 
 
@@ -873,9 +923,9 @@ def deactivate_products(invoice_id):
                     product_id = invoice_item.invoice_item_details['id']
                     # product_id = json.loads(invoice_item.invoice_item_details)['id']
                     product_to_edit = Product.query.get(product_id)
-                    app.logger.info(f'Proizvod: {product_to_edit.name} treba da se umanji količina. početna količina {product_to_edit.quantity}')
+                    app.logger.info(f'Proizvod: {product_to_edit.product_name} treba da se umanji količina. početna količina {product_to_edit.quantity}')
                     product_to_edit.quantity = float(product_to_edit.quantity) - float(invoice_item.invoice_item_details['quantity'])
-                    app.logger.info(f'Proizvod: {product_to_edit.name} treba da se umanji količina. nova količina {product_to_edit.quantity}')
+                    app.logger.info(f'Proizvod: {product_to_edit.product_name} treba da se umanji količina. nova količina {product_to_edit.quantity}')
                     # product_to_edit.quantity = float(product_to_edit.quantity) - float(json.loads(invoice_item.invoice_item_details)['quantity'])
                     db.session.commit()
                     app.logger.info(f'Za proizvod: {product_id} umanjena količina za {float(invoice_item.invoice_item_details["quantity"])}.')
@@ -1108,7 +1158,10 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
     url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
     app.logger.debug(f'PaySpot URL: {url}')
     app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-    app.logger.debug(f'Poslat PaySpot zahtev: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
+    if payment_type == 'kartica':
+        app.logger.debug(f'Poslat PaySpot zahtev preko kartice: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
+    elif payment_type == 'uplatnica':
+        app.logger.debug(f'Poslat PaySpot zahtev preko uplatnice: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
 
     json_data = json.dumps(request_data, ensure_ascii=False).encode('utf-8')
     response = requests.post(url, data=json_data, headers={"Content-Type": "application/json; charset=utf-8"})
@@ -1117,8 +1170,17 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
     app.logger.debug(f'PaySpot status kod: {response.status_code}')
     try:
         response_text = response.text
-        app.logger.debug(f'PaySpot odgovor: {json.dumps(response_text, indent=4, ensure_ascii=False)}')
-        response_data = response.json()
+        try:
+            response_data = response.json()
+            pretty_response = json.dumps(response_data, indent=4, ensure_ascii=False)
+            app.logger.debug(
+                f'\n{"="*30}\nPaySpot odgovor:\n{pretty_response}\n{"="*30}\n'
+            )
+        except Exception:
+            app.logger.debug(
+                f'\n{"="*30}\nPaySpot odgovor (RAW):\n{response_text}\n{"="*30}'
+            )
+            raise
     except Exception as e:
         app.logger.error(f'Greška pri parsiranju PaySpot odgovora: {str(e)}')
         return False, f"HTTP greška: {response.status_code}, Nije moguće parsirati odgovor."
@@ -1153,7 +1215,7 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
                         farm_id = None
                         if merchant_order_reference and merchant_order_reference.startswith(f"REF-{merchant_order_id}-F"):
                             try:
-                                farm_id = int(merchant_order_reference.split('-F')[1])
+                                farm_id = int(merchant_order_reference.split('-F')[1]) if payment_type == 'kartica' else int(merchant_order_reference.split('-F')[1].split('_')[0])
                                 app.logger.debug(f'Izdvojen farm_id: {farm_id} iz reference: {merchant_order_reference}')
                             except (ValueError, IndexError):
                                 app.logger.warning(f'Nije moguće izdvojiti farm_id iz reference: {merchant_order_reference}')
@@ -1275,20 +1337,24 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
             quantity = 1
             if item.invoice_item_type == 1:  # Proizvod
                 item_name = item_details.get('product_name', 'Nepoznat proizvod')
-                item_price = float(item_details.get('total_price', 0))
+                item_price = round(float(item_details.get('total_price', 0)), 2)
                 quantity = int(item_details.get('quantity', 1))
             elif item.invoice_item_type == 2:  # Životinja
                 item_name = item_details.get('animal_name', 'Nepoznata životinja')
-                item_price = float(item_details.get('total_price', 0))
+                item_price = round(float(item_details.get('total_price', 0)), 2)
                 quantity = 1
             elif item.invoice_item_type == 3:  # Usluga
                 item_name = item_details.get('service_name', 'Nepoznata usluga')
-                item_price = float(item_details.get('processingPrice', 0)) + float(item_details.get('slaughterPrice', 0)) #! cena usluga
+                item_price = round(float(item_details.get('processingPrice', 0)) + float(item_details.get('slaughterPrice', 0)), 2) #! cena usluga
                 quantity = int(item_details.get('quantity', 1))
             elif item.invoice_item_type == 4:  # Tov
                 item_name = item_details.get('fattening_name', 'Nepoznat tov')
-                item_price = float(item_details.get('fattening_price', 0)) #! cena tova
+                item_price = round(float(item_details.get('fattening_price', 0)), 2) #! cena tova
                 quantity = int(item_details.get('quantity', 1))
+            elif item.invoice_item_type == 5:  # Dostava
+                item_name = 'Dostava'
+                item_price = round(float(item_details.get('total_price', 0)), 2)
+                quantity = 1
             else:
                 item_name = 'Nepoznata stavka'
                 item_price = 0
@@ -1306,22 +1372,30 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 app.logger.warning(f'Iznos za farmera je 0 ili negativan: {farmer_amount}, preskačem kreiranje naloga')
                 continue
 
-            if item.invoice_item_type == 1:
-                app.logger.debug(f'Proizvod: {item_name}, iznos: {item_price}, iznos za farmera: {farmer_amount}')
-                target_dict = farm_orders
-            elif item.invoice_item_type in [2, 3, 4]:
-                app.logger.debug(f'Životinja/usluga/tov: {item_name}, iznos: {item_price}, iznos za farmera: {farmer_amount}')
+            if item.invoice_item_type in [1, 2, 3, 4, 5]:
+                item_type_map = {
+                    1: "Proizvod",
+                    2: "Životinja",
+                    3: "Usluga",
+                    4: "Tov",
+                    5: "Dostava"
+                }
+                item_type = item_type_map[item.invoice_item_type]
+                app.logger.debug(f'{item_type}: {item_name}, iznos: {item_price}, iznos za farmera: {farmer_amount}')
                 target_dict = farm_orders
             else:
                 continue
 
             if farm.id in target_dict and payment_type == 'kartica': #! Ako je tip plaćanja kartica onda grupise po farmama, ako je uplatnica onda radi stavku po stavku
+                # Za preko kartice, grupiši po farmama
                 app.logger.debug(f'Pronađen nalog za farmu {farm.id}, dodajem stavku')
                 target_dict[farm.id]['item_price'] += item_price
                 target_dict[farm.id]['farmer_amount'] += farmer_amount
             else:
+                # Za uplatnicu, napravi jedinstveni ključ za svaku stavku
+                dict_key = farm.id if payment_type == 'kartica' else f'{farm.id}_{item.id}'
                 app.logger.debug(f'Nalog za farmu {farm.id} nije pronađen, kreiram novi')
-                target_dict[farm.id] = {
+                target_dict[dict_key] = {
                     'farm': farm,
                     'farmer': farmer,
                     'item_price': item_price,
@@ -1334,7 +1408,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         # Kreiranje orders_data iz farm_orders
         orders_data = []
         app.logger.debug(f'{farm_orders=}')
-        for farm_id, farm_data in farm_orders.items():
+        for dict_key, farm_data in farm_orders.items():
             farm = farm_data['farm']
             farmer = farm_data['farmer']
             item_price = farm_data['item_price']
@@ -1342,18 +1416,19 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
             farmer_amount = farm_data['farmer_amount']
             order = {
                 "sequenceNo": sequence_no,
-                "merchantOrderReference": f"REF-{merchant_order_id}-F{farm.id}",
+                "merchantOrderReference": f"REF-{merchant_order_id}-F{farm.id}" if payment_type == 'kartica' else f"REF-{merchant_order_id}-F{dict_key}",
                 "debtorName": f"{user.name} {user.surname}",
                 "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
                 "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-                "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",
+                # "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",#? ili je možda ovo ispravno??
+                "beneficiaryAccount": farm.farm_account_number if payment_type == 'kartica' else "325950070003803565", #! staviti umesto 325950070003803565 da bude variabilna iz .env fajla
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
                 "beneficiaryReference": None if payment_type == 'kartica' else f'K12345-{user.id:05d}-{item_id:07d}',
-                "amountTrans": round(item_price, 2),
-                "senderFeeAmount": round(item_price, 2) - round(farmer_amount, 2), #! Provizija (platforma + payspot)
-                "beneficiaryAmount": round(farmer_amount, 2),
+                "amountTrans": round(item_price, 2), #? isto i za dostavu i za stavku
+                "senderFeeAmount": round((round(item_price, 2) - round(farmer_amount, 2)), 2) if farm.id != 0 else round(0, 2), #? ako je farm.id=0 onda je dostava i fee je 0 --- #! Provizija (platforma + payspot) 
+                "beneficiaryAmount": round(farmer_amount, 2) if farm.id != 0 else round(item_price, 2), #? ako je farm.id=0 onda je dostava i beneficiaryAmount je isti kao amountTrans
                 "beneficiaryCurrency": 941,  # RSD
                 "purposeCode": 289,  # Kod plaćanja
                 "paymentPurpose": f"Plaćanje za {farm.farm_name} po fakturi sa brojem {invoice.id}",
@@ -1367,61 +1442,61 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         total_amount = sum(order["amountTrans"] for order in orders_data)
         app.logger.debug(f'Ukupan iznos svih naloga: {total_amount}')
         
-        #! Provera da li je aktivirana opcija dostave, ako jeste, dodajem nalog za dostavu
-        delivery_order = None
-        if session.get('delivery')['delivery_product_status'] and payment_type == 'kartica':
-            delivery_product_total = session.get('delivery')['delivery_product_total']
+        # #! Provera da li je aktivirana opcija dostave, ako jeste, dodajem nalog za dostavu
+        # delivery_order = None
+        # if session.get('delivery')['delivery_product_status'] and payment_type == 'kartica':
+        #     delivery_product_total = session.get('delivery')['delivery_product_total']
             
-            app.logger.debug(f'Dodajem nalog za dostavu preko kartice u iznosu od {delivery_product_total} din')
-            # Dodavanje naloga za dostavu
-            delivery_order = {
-                "sequenceNo": sequence_no,
-                "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
-                "debtorName": f"{user.name} {user.surname}",
-                "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
-                "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-                "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
-                "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
-                "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
-                "beneficiaryCity": "Mionica", #! grad portala
-                "beneficiaryReference": None,
-                "amountTrans": round(delivery_product_total, 2), #? koliko kupac plaća za dostavu
-                "senderFeeAmount": round(0, 2), #? Provizija (platforma + payspot)
-                "beneficiaryAmount": round(delivery_product_total, 2), #? koliko portal dobija za dostavu
-                "beneficiaryCurrency": 941,  # RSD
-                "purposeCode": 289,  # Kod plaćanja
-                "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
-                "isUrgent": 2,  # Nije hitno
-                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-            }
-        elif session.get('delivery')['delivery_animal_status'] and payment_type == 'uplatnica':
-            delivery_animal_total = session.get('delivery')['delivery_animal_total']
-            app.logger.debug(f'Dodajem nalog za dostavu preko uplatnice u iznosu od {delivery_animal_total} din')
+        #     app.logger.debug(f'Dodajem nalog za dostavu preko kartice u iznosu od {delivery_product_total} din')
+        #     # Dodavanje naloga za dostavu
+        #     delivery_order = {
+        #         "sequenceNo": sequence_no,
+        #         "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
+        #         "debtorName": f"{user.name} {user.surname}",
+        #         "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
+        #         "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
+        #         "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
+        #         "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
+        #         "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
+        #         "beneficiaryCity": "Mionica", #! grad portala
+        #         "beneficiaryReference": None,
+        #         "amountTrans": round(delivery_product_total, 2), #? koliko kupac plaća za dostavu
+        #         "senderFeeAmount": round(0, 2), #? Provizija (platforma + payspot)
+        #         "beneficiaryAmount": round(delivery_product_total, 2), #? koliko portal dobija za dostavu
+        #         "beneficiaryCurrency": 941,  # RSD
+        #         "purposeCode": 289,  # Kod plaćanja
+        #         "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
+        #         "isUrgent": 2,  # Nije hitno
+        #         "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
+        #     }
+        # elif session.get('delivery')['delivery_animal_status'] and payment_type == 'uplatnica':
+        #     delivery_animal_total = session.get('delivery')['delivery_animal_total']
+        #     app.logger.debug(f'Dodajem nalog za dostavu preko uplatnice u iznosu od {delivery_animal_total} din')
             
-            # Dodavanje naloga za dostavu
-            delivery_order = {
-                "sequenceNo": sequence_no,
-                "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
-                "debtorName": f"{user.name} {user.surname}",
-                "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
-                "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-                "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
-                "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
-                "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
-                "beneficiaryCity": "Mionica", #! grad portala
-                "beneficiaryReference": None, #! ovde treba da se stavi poziv na broj sa uplatnice
-                "amountTrans": round(delivery_animal_total, 2), #? koliko kupac plaća za dostavu
-                "senderFeeAmount": 0, #? Provizija (platforma + payspot)
-                "beneficiaryAmount": round(delivery_animal_total, 2), #? koliko portal dobija za dostavu
-                "beneficiaryCurrency": 941,  # RSD
-                "purposeCode": 289,  # Kod plaćanja
-                "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
-                "isUrgent": 2,  # Nije hitno
-                "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
-            }
-        if delivery_order:
-            orders_data.append(delivery_order)
-            sequence_no += 1
+        #     # Dodavanje naloga za dostavu
+        #     delivery_order = {
+        #         "sequenceNo": sequence_no,
+        #         "merchantOrderReference": f"REF-{merchant_order_id}-F0", #! F0 znači da nije farma nego da je za portal
+        #         "debtorName": f"{user.name} {user.surname}",
+        #         "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
+        #         "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
+        #         "beneficiaryAccount": "325-9500700214775-47", #! broj računa portala
+        #         "beneficiaryName": "Miodrag Mitrović/Naša Imperija DOO", #? ime i prezime ili naziv portala
+        #         "beneficiaryAddress": "Kneza Grbovića 10", #! adresa portala
+        #         "beneficiaryCity": "Mionica", #! grad portala
+        #         "beneficiaryReference": f'K12345-{user.id:05d}-{invoice.id:07d}', #! Nisam siguran da je ovo dobar poziv na broj
+        #         "amountTrans": round(delivery_animal_total, 2), #? koliko kupac plaća za dostavu
+        #         "senderFeeAmount": 0, #? Provizija (platforma + payspot)
+        #         "beneficiaryAmount": round(delivery_animal_total, 2), #? koliko portal dobija za dostavu
+        #         "beneficiaryCurrency": 941,  # RSD
+        #         "purposeCode": 289,  # Kod plaćanja
+        #         "paymentPurpose": f"Plaćanje dostave po fakturi sa brojem {invoice.id}",
+        #         "isUrgent": 2,  # Nije hitno
+        #         "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")  # Datum valute
+        #     }
+        # if delivery_order:
+        #     orders_data.append(delivery_order)
+        #     sequence_no += 1
             
         # Ažuriranje ukupnog iznosa svih naloga
         total_amount = sum(order["amountTrans"] for order in orders_data)
@@ -1476,8 +1551,10 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         # Logovanje zahteva pre slanja
         app.logger.debug(f'PaySpot URL: {url}')
         app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
-        app.logger.debug(f'izgled - PaySpot zahtev 1: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
-        # app.logger.debug(f'izgled - PaySpot zahtev 7: {json.dumps(request_data_7, indent=4, ensure_ascii=False)}')
+        # if payment_type == 'kartica':
+        #     app.logger.debug(f'izgled - PaySpot zahtev 101 preko kartice: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
+        # elif payment_type == 'uplatnica':
+        #     app.logger.debug(f'izgled - PaySpot zahtev 101 preko uplatnice: {json.dumps(request_data, indent=4, ensure_ascii=False)}')
         
         # Slanje zahteva ka PaySpot-u
         result, error = send_payspot_request(request_data, merchant_order_id, invoice, orders_data, user, payment_type)
@@ -1591,8 +1668,17 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
             app.logger.debug(f'PaySpot status kod za transakciju {transaction.payspot_transaction_id}: {response.status_code}')
             try:
                 response_text = response.text
-                app.logger.debug(f'PaySpot odgovor za transakciju {transaction.payspot_transaction_id}: {response_text}')
-                response_data = response.json()
+                try:
+                    response_data = response.json()
+                    pretty_response = json.dumps(response_data, indent=4, ensure_ascii=False)
+                    app.logger.debug(
+                        f'\n{"="*30}\nPaySpot odgovor za transakciju {transaction.payspot_transaction_id}:\n{pretty_response}\n{"="*30}'
+                    )
+                except Exception:
+                    app.logger.debug(
+                        f'\n{"="*30}\nPaySpot odgovor za transakciju {transaction.payspot_transaction_id} (RAW):\n{response_text}\n{"="*30}'
+                    )
+                    raise  # ili samo pass, u zavisnosti šta želiš dalje
             except Exception as e:
                 app.logger.error(f'Greška pri parsiranju PaySpot odgovora za transakciju {transaction.payspot_transaction_id}: {str(e)}')
                 success = False

@@ -239,7 +239,8 @@ def make_order():
                     #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
                     #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
                     #! Napraviti funkcionalnost za slanje mejla korisniku o uspešnom plaćanju preko uplatnice
-                    send_payments_email(user, new_invoice_animals.id)
+                    #? donja funkcija treba da se pozove na drugom mesetu kada se potvrdi plaćanje korpe...
+                    # send_payments_email(user, new_invoice_animals.id)
 
                 else:
                     flash(f'Greška pri pripremi podataka za plaćanje preko uplatnice: {error_message}.', 'danger')
@@ -367,58 +368,43 @@ def callback_url():
 
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
-    app.logger.info('Uspesno zavrsena transakcija')
-    user = User.query.get(current_user.id)
-    invoice = Invoice.query.get(session.get('invoice_id')) #?
+    # Izvlačenje svih parametara iz PaySpot response URL-a
+    order_id = request.args.get('ORDERID')  # ID narudžbine, koristi se za identifikaciju transakcije
+    shop_id = request.args.get('SHOPID')  # ID prodavnice, koristi se za proveru prodavca
+    auth_number = request.args.get('AUTHNUMBER')  # Broj autorizacije, može se koristiti za evidenciju autorizacije
+    amount = request.args.get('AMOUNT')  # Iznos transakcije, koristi se za proveru naplaćenog iznosa
+    currency = request.args.get('CURRENCY')  # Valuta transakcije, koristi se za proveru valute (941 = RSD)
+    transaction_id = request.args.get('TRANSACTIONID')  # Jedinstveni ID transakcije, koristi se za praćenje transakcije
+    accounting_mode = request.args.get('ACCOUNTINGMODE')  # Mod obračuna, koristi se za internu obradu
+    author_mode = request.args.get('AUTHORMODE')  # Mod autorizacije, koristi se za internu evidenciju
+    result = request.args.get('RESULT')  # Rezultat transakcije (00 = uspeh), koristi se za proveru statusa
+    transaction_type = request.args.get('TRANSACTIONTYPE')  # Tip transakcije, koristi se za analitiku ili evidenciju
+    masked_pan = request.args.get('MASKEDPAN')  # Maskirani broj kartice, koristi se za prikaz korisniku
+    trecurr = request.args.get('TRECURR')  # Tip rekurentne transakcije, koristi se za pretplate
+    crecurr = request.args.get('CRECURR')  # ID rekurentne kartice, koristi se za vezivanje kartice
+    pantail = request.args.get('PANTAIL')  # Poslednje cifre kartice, koristi se za prikaz korisniku
+    pan_expiry_date = request.args.get('PANEXPIRYDATE')  # Datum isteka kartice, može se koristiti za proveru
+    network = request.args.get('NETWORK')  # Mreža kartice, koristi se za statistiku (01 = Visa/Master)
+    mac = request.args.get('MAC')  # Kriptografski potpis, koristi se za proveru integriteta
+    
+    invoice_id = int(order_id.split('-')[1])
+    invoice = Invoice.query.get(invoice_id)
+    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+    total_price = sum(item.invoice_item_details["total_price"] for item in invoice_items)
+    user = User.query.get(invoice.user_id)
 
-    # Prvo sačuvaj podatke iz korpe i podatke o kupcu, ako već nisu sačuvani
-    if 'cart_data_success' not in session or 'buyer_data_success' not in session:
-        cart_data = {
-            'products': session.get('products', []),
-            'animals': session.get('animals', []),
-            'fattening': session.get('fattening', []),
-            'services': session.get('services', [])
-        }
-        session['cart_data_success'] = cart_data
-
-        # Priprema podataka o kupcu
-        buyer_data = {
-            'id': user.id,
-            'email': user.email,
-            'ime': user.name,
-            'prezime': user.surname,
-            'telefon': user.phone,
-            'adresa': user.address,
-            'mesto': user.city,
-            'postanski_broj': user.zip_code,
-            'tip_korisnika': user.user_type
-        }
-        session['buyer_data_success'] = buyer_data
-    else:
-        cart_data = session['cart_data_success']
-        buyer_data = session['buyer_data_success']
-
-    total_price = 0
-    for item in cart_data.get('products', []):
-        total_price += item['total_price']
-    for item in cart_data.get('animals', []):
-        total_price += item['total_price']
-    for item in cart_data.get('fattening', []):
-        total_price += item['total_price']
-    for item in cart_data.get('services', []):
-        total_price += item['total_price']
+    
+    app.logger.info(f'Uspesno zavrsena transakcija')
 
     clear_cart_session()  # Brisanje korpe iz sesije
-    # Očisti i privremeno sačuvane podatke nakon prikaza
-    session.pop('cart_data_success', None)
-    session.pop('buyer_data_success', None)
 
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
     return render_template('transactions/success_url.html',
                             user=user,
                             invoice=invoice,
-                            cart_data=cart_data,
-                            buyer_data=buyer_data,
+                            invoice_items=invoice_items,
+                            auth_number=auth_number,
+                            transaction_id=transaction_id,
                             total_price=total_price
                             )
 
@@ -434,4 +420,7 @@ def error_url():
 def cancel_url():
     app.logger.warning('Transakcija je otkazana')
     flash('Transakcija je otkazana. Račun vaše platne kartice nije zadužen.', 'warning')
-    return render_template('transactions/cancel_url.html')
+    now = datetime.datetime.now()
+
+    return render_template('transactions/cancel_url.html', 
+                            now=now)
