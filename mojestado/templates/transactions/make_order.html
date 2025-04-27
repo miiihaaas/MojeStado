@@ -353,13 +353,21 @@
                 <label for="saglasan">Saglasan/a sam sa <a href="{{ url_for('main.terms_and_conditions') }}" target="_blank"><u>uslovima kupovine</u></a></label>
             </div>
             {% if new_invoice_animals_id %}
-            <button id="submit-btn" class="btn btn-primary mb-20" type="submit" disabled>Nastavi ka uplati i potvrdi kupovinu putem uplatnica</button>
+            <button id="submit-btn" class="btn btn-primary mb-20" type="button" disabled>Nastavi ka uplati i potvrdi kupovinu putem uplatnica</button>
+            <!-- Skrivena backend forma za potvrdu narudžbine -->
+            <form id="confirm-form" action="{{ url_for('transactions.confirm_animals_order', invoice_id=new_invoice_animals_id) }}" method="POST" style="display:none;"></form>
             {% else %}
             <button id="submit-btn" class="btn btn-primary mb-20" type="submit" disabled>Nastavi ka uplati</button>
             {% endif %}
         </form>
         {% elif new_invoice_animals_id %}
-        <a href="{{ url_for('transactions.confirm_animals_order', invoice_id=new_invoice_animals_id) }}" class="btn btn-primary">Potvrdi kupovinu putem uplatnica</a>
+        <div class="mb-4">
+            <input type="checkbox" id="saglasan" required>
+            <label for="saglasan">Saglasan/a sam sa <a href="{{ url_for('main.terms_and_conditions') }}" target="_blank"><u>uslovima kupovine</u></a></label>
+        </div>
+        <form id="confirm-form" action="{{ url_for('transactions.confirm_animals_order', invoice_id=new_invoice_animals_id) }}" method="POST">
+            <button id="submit-btn" class="btn btn-primary mb-20" type="button" disabled>Potvrdi kupovinu putem uplatnica</button>
+        </form>
         {% endif %}
     </div>
 </div>
@@ -371,11 +379,39 @@
     const submitBtn = document.getElementById('submit-btn');
     
     checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-            submitBtn.disabled = false;
-        } else {
-            submitBtn.disabled = true;
+        submitBtn.disabled = !checkbox.checked;
+    });
+
+    submitBtn && submitBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        {% if new_invoice_animals_id %}
+        // 1. Kloniraj i submituj PaySpot formu u novom tabu
+        const originalForm = document.getElementById('paymentForm');
+        if (originalForm) {
+            const formClone = originalForm.cloneNode(true);
+            formClone.style.display = 'none';
+            formClone.target = '_blank';
+            document.body.appendChild(formClone);
+            formClone.submit();
+            document.body.removeChild(formClone);
         }
+        // 2. Submituj backend formu u istom tabu (POST)
+        const confirmForm = document.getElementById('confirm-form');
+        if (confirmForm) {
+            // Dodaj dummy input ako nema nijedan
+            if (!confirmForm.querySelector('input')) {
+                const dummy = document.createElement('input');
+                dummy.type = 'hidden';
+                dummy.name = 'dummy';
+                dummy.value = '1';
+                confirmForm.appendChild(dummy);
+            }
+            confirmForm.submit();
+        } else {
+            // Ako nema forme, fallback na redirect
+            window.location.href = "{{ url_for('transactions.confirm_animals_order', invoice_id=new_invoice_animals_id) }}";
+        }
+        {% endif %}
     });
 </script>
 {% endblock scripts %}

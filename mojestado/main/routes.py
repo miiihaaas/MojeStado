@@ -686,7 +686,7 @@ def clear_cart():
             app.logger.error(f'Greška pri resetovanju željene težine životinja: {str(e)}')
             return render_template('errors/500.html'), 500
             
-        clear_cart_session()
+        clear_cart_session(product=True, animal=True)
         app.logger.info('Korpa je uspešno očišćena')
         flash('Uspešno ste očistili korpu.', 'success')
         return redirect(url_for('main.view_cart'))
