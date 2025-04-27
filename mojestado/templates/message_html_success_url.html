@@ -123,7 +123,11 @@
                                     <li><strong>Datum i vreme: </strong>{{ invoice.datetime.strftime('%d.%m.%Y %H:%M:%S') }}</li>
                                     <li><strong>Approval code: </strong>{{ auth_number }}</li>
                                     <li><strong>Ref. broj: </strong>{{ transaction_id }}</li>
-                                    <li><strong>Status: </strong>{{ invoice.status }}</li>
+                                    {% if invoice.status == 'paid' %}
+                                    <li><strong>Status: </strong>Plaćeno</li>
+                                    {% else %}
+                                    <li><strong>Status: </strong>Neplaćeno</li>
+                                    {% endif %}
                                 </ul>
                             </div>
                         </div>
