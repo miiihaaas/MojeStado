@@ -6,9 +6,9 @@ from flask import Blueprint, flash, jsonify, redirect, render_template, request,
 from flask_login import current_user, login_required
 from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
-from mojestado.models import AnimalCategory, Debt, Invoice, PaySpotCallback, InvoiceItems, Payment, PaymentStatement, User
+from mojestado.models import AnimalCategory, Debt, Invoice, PaySpotCallback, InvoiceItems, PaySpotTransaction, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, send_email, send_success_email, send_payments_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
+from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, populate_item_data, send_success_email, send_payments_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
 
 
 transactions = Blueprint('transactions', __name__)
@@ -142,6 +142,7 @@ def make_order():
         merchant_order_id = None
         success = None
         error_message = None
+        merchant_order_id_animals = None
         
         #! Provera da li ima stavki u korpi
         animals = session.get('animals', [])
@@ -283,49 +284,65 @@ def make_order():
 
 @transactions.route('/confirm_animals_order/<int:invoice_id>', methods=['GET', 'POST'])
 def confirm_animals_order(invoice_id):
-    invoice = Invoice.query.get(invoice_id)
-    merchant_order_id_animals = invoice.invoice_number
-    invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
-    user = User.query.get(invoice.user_id)
-    item_data = []
-    for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type == 3:
-            total_price = round((float(invoice_item.invoice_item_details['slaughterPrice']) + float(invoice_item.invoice_item_details['processingPrice'])), 2)
-            if invoice_item.invoice_item_details['slaughterPrice']:
-                name = 'Klanje'
-            elif invoice_item.invoice_item_details['processingPrice']:
-                name = 'obrada'
-            elif invoice_item.invoice_item_details['slaughterPrice'] and invoice_item.invoice_item_details['processingPrice']:
-                name = 'Klanje i obrada'
-        elif invoice_item.invoice_item_type == 2:
-            total_price = round(float(invoice_item.invoice_item_details['total_price']), 2)
-            name = AnimalCategory.query.get(int(invoice_item.invoice_item_details['animal_category_id'])).animal_category_name
-        elif invoice_item.invoice_item_type == 4:
-            total_price = round(float(invoice_item.invoice_item_details['total_price']), 2)
-            name = 'Tov'
-        elif invoice_item.invoice_item_type == 5:
-            total_price = round(float(invoice_item.invoice_item_details['total_price']), 2)
-            name = 'Dostava'
-        data = {
-            'name': name,
-            'quantity': 1,
-            'price_per_unit': total_price,
-            'total_price': total_price
-        }
-        item_data.append(data)
-    total_price = sum(item['total_price'] for item in item_data)
-    success, error_message = send_payment_order_confirm(merchant_order_id_animals, None, invoice.id)
-    if success:
-        #! implementiraj slanje mejla sa uplatnicama
-        flash('Uplatnice su poslate na mejl.', 'success')
-        send_payments_email(user, invoice.id)
-    else:
-        flash(f'Greška pri slanju PaymentOrderConfirm za životinje preko uplatnice: {error_message}.', 'danger')
-    return render_template('transactions/confirm_animals_order.html', 
-                            invoice=invoice,
-                            user=user,
-                            item_data=item_data,
-                            total_price=total_price)
+    try:
+        invoice = Invoice.query.get(invoice_id)
+        if not invoice:
+            flash('Faktura nije pronađena.', 'danger')
+            return redirect(url_for('main.home'))
+        merchant_order_id_animals = invoice.invoice_number
+        try:
+            invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
+        except Exception as e:
+            flash('Greška pri učitavanju stavki fakture.', 'danger')
+            return redirect(url_for('main.home'))
+        try:
+            user = User.query.get(invoice.user_id)
+            if not user:
+                flash('Korisnik nije pronađen.', 'danger')
+                return redirect(url_for('main.home'))
+        except Exception as e:
+            flash('Greška pri učitavanju korisnika.', 'danger')
+            return redirect(url_for('main.home'))
+        item_data = []
+        for invoice_item in invoice_items:
+            try:
+                data = populate_item_data(invoice_item)
+                item_data.append(data)
+            except Exception as e:
+                flash('Greška pri obradi stavke fakture.', 'danger')
+                continue
+        total_price = sum(item['total_price'] for item in item_data)
+        try:
+            payspot_transactions = PaySpotTransaction.query.filter_by(invoice_id=invoice.id).all()
+            if not payspot_transactions:
+                flash('Nema PaySpot transakcija za datu fakturu.', 'danger')
+                return redirect(url_for('main.home'))
+            success, error_message = send_payment_order_confirm(merchant_order_id_animals, None, invoice.id)
+        except Exception as e:
+            flash('Greška pri slanju zahteva za potvrdu uplate.', 'danger')
+            return render_template('transactions/confirm_animals_order.html', invoice=invoice, user=user, item_data=item_data, total_price=total_price)
+        if success and invoice.status == 'unconfirmed':
+            try:
+                send_payments_email(user, invoice.id)
+                invoice.status = 'sent_invoice'
+                db.session.commit()
+                deactivate_animals(invoice_id) #! pošto ide preko uplatnice treba prvo da se bookira određeno vreme pa ako ne uplati onda da se ponovo aktivira, a ako uplati da se deaktivira
+                clear_cart_session(product=False, animal=True)
+                flash('Uplatnice su poslate na mejl.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                app.logger.error(f'Greška pri slanju uplatnica na mejl: {str(e)}')
+                flash('Greška pri slanju uplatnica na mejl', 'danger')
+        else:
+            flash('Uplatnice su već poslate na mejl.', 'warning')
+        return render_template('transactions/confirm_animals_order.html', 
+                                invoice=invoice,
+                                user=user,
+                                item_data=item_data,
+                                total_price=total_price)
+    except Exception as e:
+        flash('Neočekivana greška. Pokušajte ponovo.', 'danger')
+        return redirect(url_for('transactions.make_order'))
 
 
 @transactions.route('/callback_url', methods=['POST'])
@@ -397,7 +414,6 @@ def callback_url():
             # Deaktivacija životinja i proizvoda
             app.logger.info(f'{invoice_id=}')
 
-            deactivate_animals(invoice_id) #! pošto ide preko uplatnice treba prvo da se bookira određeno vreme pa ako ne uplati onda da se ponovo aktivira, a ako uplati da se deaktivira
             deactivate_products(invoice_id)
             
             # Slanje email-a korisniku
@@ -420,7 +436,7 @@ def callback_url():
 
 @transactions.route('/success_url', methods=['GET'])
 def success_url():
-    time.sleep(3)
+    time.sleep(10)
     # Izvlačenje svih parametara iz PaySpot response URL-a
     order_id = request.args.get('ORDERID')  # ID narudžbine, koristi se za identifikaciju transakcije
     shop_id = request.args.get('SHOPID')  # ID prodavnice, koristi se za proveru prodavca
@@ -449,7 +465,7 @@ def success_url():
     
     app.logger.info(f'Uspesno zavrsena transakcija')
 
-    clear_cart_session()  # Brisanje korpe iz sesije
+    clear_cart_session(product=True, animal=False)  # Brisanje korpe iz sesije
     send_success_email(invoice, auth_number, transaction_id, total_price)
 
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')

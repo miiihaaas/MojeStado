@@ -33,7 +33,7 @@
                             <table class="table table-striped table-hover">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Životinja</th>
+                                        <th>Stavka</th>
                                         <th>Količina</th>
                                         <th>Cena/jed.</th>
                                         <th>Ukupno</th>
@@ -72,7 +72,9 @@
                                 <h4 class="mb-3">Podaci o narudžbini</h4>
                                 <ul class="list-unstyled mb-4">
                                     <li><strong>Datum i vreme: </strong>{{ invoice.datetime.strftime('%d.%m.%Y %H:%M:%S') }}</li>
-                                    <li><strong>Status: </strong>{{ invoice.status }}</li>
+                                    <li>* Iznose sa uplatnica iz priloga ovog mejla za sledeće stavke: životinje, usluge klanja i obrade, dostave, i prva rata tova potrebno je izmiriti u roku od 24h.</li>
+                                    <li>* Ukoliko iznosi sa uplatnica iz prologa ovog mejla ne budu izmireni u roku od 24h, narudžbina će biti otkazana.</li>
+                                    <li>* Ostale rate tova plaćaju se u vremenskim intervalima od mesec dana.</li>
                                 </ul>
                             </div>
                         </div>

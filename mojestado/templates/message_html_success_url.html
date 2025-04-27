@@ -52,22 +52,22 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <ul class="list-unstyled mb-4">
-                                    <li><strong>Ime i prezime:</strong> {{ user.name }} {{ user.surname }}</li>
-                                    <li><strong>Email:</strong> {{ user.email }}</li>
-                                    <li><strong>Telefon:</strong> {{ user.phone }}</li>
+                                    <li><strong>Ime i prezime: </strong>{{ user.name }} {{ user.surname }}</li>
+                                    <li><strong>Email: </strong>{{ user.email }}</li>
+                                    <li><strong>Telefon: </strong>{{ user.phone }}</li>
                                 </ul>
                             </div>
                             <div class="col-md-6">
                                 <ul class="list-unstyled mb-4">
-                                    <li><strong>Adresa:</strong> {{ user.address }}</li>
-                                    <li><strong>Mesto:</strong> {{ user.city }}</li>
-                                    <li><strong>Poštanski broj:</strong> {{ user.zip_code }}</li>
+                                    <li><strong>Adresa: </strong>{{ user.address }}</li>
+                                    <li><strong>Mesto: </strong>{{ user.city }}</li>
+                                    <li><strong>Poštanski broj: </strong>{{ user.zip_code }}</li>
                                 </ul>
                             </div>
                         </div>
                         <h4 class="mb-3">Podaci o narudžbini</h4>
                         <ul class="list-unstyled mb-4">
-                            <li><strong>OID porudžbine:</strong> {{ invoice.invoice_number }}</li>
+                            <li><strong>OID porudžbine: </strong>{{ invoice.invoice_number }}</li>
                         </ul>
                         <div class="table-responsive mb-4">
                             <table class="table table-striped table-hover">
@@ -112,18 +112,18 @@
                             <div class="col-md-7">
                                 <h4 class="mb-3">Podaci o trgovcu</h4>
                                 <ul class="list-unstyled mb-4">
-                                    <li><strong>Naziv trgovca:</strong> Naša Imperija DOO</li>
-                                    <li><strong>PIB:</strong> 114244045</li>
-                                    <li><strong>Adresa trgovca:</strong> Kneza Grbovića 10, 14242 Mionica</li>
+                                    <li><strong>Naziv trgovca: </strong>Naša Imperija DOO</li>
+                                    <li><strong>PIB: </strong>114244045</li>
+                                    <li><strong>Adresa trgovca: </strong>Kneza Grbovića 10, 14242 Mionica</li>
                                 </ul>
                             </div>
                             <div class="col-md-5">
                                 <h4 class="mb-3">Podaci o transakciji</h4>
                                 <ul class="list-unstyled mb-4">
-                                    <li><strong>Datum i vreme:</strong> {{ invoice.datetime.strftime('%d.%m.%Y %H:%M:%S') }}</li>
-                                    <li><strong>Approval code:</strong> {{ auth_number }}</li>
-                                    <li><strong>Ref. broj:</strong> {{ transaction_id }}</li>
-                                    <li><strong>Status:</strong> {{ invoice.status }}</li>
+                                    <li><strong>Datum i vreme: </strong>{{ invoice.datetime.strftime('%d.%m.%Y %H:%M:%S') }}</li>
+                                    <li><strong>Approval code: </strong>{{ auth_number }}</li>
+                                    <li><strong>Ref. broj: </strong>{{ transaction_id }}</li>
+                                    <li><strong>Status: </strong>{{ invoice.status }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -133,6 +133,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Moje stado. Sva prava zadržana.</p>
+        <div class="auto-message" style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-left: 3px solid #6c757d; font-size: 0.85em; color: #6c757d;">
+            <p><strong>Napomena:</strong> Ovo je automatski generisana poruka. Molimo vas da ne odgovarate na ovaj mejl jer se odgovori ne učitavaju. Za sva pitanja i pomoć, kontaktirajte naš tim za podršku putem kontakt forme na sajtu.</p>
         </div>
     </div>
 </section>

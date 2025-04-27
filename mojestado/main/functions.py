@@ -5,40 +5,54 @@ from flask_mail import Message
 from mojestado import mail
 
 
-def clear_cart_session():
+def clear_cart_session(product=None, animal=None):
     """
-    Čisti sve podatke o korpi iz sesije.
+    Čisti podatke o korpi iz sesije u zavisnosti od prosleđenih parametara.
     
+    Args:
+        product (bool|None): Da li čistiti proizvode
+        animal (bool|None): Da li čistiti životinje i povezane stavke
     Returns:
         bool: True ako je čišćenje uspešno, False ako je došlo do greške
-    
     Raises:
         Exception: Ako dođe do greške prilikom pristupa ili modifikacije sesije
     """
     try:
         app.logger.debug('Započeto čišćenje korpe')
-        
-        # Lista svih ključeva koje treba očistiti
-        cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
-        
+
+        # Definiši sve moguće ključeve
+        all_cart_keys = ['animals', 'products', 'fattening', 'services', 'delivery']
+
+        # Odredi koje ključeve treba obrisati
+        if (product is None and animal is None) or \
+           (product is True and animal is True) or \
+           (product is False and animal is False):
+            cart_keys = all_cart_keys
+        elif product is True and (animal is not True):
+            cart_keys = ['products']
+        elif animal is True and (product is not True):
+            cart_keys = ['animals', 'fattening', 'services', 'delivery']
+        else:
+            cart_keys = []  # fallback, ništa se ne briše
+
         # Beležimo šta se briše
         items_to_clear = {key: session.get(key) for key in cart_keys if key in session}
         if items_to_clear:
             app.logger.info(f'Brisanje stavki iz korpe: {list(items_to_clear.keys())}')
         else:
-            app.logger.info('Korpa je već prazna')
+            app.logger.info('Nema stavki za brisanje ili korpa je već prazna')
             return True
 
-        # Čistimo trenutnu sesiju
+        # Čistimo izabrane ključeve iz sesije
         for key in cart_keys:
             if key in session:
                 del session[key]
                 app.logger.debug(f'Obrisan ključ iz sesije: {key}')
-                
+
         session.modified = True
         app.logger.info('Korpa je uspešno očišćena')
         return True
-        
+
     except Exception as e:
         app.logger.error(f'Greška prilikom čišćenja korpe: {str(e)}', exc_info=True)
         return False

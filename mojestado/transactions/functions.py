@@ -32,6 +32,51 @@ def add_fonts(pdf):
     pdf.add_font('DejaVuSansCondensed', 'I', font_path_I, uni=True)
 
 
+def populate_item_data(invoice_item):
+    data = {}
+    if invoice_item.invoice_item_type == 3:
+        slaughter_price = float(invoice_item.invoice_item_details['slaughterPrice'])
+        processing_price = float(invoice_item.invoice_item_details['processingPrice'])
+        if slaughter_price > 0:
+            name = 'Klanje'
+        elif processing_price > 0:
+            name = 'obrada'
+        elif slaughter_price > 0 and processing_price > 0:
+            name = 'Klanje i obrada'
+        quantity = 1
+        price_per_unit = round((slaughter_price + processing_price), 2)
+        total_price = round((slaughter_price + processing_price), 2)
+    elif invoice_item.invoice_item_type == 2:
+        try:
+            animal_category = AnimalCategory.query.get(int(invoice_item.invoice_item_details['animal_category_id']))
+            name = animal_category.animal_category_name if animal_category else 'Nepoznata kategorija'
+        except Exception:
+            name = 'Nepoznata kategorija'
+        quantity = 1
+        price_per_unit = round(float(invoice_item.invoice_item_details['total_price']), 2)
+        total_price = round(float(invoice_item.invoice_item_details['total_price']), 2)
+    elif invoice_item.invoice_item_type == 4:
+        name = 'Tov'
+        quantity = invoice_item.invoice_item_details['installment_options'] if 'installment_options' in invoice_item.invoice_item_details else 1
+        total_price = round(float(invoice_item.invoice_item_details['fattening_price']), 2)
+        price_per_unit = round(total_price/quantity, 2)
+    elif invoice_item.invoice_item_type == 5:
+        name = 'Dostava'
+        quantity = '-'
+        price_per_unit = '-'
+        total_price = round(float(invoice_item.invoice_item_details['total_price']), 2)
+    else:
+        total_price = 0.00
+        name = 'Nepoznata stavka'
+    data = {
+        'name': name,
+        'quantity': quantity,
+        'price_per_unit': price_per_unit,
+        'total_price': total_price
+    }
+    return data
+
+
 def generate_payment_slips_attach(invoice_item):
     '''
     generiše 2+ uplatnice na jednom dokumentu (A4) u fpdf, qr kod/api iz nbs
@@ -47,7 +92,11 @@ def generate_payment_slips_attach(invoice_item):
     print(f'** {broj_rata=}, {type(broj_rata)=}')
     
     for i in range(1, broj_rata+1):
-        if invoice_item.invoice_item_type == 4:
+        if invoice_item.invoice_item_type == 5:
+            iznos_duga = float(invoice_item_details['total_price'])
+            iznos_rate = iznos_duga/broj_rata
+            svrha_uplate = f'Uplata za uslugu dostave'
+        elif invoice_item.invoice_item_type == 4:
             iznos_duga = float(invoice_item_details['fattening_price'])
             iznos_rate = iznos_duga/broj_rata
             if broj_rata > 1:
@@ -230,7 +279,7 @@ def generate_payment_slips_attach(invoice_item):
         pdf.set_font('DejaVuSansCondensed', '', 10)
         pdf.multi_cell(10,6, f"{uplatnica['model']}", new_y='LAST', align='L', border=1)
         pdf.multi_cell(10,6, f"", new_y='LAST', align='L', border=0)
-        pdf.multi_cell(45,6, f"{uplatnica['poziv_na_broj']}", new_y='LAST', align='L', border=1)
+        pdf.multi_cell(45,6, f"{uplatnica['poziv_na_broj']}", new_y='NEXT', align='L', border=1)
         pdf.set_x(141)
         pdf.set_font('DejaVuSansCondensed', '', 10)
         pdf.cell(63,4, f"Uplatilac", new_y='NEXT', align='L', border=0)
@@ -961,32 +1010,37 @@ def send_payments_email(user, invoice_id):
     '''
     Slanje mejla korisniku o uspešnom plaćanju preko uplatnice nakon ...
     '''
+    invoice=Invoice.query.get(invoice_id)
     app.logger.info(f'Započinjem slanje email-a za korisnika {user.email}, faktura {invoice_id}')
     payment_slips = []
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
     app.logger.debug(f'Pronađeno {len(invoice_items)} stavki fakture')
-    
+    item_data = []
     for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type in [2, 3, 4]:
+        if invoice_item.invoice_item_type in [2, 3, 4, 5]:
             create_debt(user, invoice_item)
             new_payment_slip = generate_payment_slips_attach(invoice_item)
             app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
             payment_slips.append(new_payment_slip)
+        
+        data = populate_item_data(invoice_item)
+        item_data.append(data)
+    total_price = sum(item['total_price'] for item in item_data)
+    
     app.logger.debug(f'Generisane uplatnice: {payment_slips}')
     to = [user.email]
     bcc = [os.environ.get('MAIL_ADMIN')]
-    subject = 'Potvrda kupovine preko uplatnica na portalu "Moje stado"'
+    subject = 'Potvrda kupovine životinja preko uplatnica na portalu "Moje stado"'
     
-    if payment_slips:
-        app.logger.info('Faktura je na rate - prilažem uplatnice')
-        attachments = payment_slips
-        na_rate = True
-    else:
-        app.logger.info('Nema ni jedna uplatnica!')
-        return False, 'Nema ni jedna uplatnica!'
-        
+    
+    
     message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
-    message.html = render_template('message_html_confirm_invoice.html', na_rate=na_rate)
+    message.html = render_template('message_html_confirm_invoice.html', 
+                                    user=user, 
+                                    invoice=invoice, 
+                                    item_data=item_data, 
+                                    total_price=total_price)
+    attachments = payment_slips
     
     app.logger.debug(f'Prilozi za slanje: {attachments}')
     
@@ -997,8 +1051,8 @@ def send_payments_email(user, invoice_id):
             continue
         try:
             with open(attachment, 'rb') as f:
-                app.logger.debug(f'Uspešno pročitan fajl: {attachment}, veličina: {len(f.read())} bajtova')
                 file_content = f.read()
+                app.logger.debug(f'Uspešno pročitan fajl: {attachment}, veličina: {len(file_content)} bajtova')
                 message.attach(os.path.basename(attachment), "application/pdf", file_content)
                 app.logger.debug(f'Uspešno dodat prilog: {os.path.basename(attachment)}')
         except Exception as e:
@@ -1108,8 +1162,18 @@ def send_email_to_update_product_quantity(invoice_item):
         app.logger.error(f'Greška prilikom slanja mejla: {e}')
 
 def create_debt(user, invoice_item):
-    if invoice_item.invoice_item_type == 4:
-        app.logger.info(f'Usluga tova na jednu ili više rata za stavku {invoice_item.id}, prva rata se plaća odmah, ostalo na mesec dana')
+    app.logger.debug(f'Kreiranje zaduženja za stavku: {invoice_item.id}')
+    if invoice_item.invoice_item_type == 5:
+        app.logger.info(f'Usluga dostave za stavku {invoice_item.id}.')
+        new_debt = Debt(
+            invoice_item_id=invoice_item.id,
+            user_id=user.id,
+            # amount=json.loads(invoice_item.invoice_item_details)['fattening_price'],
+            amount=invoice_item.invoice_item_details['total_price'],
+            status='pending'
+        )
+    elif invoice_item.invoice_item_type == 4:
+        app.logger.info(f'Usluga tova na jednu ili više rata za stavku {invoice_item.id}, prva rata se plaća odmah, ostalo na mesec dana.')
         new_debt = Debt(
             invoice_item_id=invoice_item.id,
             user_id=user.id,
@@ -1118,6 +1182,7 @@ def create_debt(user, invoice_item):
             status='pending'
         )
     elif invoice_item.invoice_item_type == 3:
+        app.logger.info(f'Usluga klanje i/ili obrada za stavku {invoice_item.id}.')
         new_debt = Debt(
             invoice_item_id=invoice_item.id,
             user_id=user.id,
@@ -1126,6 +1191,7 @@ def create_debt(user, invoice_item):
             status='pending'
         )
     elif invoice_item.invoice_item_type == 2:
+        app.logger.info(f'Kupovina životinje za stavku {invoice_item.id}.')
         new_debt = Debt(
             invoice_item_id=invoice_item.id,
             user_id=user.id,
