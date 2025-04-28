@@ -290,8 +290,8 @@ class PaySpotTransaction(db.Model):
     status_trans = db.Column(db.String(10), nullable=True)
     create_date = db.Column(db.String(10), nullable=True)
     create_time = db.Column(db.String(10), nullable=True)
-    sender_fee = db.Column(db.Float, nullable=True)
-    beneficiary_amount = db.Column(db.Float, nullable=True)
+    sender_fee = db.Column(db.Numeric(12,2), nullable=True)
+    beneficiary_amount = db.Column(db.Numeric(12,2), nullable=True)
     order_confirmation = db.Column(db.Boolean, nullable=True, default=False)
     
     # Relacija

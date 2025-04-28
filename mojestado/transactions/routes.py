@@ -317,7 +317,7 @@ def confirm_animals_order(invoice_id):
             if not payspot_transactions:
                 flash('Nema PaySpot transakcija za datu fakturu.', 'danger')
                 return redirect(url_for('main.home'))
-            success, error_message = send_payment_order_confirm(merchant_order_id_animals, None, invoice.id)
+            success, error_message = send_payment_order_confirm(merchant_order_id_animals, 'uplatnica', invoice.id)
         except Exception as e:
             flash('Greška pri slanju zahteva za potvrdu uplate.', 'danger')
             return render_template('transactions/confirm_animals_order.html', invoice=invoice, user=user, item_data=item_data, total_price=total_price)
@@ -406,7 +406,7 @@ def callback_url():
             invoice.payment_date = datetime.datetime.now()
             
             # Slanje PaymentOrderConfirm zahteva za split transakcije
-            success, error_message = send_payment_order_confirm(order_id, payspot_order_id, invoice_id)
+            success, error_message = send_payment_order_confirm(order_id, 'uplatnica', invoice_id)
             if not success:
                 app.logger.error(f'Greška pri slanju PaymentOrderConfirm: {error_message}')
                 return jsonify({"error": "Greška pri slanju PaymentOrderConfirm"}), 500
