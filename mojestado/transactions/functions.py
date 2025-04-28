@@ -6,6 +6,7 @@ import random, string
 import requests
 
 from PIL import Image
+from decimal import Decimal, ROUND_HALF_UP
 
 from mojestado import db, mail, app
 from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User, PaySpotTransaction, AnimalCategory
@@ -1298,6 +1299,12 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
                             except (ValueError, IndexError):
                                 app.logger.warning(f'Nije moguće izdvojiti farm_id iz reference: {merchant_order_reference}')
                         beneficiary_amount = beneficiary_amounts.get(merchant_order_reference)
+                        # Konvertujemo vrednosti u Decimal za preciznost sa 2 decimale
+                        if beneficiary_amount is not None:
+                            beneficiary_amount = Decimal(str(beneficiary_amount)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                        if sender_fee is not None:
+                            sender_fee = Decimal(str(sender_fee)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                        
                         transaction = PaySpotTransaction(
                             invoice_id=invoice.id,
                             merchant_order_id=merchant_order_id,
@@ -1478,6 +1485,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                     'farmer': farmer,
                     'item_price': item_price,
                     'item_id': item.id,
+                    # 'farmer_amount': f'{farmer_amount:.2f}',
                     'farmer_amount': farmer_amount,
                     'user_address': user_address,
                     'user_city': user_city
@@ -1499,7 +1507,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
                 "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
                 # "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",#? ili je možda ovo ispravno??
-                "beneficiaryAccount": farm.farm_account_number if payment_type == 'kartica' else "325950070003803565", #! staviti umesto 325950070003803565 da bude variabilna iz .env fajla
+                "beneficiaryAccount": farm.farm_account_number, #? if payment_type == 'kartica' else "325950070003803565", #! staviti umesto 325950070003803565 da bude variabilna iz .env fajla
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
@@ -1588,7 +1596,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         return False, str(e)
 
 
-def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
+def send_payment_order_confirm(merchant_order_id, payment_type, invoice_id):
     """
     Šalje PaymentOrderConfirm (MsgType=110) zahtev ka PaySpot-u nakon uspešnog plaćanja.
     Šalje poseban zahtev za svaku transakciju.
@@ -1643,11 +1651,11 @@ def send_payment_order_confirm(merchant_order_id, payspot_order_id, invoice_id):
             # Kreiranje zahteva samo za jednu transakciju
             order_confirm_item = {
                 "merchantOrderID": merchant_order_id,
-                "merchantReference": f"REF-{merchant_order_id}-F{transaction.farm_id}",
+                "merchantReference": transaction.merchant_order_reference,
                 "payspotGroupID": transaction.payspot_group_id,
                 "payspotTransactionID": transaction.payspot_transaction_id,
                 "beneficiaryAccount": farm.farm_account_number,
-                "beneficiaryAmount": round(beneficiary_amount, 2),
+                "beneficiaryAmount": f"{beneficiary_amount:.2f}",
                 "valueDate": (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             }
             
