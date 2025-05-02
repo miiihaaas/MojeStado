@@ -411,6 +411,13 @@
             // Ako nema forme, fallback na redirect
             window.location.href = "{{ url_for('transactions.confirm_animals_order', invoice_id=new_invoice_animals_id) }}";
         }
+        {% else %}
+        // NOVI KOD - Slučaj kada imamo samo gotove proizvode
+        // Submituj payment formu direktno
+        const paymentForm = document.getElementById('paymentForm');
+        if (paymentForm) {
+            paymentForm.submit();
+        }
         {% endif %}
     });
 </script>
