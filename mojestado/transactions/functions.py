@@ -2,25 +2,18 @@ import base64, hashlib
 import io
 import datetime, os
 import random, string
-
 import requests
-
 from PIL import Image
 from decimal import Decimal, ROUND_HALF_UP
-
 from mojestado import db, mail, app
 from mojestado.models import Animal, Debt, Farm, Invoice, InvoiceItems, Product, User, PaySpotTransaction, AnimalCategory
-
 from flask import flash, json, redirect, render_template, session, url_for
 from flask_login import current_user
 from flask_mail import Message, Attachment
-
 from fpdf import FPDF
 
 current_file_path = os.path.abspath(__file__)
 project_folder = os.path.dirname(os.path.dirname((current_file_path)))
-print(f'{current_file_path=}')
-print(f'{project_folder=}')
 
 font_path = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed.ttf')
 font_path_B = os.path.join(project_folder, 'static', 'fonts', 'DejaVuSansCondensed-Bold.ttf')
@@ -31,6 +24,33 @@ def add_fonts(pdf):
     pdf.add_font('DejaVuSansCondensed', '', font_path, uni=True)
     pdf.add_font('DejaVuSansCondensed', 'B', font_path_B, uni=True)
     pdf.add_font('DejaVuSansCondensed', 'I', font_path_I, uni=True)
+
+
+def generisi_poziv_na_broj(osnovni_broj):
+    # Osnovni broj je string cifara i slova (bez kontrolnih cifara).
+    # 1. Konvertuj slova u brojeve po A=10...Z=35
+    tabelarni = {
+        'A':10, 'B':11, 'C':12, 'D':13, 'E':14, 'F':15, 'G':16, 'H':17, 'I':18,
+        'J':19, 'K':20, 'L':21, 'M':22, 'N':23, 'O':24, 'P':25, 'Q':26,
+        'R':27, 'S':28, 'T':29, 'U':30, 'V':31, 'W':32, 'X':33, 'Y':34, 'Z':35
+    }
+    numeric = ""
+    for c in osnovni_broj:
+        if c.isalpha():
+            c = c.upper()
+            numeric += str(tabelarni[c])
+        else:
+            numeric += c
+    # 2. Dodaj dve nule
+    numeric += "00"
+    # 3. Izračunaj mod 97
+    ostatak = int(numeric) % 97
+    # 4. Kontrolni broj = 98 - ostatak
+    kontrola = 98 - ostatak
+    # 5. Dve cifre (vodeća nula ako je potrebno)
+    ctr = str(kontrola).zfill(2)
+    # 6. Kreiraj konačni poziv na broj
+    return ctr + osnovni_broj
 
 
 def populate_item_data(invoice_item):
@@ -120,9 +140,27 @@ def generate_payment_slips_attach(invoice_item):
         print(f'{iznos_duga=}, {broj_rata=}, {iznos_rate=}')
         uplatilac = invoice_item.invoice.user_invoice.name + ' ' + invoice_item.invoice.user_invoice.surname
         sifra_placanja = f'189'
-        model='00' #! ili 97?
-        poziv_na_broj = f'K12345-{invoice_item.invoice.user_id:05d}-{invoice_item.id:07d}' #! pirlagoditi da ima i PaySpot deo "K12345-"
-        payspot_racun_primaoca = '325950070003803565' #! upisati realan racun primaoca PaySpot
+        # Detaljnije smo analizirali poziv na broj i dosli do sledeceg zakljucka na koji se nadam se vi mozete lako prilagoditi posto koliko vidim vas poziv na broj je broj fakture koji je autoincrement? 
+
+        # Vi projeravate poziv na broj po modulu 97?
+
+        # KB , N(2) -  kontrloni broj izračunat po modulu 97 = 97
+        # MB, N(8) - matični broj platforme na kojoj je izvršena kupovina, u ovom slučaju "Moje stado". Dužina 8 cifara sa vodećom nulom. = MB od Moje Stado
+        # TU, AN(2) - alfanumerik dužine 2 karaktera, određuje vrstu posla (tip ugovora) sa platformom, po osnovu koga je kreriana instgrukcija za uplatu kupca = 14
+        # REF, AN(11) - alfanumerik max. dužine 11 karaktera. Jedinstvena referenca naloga za uplatu kreirana od strane platforme  = Vaš dio
+        # Podaci mogu da budu razdvojeni crticom "-"  (ASCII vredost 45). 
+
+        # Na ovaj način bi obezbedili
+        # jednoznačnu identifikaciju identifikaciju upalte depozita, za vrstu posla i partnera, u izvodu našeg računa
+        # jednoznačnu identifikaciju naloga za prenos za koji smo dobili instgrukcije u poruci MT=101
+        model='97' #! ili 00?
+        osnovni_broj = f'2199386714{invoice_item.id:09d}'
+        poziv_na_broj = generisi_poziv_na_broj(osnovni_broj)
+        # poziv_na_broj = f'K12345-{invoice_item.invoice.user_id:05d}-{invoice_item.id:07d}' #! pirlagoditi deo "K12345-" kada PaySpot pošalje realnu vrednost
+        payspot_racun_primaoca = os.getenv('PAYSPOT_ACCOUNT')
+        print("ENV RAW :", os.environ.get("PAYSPOT_ACCOUNT"))
+        print("GETENV   :", os.getenv("PAYSPOT_ACCOUNT"))
+        print(f'*************{payspot_racun_primaoca=}')
         primalac = 'PaySpot DOO, Branimira Ćosića 2, 21000 Novi Sad'
         new_data = {
             'user_id': invoice_item.invoice.user_invoice.id,
@@ -1506,8 +1544,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "debtorName": f"{user.name} {user.surname}",
                 "debtorAddress": user.address if hasattr(user, 'address') and user.address else "Nepoznata adresa",
                 "debtorCity": user.city if hasattr(user, 'city') and user.city else "Nepoznat grad",
-                # "beneficiaryAccount": farm.farm_account_number if hasattr(farm, 'farm_account_number') and farm.farm_account_number else "0000000000000000000",#? ili je možda ovo ispravno??
-                "beneficiaryAccount": farm.farm_account_number, #? if payment_type == 'kartica' else "325950070003803565", #! staviti umesto 325950070003803565 da bude variabilna iz .env fajla
+                "beneficiaryAccount": farm.farm_account_number,
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
