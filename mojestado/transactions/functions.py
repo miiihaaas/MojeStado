@@ -157,10 +157,6 @@ def generate_payment_slips_attach(invoice_item):
         osnovni_broj = f'2199386714{invoice_item.id:09d}'
         poziv_na_broj = generisi_poziv_na_broj(osnovni_broj)
         # poziv_na_broj = f'K12345-{invoice_item.invoice.user_id:05d}-{invoice_item.id:07d}' #! pirlagoditi deo "K12345-" kada PaySpot pošalje realnu vrednost
-        payspot_racun_primaoca = os.getenv('PAYSPOT_ACCOUNT')
-        print("ENV RAW :", os.environ.get("PAYSPOT_ACCOUNT"))
-        print("GETENV   :", os.getenv("PAYSPOT_ACCOUNT"))
-        print(f'*************{payspot_racun_primaoca=}')
         primalac = 'PaySpot DOO, Branimira Ćosića 2, 21000 Novi Sad'
         new_data = {
             'user_id': invoice_item.invoice.user_invoice.id,
