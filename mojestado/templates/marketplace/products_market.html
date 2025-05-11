@@ -25,7 +25,7 @@
             {% for product_category in product_categories %}
                 <a href="{{ url_for('marketplace.products_market', product_category_id=product_category.id) }}" class="btn btn-secondary smallfont prod-btn">
                     {{ product_category.product_category_name }}
-                    <img src="{{ url_for('static', filename='icons/' ~ product_category.icon_filename) }}" alt="{{ product_category.product_category_name }}" width="40" height="40">
+                    <img src="{{ url_for('static', filename='icons/' + product_category.product_category_name + '.png') }}" alt="{{ product_category.product_category_name }}" width="40" height="40">
                 </a>
             {% endfor %}
         </div>
