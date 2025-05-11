@@ -103,6 +103,7 @@ def generate_payment_slips_attach(invoice_item):
     generiše 2+ uplatnice na jednom dokumentu (A4) u fpdf, qr kod/api iz nbs
     '''
     app.logger.info('Generisanje uplatnica za fakturu')
+    payspot_racun_primaoca = os.getenv('PAYSPOT_ACCOUNT')
     data_list = []
     qr_code_images = []
     path = os.path.join(project_folder, 'static', 'payment_slips')
