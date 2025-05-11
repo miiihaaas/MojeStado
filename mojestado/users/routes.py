@@ -1261,7 +1261,7 @@ def my_market(farm_id):
             try:
                 # Validacija konverzije težine
                 weight_conversion = 1.0
-                if form.unit_of_measurement.data == 'kom':
+                if form.unit_of_measurement.data in ['kom', 'kom (kg)', 'kom (l)']:
                     try:
                         weight_conversion = float(form.weight_conversion.data)
                         if weight_conversion <= 0:
@@ -1285,7 +1285,7 @@ def my_market(farm_id):
                     product_price_per_unit=float(form.product_price_per_unit.data) * 1.38,
                     product_price_per_kg=(
                         (float(form.product_price_per_unit.data) / weight_conversion) * 1.38 
-                        if form.unit_of_measurement.data == 'kom' 
+                        if form.unit_of_measurement.data in ['kom', 'kom (kg)', 'kom (l)'] 
                         else float(form.product_price_per_unit.data) * 1.38
                     ),
                     organic_product=form.organic_product.data,
