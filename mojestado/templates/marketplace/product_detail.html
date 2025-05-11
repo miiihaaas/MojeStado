@@ -474,13 +474,15 @@
                         }));
                     });
                     
-                    // Automatski pokreni promenu za potkategoriju da bi se ažurirale sekcije
-                    $('#subcategory').change();
-                    
                     // Ako postoji prethodno izabrana potkategorija, selektuj je
                     if (initialSubcategoryId) {
                         $('#subcategory').val(initialSubcategoryId);
                         initialSubcategoryId = null; // Resetuj nakon prvog učitavanja
+                        // NAKON selektovanja triggeruj change događaj za učitavanje sekcija
+                        $('#subcategory').trigger('change');
+                    } else {
+                        // Ako nema inicijalne vrednosti samo triggeruj change
+                        $('#subcategory').trigger('change');
                     }
                 }
             });
@@ -522,9 +524,11 @@
         });
         
         // Inicijalizuj sa trenutnim vrednostima
-        if ($('#category').val()) {
-            loadSubcategories($('#category').val());
-        }
+        $(document).ready(function() {
+            if ($('#category').val()) {
+                loadSubcategories($('#category').val());
+            }
+        });
     });
 </script>
 
