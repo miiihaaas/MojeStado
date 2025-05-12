@@ -300,4 +300,14 @@
         });
     });
 </script>
+<script>
+    // kada ode na sledeću stranu vrati na vrh stranice
+    $('#pagination').on('click', 'a', function (e) {
+        const url = $(this).attr('href');
+        $.get(url, function (data) {
+            $('#content').html(data);
+            window.scrollTo({ top: 0 });
+        });
+    });
+</script>
 {% endblock %}
