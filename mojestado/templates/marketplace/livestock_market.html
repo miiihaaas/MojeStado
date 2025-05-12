@@ -315,7 +315,7 @@
                 {% endif %}
             </div>
         </div>
-        <!-- Tov Modal -->
+        <!-- Tov Modal (ima usluga klanje i obrada)-->
         <div class="modal fade" id="tovModal" tabindex="-1" aria-labelledby="tovModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -410,7 +410,7 @@
                 </div>
             </div>
         </div>
-        <!-- Tov_ Modal -->
+        <!-- Tov_ Modal (nema usluga klanje i obrada) -->
         <div class="modal fade" id="tovModal_" tabindex="-1" aria-labelledby="tovModalLabel_" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -606,16 +606,18 @@ $(document).ready(function() {
                     }
                     
                     populateInstallmentOptions_();
+                    updateConfirmButton_();
                 },
                 error: function(xhr, status, error) {
                     console.error("Greška pri izračunavanju detalja tova:", error);
                     resetTovDetails_();
+                    updateConfirmButton_();
                 }
             });
         } else {
             resetTovDetails_();
+            updateConfirmButton_();
         }
-        updateConfirmButton_();
     }
 
     function disableInstallmentPayment_() {
@@ -691,16 +693,21 @@ $(document).ready(function() {
                     }
                     
                     populateInstallmentOptions();
+                    // Pozivamo proveru validnosti forme nakon uspešnog AJAX zahteva
+                    updateConfirmButton();
                 },
                 error: function(xhr, status, error) {
                     console.error("Greška pri izračunavanju detalja tova:", error);
                     resetTovDetails();
+                    // Pozivamo proveru validnosti forme i nakon neuspešnog AJAX zahteva
+                    updateConfirmButton();
                 }
             });
         } else {
             resetTovDetails();
+            // Pozivamo proveru validnosti forme i u slučaju da je željena težina manja od trenutne
+            updateConfirmButton();
         }
-        updateConfirmButton();
     }
 
     function disableInstallmentPayment() {
@@ -811,6 +818,12 @@ $(document).ready(function() {
 
         $('#desiredWeight').on('input', function() {
             console.log('desiredWeight input event triggered');
+            calculateTovDetails();
+            updateConfirmButton();
+        });
+
+        $('#desiredWeight').change(function() {
+            console.log('desiredWeight change event triggered');
             calculateTovDetails();
             updateConfirmButton();
         });
