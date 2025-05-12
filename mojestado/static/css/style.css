@@ -47,6 +47,8 @@ a:hover { color: #e0bd5d; }
 .btn-check:focus+.btn-secondary, .btn-secondary:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
 .btn-check:active+.btn-secondary, .btn-check:checked+.btn-secondary, .btn-secondary.active, .btn-secondary:active, .show>.btn-secondary.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
 .btn-secondary:hover { color: #fff; background-color: #5e4432; border-color: #5e4432; }
+.btn-secondary img { transition: all 0.3s ease; }
+.btn-secondary:hover img { filter: invert(100%) brightness(200%) contrast(100%); }
 .btn-alt { color: #5e4432;  background-color: transparent; border-color: #5e4432; }
 .btn-check:focus+.btn-alt, .btn-alt:focus { color: #fff; background-color: #5e4432; border-color: #5e4432; box-shadow: none !important; }
 .btn-check:active+.btn-alt, .btn-check:checked+.btn-alt, .btn-alt.active, .btn-alt:active, .show>.btn-alt.dropdown-toggle { color: #fff; background-color: #5e4432; border-color: #5e4432; }
