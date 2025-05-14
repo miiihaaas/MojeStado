@@ -1535,6 +1535,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
             item_price = farm_data['item_price']
             item_id = farm_data['item_id']
             farmer_amount = farm_data['farmer_amount']
+            osnovni_broj = f'2199386714{item_id:09d}'
+            poziv_na_broj = generisi_poziv_na_broj(osnovni_broj)
             order = {
                 "sequenceNo": sequence_no,
                 "merchantOrderReference": f"REF-{merchant_order_id}-F{farm.id}" if payment_type == 'kartica' else f"REF-{merchant_order_id}-F{dict_key}",
@@ -1545,7 +1547,8 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
                 "beneficiaryName": f"{farmer.name} {farmer.surname}",
                 "beneficiaryAddress": farmer.address if hasattr(farmer, 'address') and farmer.address else "Nepoznata adresa",
                 "beneficiaryCity": farmer.city if hasattr(farmer, 'city') and farmer.city else "Nepoznat grad",
-                "beneficiaryReference": None if payment_type == 'kartica' else f'2199386714{item_id:09d}',
+                "beneficiaryModul": None if payment_type == 'kartica' else "97",
+                "beneficiaryReference": None if payment_type == 'kartica' else poziv_na_broj,
                 "amountTrans": round(item_price, 2), #? isto i za dostavu i za stavku
                 "senderFeeAmount": round((round(item_price, 2) - round(farmer_amount, 2)), 2) if farm.id != 0 else round(0, 2), #? ako je farm.id=0 onda je dostava i fee je 0 --- #! Provizija (platforma + payspot) 
                 "beneficiaryAmount": round(farmer_amount, 2) if farm.id != 0 else round(item_price, 2), #? ako je farm.id=0 onda je dostava i beneficiaryAmount je isti kao amountTrans
