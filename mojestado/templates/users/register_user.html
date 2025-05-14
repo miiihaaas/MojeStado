@@ -74,12 +74,12 @@
                     </div>
                     <div class="col-md-2"> </div>
                     <div class="col-md-12 plr-10 d-d-flex formsubmit">
-                        <div class="form-check">
+                        <!-- <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="agreement" name="agreement">
                             <label class="form-check-label" for="agreement">Slažem se sa <a href="{{ url_for('main.terms_and_conditions') }}" target="_blank">uslovima korišćenja</a></label>
-                        </div>
+                        </div> -->
                         <div>
-                            {{ form.submit(class="btn btn-secondary", id="submit", disabled="disabled") }}
+                            {{ form.submit(class="btn btn-secondary", id="submit") }}
                         </div>
                     </div>
                 </form>
@@ -89,7 +89,7 @@
 </section>
 {% endblock content%}
 {% block scripts %}
-<script>
+<!-- <script>
     $(document).ready(function() {
         $('#agreement').change(function() {
             if($(this).is(':checked')) {
@@ -99,5 +99,5 @@
             }
         });
     });
-</script>
+</script> -->
 {% endblock %}
