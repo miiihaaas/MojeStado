@@ -329,7 +329,7 @@
         <input type="hidden" id="cartData" name="cartData" value="">
         <form id="paymentForm"
             method="post" 
-            action='https://test.nsgway.rs:50009/api/ecommerce/submit' 
+            action='{{ action }}' 
             target="output_frame">
             <input type="hidden" name="companyId" value="{{ company_id }}" />
             <input type="hidden" name="merchantOrderID" value='{{ merchant_order_id }}' />
