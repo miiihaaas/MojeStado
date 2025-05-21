@@ -1269,7 +1269,11 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
     '''
     Pomoćna funkcija za slanje zahteva ka PaySpot-u i upis u bazu.
     '''
-    url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
+    environment = os.environ.get('ENVIRONMENT')
+    if environment == 'development':
+        url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
+    elif environment == 'production':
+        url = "https://nsgway.rs:50010/api/paymentorderinsert"
     app.logger.debug(f'PaySpot URL: {url}')
     app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
     if payment_type == 'kartica':
@@ -1609,7 +1613,11 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         # request_data_7["data"]["header"]["hash"] = hash_value
         
         # Slanje zahteva ka PaySpot-u
-        url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
+        environment = os.environ.get('ENVIRONMENT')
+        if environment == 'development':
+            url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
+        elif environment == 'production':
+            url = "https://nsgway.rs:50010/api/paymentorderinsert"
         
         # Logovanje zahteva pre slanja
         app.logger.debug(f'PaySpot URL: {url}')
@@ -1714,7 +1722,11 @@ def send_payment_order_confirm(merchant_order_id, payment_type, invoice_id):
             }
             
             # Slanje zahteva ka PaySpot-u
-            url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
+            environment = os.environ.get('ENVIRONMENT')
+            if environment == 'development':
+                url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
+            elif environment == 'production':
+                url = "https://nsgway.rs:50010/api/paymentorderconfirm"
             
             app.logger.debug(f'PaySpot URL: {url}')
             app.logger.debug(f'PaySpot companyID: {company_id}')

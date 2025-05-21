@@ -253,6 +253,11 @@ def make_order():
             # Uvek dodeljujemo current_date pre render_template
             if not current_date:
                 current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            environment = os.environ.get('ENVIRONMENT')
+            if environment == 'development':
+                action = 'https://test.nsgway.rs:50009/api/ecommerce/submit'
+            elif environment == 'production':
+                action = 'https://nsgway.rs:50010/api/ecommerce/submit'
             return render_template('transactions/make_order.html',
                                 animals=animals,
                                 products=products,
@@ -269,7 +274,8 @@ def make_order():
                                 installment_total=installment_total,
                                 delivery_product_total=delivery_product_total,
                                 delivery_animal_total=delivery_animal_total,
-                                current_date=current_date)
+                                current_date=current_date,
+                                action=action)
                                 
         except ValueError as e:
             app.logger.error(f'Nedostaje konfiguracija za plaćanje: {str(e)}')
