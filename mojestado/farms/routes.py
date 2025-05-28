@@ -135,6 +135,8 @@ def farm_list():
         print(f'post: {selected_municipality=}')
         if selected_municipality:
             farm_list = Farm.query.filter(Farm.farm_municipality_id.in_(selected_municipality)).all()
+            farm_list_active = [farm for farm in farm_list if User.query.get(farm.user_id).user_type == 'farm_active']
+            farm_list = farm_list_active
         else:
             farm_list = Farm.query.all()
             farm_list_active = [farm for farm in farm_list if User.query.get(farm.user_id).user_type == 'farm_active']
