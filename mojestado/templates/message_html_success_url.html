@@ -131,6 +131,18 @@
                                 </ul>
                             </div>
                         </div>
+                        {% if fiskom_data %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4 class="mb-3">Podaci o fiskalnom računu</h4>
+                                <ul class="list-unstyled mb-4">
+                                    <li><strong>Broj fiskalnog računa: </strong>{{ fiskom_data['invoice_number'] }}</li>
+                                    <li><strong>PDF fiskalnog računa: </strong><a href="{{ fiskom_data['pdf_url'] }}" target="_blank">link</a></li>
+                                    <li><strong>Verifikacija fiskalnog računa: </strong><a href="{{ fiskom_data['verification_url'] }}" target="_blank">link</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="text-center mt-4">
                             <span style="font-size: 1.1em; color: #5e4432;">Hvala što koristite portal „Moje stado”.</span>
                         </div>

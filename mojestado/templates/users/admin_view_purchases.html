@@ -39,7 +39,7 @@
             <thead>
                 <tr>
                     <th>Datum kupovine</th>
-                    <th>Korisnik</th>
+                    <th>Kupac</th>
                     <th>PG</th>
                     <th>Vrsta transakcije</th>
                     <th>Predmet kupovine</th>
@@ -47,12 +47,13 @@
                     <th>Cena po jedinici mere</th>
                     <th>Broj / masa</th>
                     <th>Ukupan iznos</th>
+                    <th>Akcije</th>
                 </tr>
             </thead>
             <tbody>
                 {% for invoice_item in invoice_items %}
                 <tr>
-                    <td>{{ invoice_item.invoice.datetime.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ invoice_item.invoice.datetime.strftime('%Y-%m-%d') }}</td>
                     <td><a href="{{ url_for('users.admin_edit_profile',user_id=invoice_item.invoice.user_invoice.id)}}" target="_blank">{{ invoice_item.invoice.user_invoice.name }} {{ invoice_item.invoice.user_invoice.surname }}</a></td>
                     <td><a href="{{ url_for('users.my_profile', user_id = invoice_item.farm.user_id) }}" target="_blank">{{ invoice_item.invoice_item_details["farm"] }}</a></td>
                     {% if invoice_item.invoice_item_type == 1 %}
@@ -107,6 +108,9 @@
                     {% else %}
                     <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
                     {% endif %}
+                    <td>
+                        pošalji na adresu
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

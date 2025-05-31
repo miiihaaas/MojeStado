@@ -1874,7 +1874,7 @@ def admin_view_purchases():
             invoice_items = InvoiceItems.query.all()
             
             # Filtriranje po statusu
-            valid_statuses = ['confirmed', 'paid']  # TODO: Dodati ostale statuse kad budu definisani
+            valid_statuses = ['delivered', 'paid']  # TODO: Dodati ostale statuse kad budu definisani
             invoice_items = [
                 item for item in invoice_items 
                 if item.invoice_item_type == 1 and item.invoice.status in valid_statuses #! naći drugi način da se ovo proveri da obuhvati i [2,3,4]
@@ -1908,6 +1908,31 @@ def admin_view_purchases():
         app.logger.error(f'Neočekivana greška: {str(e)}')
         flash('Došlo je do greške. Molimo pokušajte ponovo.', 'danger')
         return redirect(url_for('main.home'))
+
+
+@users.route("/deliver_item/<int:item_id>", methods=["POST"])
+def deliver_item(item_id):
+    """
+    Admin potvrđivanje dostave proizvoda pomoću ajax-a.
+    
+    Methods:
+        POST: Potvrđuje dostavu proizvoda
+        
+    Returns:
+        Renderovan template sa pregledom kupovina
+    """
+    try:
+        invoice_item = InvoiceItems.query.get(item_id)
+        invoice_item.invoice.status = "delivered"
+        db.session.commit()
+        app.logger.info(f'Potvrđena dostava proizvoda {invoice_item.id} od strane admina')
+        flash('Dostava proizvoda uspešno potvrđena.', 'success')
+    except Exception as e:
+        app.logger.error(f'Greška pri potvrđivanju dostave proizvoda: {str(e)}')
+        flash('Došlo je do greške pri potvrđivanju dostave proizvoda. Molimo pokušajte ponovo.', 'warning')
+    
+    return redirect(url_for('users.admin_view_purchases'))
+        
 
 
 @users.route("/admin_view_overview", methods=['GET', 'POST'])
