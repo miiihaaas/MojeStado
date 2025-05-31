@@ -1874,7 +1874,7 @@ def admin_view_purchases():
             invoice_items = InvoiceItems.query.all()
             
             # Filtriranje po statusu
-            valid_statuses = ['confirmed', 'paid']  # TODO: Dodati ostale statuse kad budu definisani
+            valid_statuses = ['delivered', 'paid']  # TODO: Dodati ostale statuse kad budu definisani
             invoice_items = [
                 item for item in invoice_items 
                 if item.invoice_item_type == 1 and item.invoice.status in valid_statuses #! naći drugi način da se ovo proveri da obuhvati i [2,3,4]
@@ -1908,6 +1908,167 @@ def admin_view_purchases():
         app.logger.error(f'Neočekivana greška: {str(e)}')
         flash('Došlo je do greške. Molimo pokušajte ponovo.', 'danger')
         return redirect(url_for('main.home'))
+
+
+@users.route("/deliver_item/<int:item_id>", methods=["POST"])
+def deliver_item(item_id):
+    """
+    Admin potvrđivanje dostave proizvoda pomoću ajax-a.
+    
+    Methods:
+        POST: Potvrđuje dostavu proizvoda
+        
+    Returns:
+        Renderovan template sa pregledom kupovina
+    """
+    try:
+        invoice_item = InvoiceItems.query.get(item_id)
+        invoice_item.invoice.status = "delivered"
+        db.session.commit()
+        app.logger.info(f'Potvrđena dostava proizvoda {invoice_item.id} od strane admina')
+        flash('Dostava proizvoda uspešno potvrđena.', 'success')
+    except Exception as e:
+        app.logger.error(f'Greška pri potvrđivanju dostave proizvoda: {str(e)}')
+        flash('Došlo je do greške pri potvrđivanju dostave proizvoda. Molimo pokušajte ponovo.', 'warning')
+    
+    return redirect(url_for('users.admin_view_purchases'))
+
+
+@users.route("/get_user_details", methods=["GET"])
+def get_user_details():
+    """
+    AJAX ruta za dobavljanje podataka o korisniku.
+    
+    Methods:
+        GET: Prima ID korisnika i vraća njegove podatke
+        
+    Returns:
+        JSON sa podacima o korisniku
+    """
+    try:
+        # Provera autentikacije
+        if not current_user.is_authenticated:
+            return jsonify({"success": False, "message": "Morate biti prijavljeni."})
+            
+        # Provera admin prava
+        if current_user.user_type != 'admin':
+            return jsonify({"success": False, "message": "Nemate administratorska prava."})
+            
+        user_id = request.args.get('user_id', type=int)
+        if not user_id:
+            return jsonify({"success": False, "message": "Nije prosleđen ID korisnika."})
+            
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"success": False, "message": "Korisnik nije pronađen."})
+            
+        user_data = {
+            "name": user.name,
+            "surname": user.surname,
+            "email": user.email,
+            "address": user.address,
+            "city": user.city,
+            "zip_code": user.zip_code,
+            "phone": user.phone
+        }
+            
+        return jsonify({"success": True, "user": user_data})
+            
+    except Exception as e:
+        app.logger.error(f'Greška pri dobavljanju podataka o korisniku: {str(e)}')
+        return jsonify({"success": False, "message": "Došlo je do greške pri dobavljanju podataka o korisniku."})
+
+
+@users.route("/get_farm_details", methods=["GET"])
+def get_farm_details():
+    """
+    AJAX ruta za dobavljanje podataka o farmi.
+    
+    Methods:
+        GET: Prima ID farme i vraća njene podatke
+        
+    Returns:
+        JSON sa podacima o farmi
+    """
+    try:
+        # Provera autentikacije
+        if not current_user.is_authenticated:
+            return jsonify({"success": False, "message": "Morate biti prijavljeni."})
+            
+        # Provera admin prava
+        if current_user.user_type != 'admin':
+            return jsonify({"success": False, "message": "Nemate administratorska prava."})
+            
+        farm_id = request.args.get('farm_id', type=int)
+        if not farm_id:
+            return jsonify({"success": False, "message": "Nije prosleđen ID farme."})
+            
+        farm = Farm.query.get(farm_id)
+        if not farm:
+            return jsonify({"success": False, "message": "Farma nije pronađena."})
+            
+        farm_data = {
+            "farm_name": farm.farm_name,
+            "farm_address": farm.farm_address,
+            "farm_city": farm.farm_city,
+            "farm_zip_code": farm.farm_zip_code,
+            "farm_phone": farm.farm_phone,
+            "farm_account_number": farm.farm_account_number
+        }
+            
+        return jsonify({"success": True, "farm": farm_data})
+            
+    except Exception as e:
+        app.logger.error(f'Greška pri dobavljanju podataka o farmi: {str(e)}')
+        return jsonify({"success": False, "message": "Došlo je do greške pri dobavljanju podataka o farmi."})
+
+
+@users.route("/mark_as_delivered", methods=["POST"])
+def mark_as_delivered():
+    """
+    AJAX ruta za označavanje fakture kao dostavljene.
+    
+    Methods:
+        POST: Prima ID fakture i označava je kao dostavljenu
+        
+    Returns:
+        JSON sa statusom operacije
+    """
+    try:
+        # Provera autentikacije
+        if not current_user.is_authenticated:
+            return jsonify({"success": False, "message": "Morate biti prijavljeni."})
+            
+        # Provera admin prava
+        if current_user.user_type != 'admin':
+            return jsonify({"success": False, "message": "Nemate administratorska prava."})
+            
+        invoice_id = request.form.get('invoice_id', type=int)
+        if not invoice_id:
+            return jsonify({"success": False, "message": "Nije prosleđen ID fakture."})
+            
+        invoice = Invoice.query.get(invoice_id)
+        if not invoice:
+            return jsonify({"success": False, "message": "Faktura nije pronađena."})
+            
+        # Provera da li je faktura već označena kao dostavljena
+        if invoice.status == "delivered":
+            return jsonify({"success": True, "message": "Faktura je već označena kao dostavljena."})
+            
+        # Provera da li je faktura plaćena
+        if invoice.status != "paid":
+            return jsonify({"success": False, "message": "Samo plaćene fakture mogu biti označene kao dostavljene."})
+            
+        # Označavanje fakture kao dostavljene
+        invoice.status = "delivered"
+        db.session.commit()
+        
+        app.logger.info(f'Faktura {invoice.id} označena kao dostavljena od strane admina {current_user.email}')
+        return jsonify({"success": True, "message": "Faktura je uspešno označena kao dostavljena."})
+            
+    except Exception as e:
+        app.logger.error(f'Greška pri označavanju fakture kao dostavljene: {str(e)}')
+        return jsonify({"success": False, "message": "Došlo je do greške pri označavanju fakture kao dostavljene."})
 
 
 @users.route("/admin_view_overview", methods=['GET', 'POST'])

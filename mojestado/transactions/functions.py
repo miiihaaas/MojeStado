@@ -1020,7 +1020,7 @@ def deactivate_products(invoice_id):
     return True, None
 
 
-def send_success_email(invoice, auth_number, transaction_id, total_price):
+def send_success_email(invoice, auth_number, transaction_id, total_price, fiskom_data=None):
     '''
     Slanje mejla korisniku o uspešnom plaćanju preko kartice nakon callback_url
     '''
@@ -1038,7 +1038,8 @@ def send_success_email(invoice, auth_number, transaction_id, total_price):
                                     invoice_items=invoice_items, 
                                     auth_number=auth_number, 
                                     transaction_id=transaction_id, 
-                                    total_price=total_price)
+                                    total_price=total_price,
+                                    fiskom_data=fiskom_data)
     mail.send(message)
 
 
@@ -1849,28 +1850,32 @@ def log_payspot_request_response(merchant_order_id, payload, response=None, requ
 ##############
 
 def get_fiskom_data(invoice, invoice_items):
+    '''
+    funkcija koja prima fakturu i stavke fakture i vraća podatke o fiskalnom računu
+    '''
     total_price = sum(item.invoice_item_details["total_price"] for item in invoice_items)
     
+    fiskom_items = []
+    for item in invoice_items:
+        fiskom_items.append({
+            "name": item.invoice_item_details["product_name"],
+            "unitPrice": item.invoice_item_details["product_price_per_unit"],
+            "labels": ["Ж"],
+            "quantity": item.invoice_item_details["quantity"],
+            "totalAmount": item.invoice_item_details["total_price"]
+        })
     
     url = "https://us-central1-fiscal-38558.cloudfunctions.net/api/invoices/normal/sale"
     payload = {
-        "cashier": "test_portal_mojestado",
+        "cashier": "Naša Imperija DOO",
         "payment": [
             {
                 "paymentType": "Card",
                 "amount": total_price
             }
         ],
-        "invoiceNumber": f"MS-{invoice.invoice_number}",
-        "items": [
-            {
-                "name": "test proizvod",
-                "unitPrice": 1000,
-                "labels": ["Ж"],
-                "quantity": 1,
-                "totalAmount": 1000
-            }
-        ]
+        "invoiceNumber": f"MS-{invoice.invoice_number:09d}",
+        "items": fiskom_items
     }
     fiskom_sandbox_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
     headers = {
@@ -1879,6 +1884,7 @@ def get_fiskom_data(invoice, invoice_items):
         "authorization": f"Bearer {fiskom_sandbox_api_key}"
     }
     response = requests.post(url, json=payload, headers=headers)
+    app.logger.info(f'Fiskom response: {response.json()}')
     fiskkom_data = {
         "invoice_number": response.json().get("invoiceNumber"),
         "pdf_url": response.json().get("invoicePdfUrl"),
@@ -1888,5 +1894,4 @@ def get_fiskom_data(invoice, invoice_items):
         "created_at": response.json().get("sdcDateTime")
     }
     app.logger.info(f'{fiskkom_data=}')
-    print(f'iz funkcije get_fiskom_data: {fiskkom_data=}')
     return fiskkom_data

@@ -475,7 +475,7 @@ def success_url():
     clear_cart_session(product=True, animal=False)  # Brisanje korpe iz sesije
     #! da li da se ovde implementira generisanje fiskalnog računa?
     fiskom_data = get_fiskom_data(invoice, invoice_items)
-    send_success_email(invoice, auth_number, transaction_id, total_price)
+    send_success_email(invoice, auth_number, transaction_id, total_price, fiskom_data)
 
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
     return render_template('transactions/success_url.html',
