@@ -1273,7 +1273,7 @@ def send_payspot_request(request_data, merchant_order_id, invoice, orders_data, 
     if environment == 'development':
         url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
     elif environment == 'production':
-        url = "https://nsgway.rs:50010/api/paymentorderinsert"
+        url = "https://www.nsgway.rs:50010/api/paymentorderinsert"
     app.logger.debug(f'PaySpot URL: {url}')
     app.logger.debug(f'PaySpot companyID: {os.environ.get("PAYSPOT_COMPANY_ID")}')
     if payment_type == 'kartica':
@@ -1617,7 +1617,7 @@ def send_payment_order_insert(merchant_order_id, merchant_order_amount, payment_
         if environment == 'development':
             url = "https://test.nsgway.rs:50009/api/paymentorderinsert"
         elif environment == 'production':
-            url = "https://nsgway.rs:50010/api/paymentorderinsert"
+            url = "https://www.nsgway.rs:50010/api/paymentorderinsert"
         
         # Logovanje zahteva pre slanja
         app.logger.debug(f'PaySpot URL: {url}')
@@ -1726,7 +1726,7 @@ def send_payment_order_confirm(merchant_order_id, payment_type, invoice_id):
             if environment == 'development':
                 url = "https://test.nsgway.rs:50009/api/paymentorderconfirm"
             elif environment == 'production':
-                url = "https://nsgway.rs:50010/api/paymentorderconfirm"
+                url = "https://www.nsgway.rs:50010/api/paymentorderconfirm"
             
             app.logger.debug(f'PaySpot URL: {url}')
             app.logger.debug(f'PaySpot companyID: {company_id}')
@@ -1843,3 +1843,50 @@ def log_payspot_request_response(merchant_order_id, payload, response=None, requ
             else:
                 f.write(str(response))
         f.write("\n==============================\n")
+
+##############
+### FISKOM ###
+##############
+
+def get_fiskom_data(invoice, invoice_items):
+    total_price = sum(item.invoice_item_details["total_price"] for item in invoice_items)
+    
+    
+    url = "https://us-central1-fiscal-38558.cloudfunctions.net/api/invoices/normal/sale"
+    payload = {
+        "cashier": "test_portal_mojestado",
+        "payment": [
+            {
+                "paymentType": "Card",
+                "amount": total_price
+            }
+        ],
+        "invoiceNumber": f"MS-{invoice.invoice_number}",
+        "items": [
+            {
+                "name": "test proizvod",
+                "unitPrice": 1000,
+                "labels": ["Ж"],
+                "quantity": 1,
+                "totalAmount": 1000
+            }
+        ]
+    }
+    fiskom_sandbox_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {fiskom_sandbox_api_key}"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    fiskkom_data = {
+        "invoice_number": response.json().get("invoiceNumber"),
+        "pdf_url": response.json().get("invoicePdfUrl"),
+        "qr_code_url": response.json().get("qrCodeFileURL"),
+        "verification_url": response.json().get("verificationUrl"),
+        "total_amount": response.json().get("totalAmount"),
+        "created_at": response.json().get("sdcDateTime")
+    }
+    app.logger.info(f'{fiskkom_data=}')
+    print(f'iz funkcije get_fiskom_data: {fiskkom_data=}')
+    return fiskkom_data
