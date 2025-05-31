@@ -8,7 +8,7 @@ from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import AnimalCategory, Debt, Invoice, PaySpotCallback, InvoiceItems, PaySpotTransaction, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, populate_item_data, send_success_email, send_payments_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user
+from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, populate_item_data, send_success_email, send_payments_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user, get_fiskom_data
 
 
 transactions = Blueprint('transactions', __name__)
@@ -257,7 +257,7 @@ def make_order():
             if environment == 'development':
                 action = 'https://test.nsgway.rs:50009/api/ecommerce/submit'
             elif environment == 'production':
-                action = 'https://nsgway.rs:50010/api/ecommerce/submit'
+                action = 'https://www.nsgway.rs:50010/api/ecommerce/submit'
             return render_template('transactions/make_order.html',
                                 animals=animals,
                                 products=products,
@@ -421,6 +421,7 @@ def callback_url():
             app.logger.info(f'{invoice_id=}')
 
             deactivate_products(invoice_id)
+            #! da li da se ovde implementira generisanje fiskalnog računa?
             
             # Slanje email-a korisniku
             # user = User.query.get(invoice.user_id)
@@ -472,6 +473,8 @@ def success_url():
     app.logger.info(f'Uspesno zavrsena transakcija')
 
     clear_cart_session(product=True, animal=False)  # Brisanje korpe iz sesije
+    #! da li da se ovde implementira generisanje fiskalnog računa?
+    fiskom_data = get_fiskom_data(invoice, invoice_items)
     send_success_email(invoice, auth_number, transaction_id, total_price)
 
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
@@ -501,3 +504,55 @@ def cancel_url():
 
     return render_template('transactions/cancel_url.html', 
                             now=now)
+
+
+@transactions.route('/fiskom_test', methods=['GET'])
+def fiskom_test():
+    
+    import requests
+
+    url = "https://us-central1-fiscal-38558.cloudfunctions.net/api/invoices/normal/sale"
+    payload = {
+        "cashier": "test_portal_mojestado",
+        "payment": [
+            {
+                "paymentType": "Card",
+                "amount": 1000
+            }
+        ],
+        "invoiceNumber": "MS-00000507",
+        "items": [
+            {
+                "name": "test proizvod",
+                "unitPrice": 1000,
+                "labels": ["Ж"],
+                "quantity": 1,
+                "totalAmount": 1000
+            }
+        ]
+    }
+    fiskom_sandbox_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {fiskom_sandbox_api_key}"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    print(response.text)
+    
+    #? data koji treba da se sačuva u db?
+    data = {
+        "invoice_number": response.json().get("invoiceNumber"),
+        "pdf_url": response.json().get("invoicePdfUrl"),
+        "qr_code_url": response.json().get("qrCodeFileURL"),
+        "verification_url": response.json().get("verificationUrl"),
+        "total_amount": response.json().get("totalAmount"),
+        "created_at": response.json().get("sdcDateTime")
+    }
+    
+    print(f'{data=}')
+    return response.text
+
+
