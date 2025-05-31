@@ -47,6 +47,7 @@
                     <th>Cena po jedinici mere</th>
                     <th>Broj / masa</th>
                     <th>Ukupan iznos</th>
+                    <th>Prodajni nalog</th>
                     <th>Akcije</th>
                 </tr>
             </thead>
@@ -108,8 +109,14 @@
                     {% else %}
                     <td>{{ invoice_item.invoice_item_details["total_price"] }}</td>
                     {% endif %}
+                    <td>{{ invoice_item.invoice.invoice_number }}</td>
                     <td>
-                        pošalji na adresu
+                        {% if invoice_item.invoice.status == "paid" %}
+                            <button class="btn btn-primary btn-delivery" title="Pošalji na adresu" data-invoice-id="{{ invoice_item.invoice.id }}" data-farm-id="{{ invoice_item.farm.id }}" data-user-id="{{ invoice_item.invoice.user_invoice.id }}"><i class="fa fa-truck"></i></button>
+                        {% endif %}
+                        {% if invoice_item.invoice.status == "delivered" %}
+                            <button class="btn btn-success" title="Dostavljeno"><i class="fa fa-truck"></i></button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -117,6 +124,44 @@
         </table>
     </div>
 </section>
+
+<!-- Modal za prikaz podataka o kupcu i farmeru -->
+<div class="modal fade" id="deliveryModal" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deliveryModalLabel">Podaci za dostavu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Podaci o kupcu</h5>
+                            <div id="customer-info">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Učitavanje...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Podaci o PG (farmeru)</h5>
+                            <div id="farm-info">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Učitavanje...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
+                <button type="button" class="btn btn-primary" id="mark-as-delivered">Označi kao dostavljeno</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -127,6 +172,103 @@
                 url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/sr-SP.json'
             },
             order: [[0, 'desc']]
+        });
+        
+        // Handler za klik na dugme za dostavu
+        $('.btn-delivery').on('click', function() {
+            const invoiceId = $(this).data('invoice-id');
+            const farmId = $(this).data('farm-id');
+            const userId = $(this).data('user-id');
+            
+            // Resetuj prethodni sadržaj
+            $('#customer-info').html('<div class="spinner-border" role="status"><span class="visually-hidden">Učitavanje...</span></div>');
+            $('#farm-info').html('<div class="spinner-border" role="status"><span class="visually-hidden">Učitavanje...</span></div>');
+            
+            // Postavi ID fakture na dugme za oznaku dostavljeno
+            $('#mark-as-delivered').attr('data-invoice-id', invoiceId);
+            
+            // Učitaj podatke o kupcu
+            $.ajax({
+                url: `{{ url_for('users.get_user_details') }}`,
+                method: 'GET',
+                data: { user_id: userId },
+                success: function(response) {
+                    if (response.success) {
+                        const user = response.user;
+                        let userHtml = `
+                            <p><strong>Ime i prezime:</strong> ${user.name} ${user.surname}</p>
+                            <p><strong>Adresa:</strong> ${user.address}</p>
+                            <p><strong>Grad:</strong> ${user.city}</p>
+                            <p><strong>Poštanski broj:</strong> ${user.zip_code}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                        `;
+                        if (user.phone) {
+                            userHtml += `<p><strong>Telefon:</strong> ${user.phone}</p>`;
+                        }
+                        $('#customer-info').html(userHtml);
+                    } else {
+                        $('#customer-info').html('<div class="alert alert-danger">Greška prilikom učitavanja podataka o kupcu.</div>');
+                    }
+                },
+                error: function() {
+                    $('#customer-info').html('<div class="alert alert-danger">Greška prilikom učitavanja podataka o kupcu.</div>');
+                }
+            });
+            
+            // Učitaj podatke o PG (farmeru)
+            $.ajax({
+                url: `{{ url_for('users.get_farm_details') }}`,
+                method: 'GET',
+                data: { farm_id: farmId },
+                success: function(response) {
+                    if (response.success) {
+                        const farm = response.farm;
+                        let farmHtml = `
+                            <p><strong>Naziv PG:</strong> ${farm.farm_name}</p>
+                            <p><strong>Adresa:</strong> ${farm.farm_address}</p>
+                            <p><strong>Grad:</strong> ${farm.farm_city}</p>
+                            <p><strong>Poštanski broj:</strong> ${farm.farm_zip_code}</p>
+                            <p><strong>Telefon:</strong> ${farm.farm_phone}</p>
+                            <p><strong>Broj računa:</strong> ${farm.farm_account_number}</p>
+                        `;
+                        $('#farm-info').html(farmHtml);
+                    } else {
+                        $('#farm-info').html('<div class="alert alert-danger">Greška prilikom učitavanja podataka o farmeru.</div>');
+                    }
+                },
+                error: function() {
+                    $('#farm-info').html('<div class="alert alert-danger">Greška prilikom učitavanja podataka o farmeru.</div>');
+                }
+            });
+            
+            // Otvori modal
+            $('#deliveryModal').modal('show');
+        });
+        
+        // Handler za klik na dugme za oznaku dostavljeno
+        $('#mark-as-delivered').on('click', function() {
+            const invoiceId = $(this).data('invoice-id');
+            
+            $.ajax({
+                url: `{{ url_for('users.mark_as_delivered') }}`,
+                method: 'POST',
+                data: { invoice_id: invoiceId },
+                success: function(response) {
+                    if (response.success) {
+                        // Zatvori modal
+                        $('#deliveryModal').modal('hide');
+                        // Prikaži poruku o uspešnom označavanju
+                        alert('Porudžbina je uspešno označena kao dostavljena.');
+                        // Osveži stranicu
+                        location.reload();
+                    } else {
+                        alert('Greška prilikom označavanja porudžbine kao dostavljene.');
+                    }
+                },
+                error: function() {
+                    alert('Greška prilikom označavanja porudžbine kao dostavljene.');
+                }
+            });
         });
     });
 </script>
