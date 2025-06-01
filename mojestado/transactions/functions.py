@@ -1864,6 +1864,10 @@ def get_fiskom_data(invoice, invoice_items):
             "quantity": item.invoice_item_details.get("quantity", 0),
             "totalAmount": item.invoice_item_details.get("total_price", 0)
         })
+    app.logger.info(
+        "\n==============================\nFiskom items:\n%s",
+        json.dumps(fiskom_items, indent=4, ensure_ascii=False)
+    )
     
     url = "https://us-central1-fiscal-38558.cloudfunctions.net/api/invoices/normal/sale"
     payload = {
