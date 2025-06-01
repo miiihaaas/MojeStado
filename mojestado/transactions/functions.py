@@ -1857,11 +1857,17 @@ def get_fiskom_data(invoice, invoice_items):
     
     fiskom_items = []
     for item in invoice_items:
+        name = item.invoice_item_details.get("product_name", "Dostava")
+        quantity = item.invoice_item_details.get("quantity", 0)
+        unit_price = item.invoice_item_details.get("product_price_per_unit", 0)
+        if name == "Dostava":
+            quantity = 1
+            unit_price = float(item.invoice_item_details.get("total_price", 0))
         fiskom_items.append({
-            "name": item.invoice_item_details.get("product_name", "Dostava"),
-            "unitPrice": float(item.invoice_item_details.get("product_price_per_unit", 0)),
+            "name": name,
+            "unitPrice": float(unit_price),
             "labels": ["Ж"],
-            "quantity": float(item.invoice_item_details.get("quantity", 0)),
+            "quantity": quantity,
             "totalAmount": float(item.invoice_item_details.get("total_price", 0))
         })
     app.logger.info(
