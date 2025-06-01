@@ -1030,7 +1030,7 @@ def send_success_email(invoice, auth_number, transaction_id, total_price, fiskom
     app.logger.info(f'Nastaviti implementaciju funkcionalnosti za slanje mejla korisniku o uspešnom plaćanju preko kartice nakon callback_url')
     to = [user.email]
     bcc = [os.environ.get('MAIL_ADMIN')]
-    subject = 'Potvrda kupovine preko kartice na portalu "Moje stado"'
+    subject = f'Potvrda kupovine preko kartice na portalu "Moje stado" - {invoice.invoice_number}'
     message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
     message.html = render_template('message_html_success_url.html', 
                                     user=user, 
@@ -1859,10 +1859,10 @@ def get_fiskom_data(invoice, invoice_items):
     for item in invoice_items:
         fiskom_items.append({
             "name": item.invoice_item_details.get("product_name", "Dostava"),
-            "unitPrice": item.invoice_item_details.get("product_price_per_unit", 0),
+            "unitPrice": float(item.invoice_item_details.get("product_price_per_unit", 0)),
             "labels": ["Ж"],
-            "quantity": item.invoice_item_details.get("quantity", 0),
-            "totalAmount": item.invoice_item_details.get("total_price", 0)
+            "quantity": float(item.invoice_item_details.get("quantity", 0)),
+            "totalAmount": float(item.invoice_item_details.get("total_price", 0))
         })
     app.logger.info(
         "\n==============================\nFiskom items:\n%s",
@@ -1888,7 +1888,10 @@ def get_fiskom_data(invoice, invoice_items):
         "authorization": f"Bearer {fiskom_sandbox_api_key}"
     }
     response = requests.post(url, json=payload, headers=headers)
-    app.logger.info(f'Fiskom response: {response.json()}')
+    app.logger.info(
+        "\n==============================\nFiskom response: %s",
+        json.dumps(response.json(), indent=4, ensure_ascii=False)
+    )
     fiskkom_data = {
         "invoice_number": response.json().get("invoiceNumber"),
         "pdf_url": response.json().get("invoicePdfUrl"),
@@ -1897,5 +1900,8 @@ def get_fiskom_data(invoice, invoice_items):
         "total_amount": response.json().get("totalAmount"),
         "created_at": response.json().get("sdcDateTime")
     }
-    app.logger.info(f'{fiskkom_data=}')
+    app.logger.info(
+        "\n==============================\nFiskom data: %s",
+        json.dumps(fiskkom_data, indent=4, ensure_ascii=False)
+    )
     return fiskkom_data
