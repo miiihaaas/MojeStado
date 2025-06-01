@@ -1858,11 +1858,11 @@ def get_fiskom_data(invoice, invoice_items):
     fiskom_items = []
     for item in invoice_items:
         fiskom_items.append({
-            "name": item.invoice_item_details["product_name"],
-            "unitPrice": item.invoice_item_details["product_price_per_unit"],
+            "name": item.invoice_item_details.get("product_name", "Dostava"),
+            "unitPrice": item.invoice_item_details.get("product_price_per_unit", 0),
             "labels": ["Ж"],
-            "quantity": item.invoice_item_details["quantity"],
-            "totalAmount": item.invoice_item_details["total_price"]
+            "quantity": item.invoice_item_details.get("quantity", 0),
+            "totalAmount": item.invoice_item_details.get("total_price", 0)
         })
     
     url = "https://us-central1-fiscal-38558.cloudfunctions.net/api/invoices/normal/sale"
