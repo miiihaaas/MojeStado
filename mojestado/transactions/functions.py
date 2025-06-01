@@ -1874,7 +1874,7 @@ def get_fiskom_data(invoice, invoice_items):
                 "amount": total_price
             }
         ],
-        "invoiceNumber": f"MS-{invoice.invoice_number:09d}",
+        "invoiceNumber": invoice.invoice_number,
         "items": fiskom_items
     }
     fiskom_sandbox_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
