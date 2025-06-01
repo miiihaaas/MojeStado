@@ -8,7 +8,9 @@ from mojestado import app, db
 from mojestado.main.functions import clear_cart_session, get_cart_total
 from mojestado.models import AnimalCategory, Debt, Invoice, PaySpotCallback, InvoiceItems, PaySpotTransaction, User
 from mojestado.transactions.form import GuestForm
-from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, register_guest_user, create_invoices, populate_item_data, send_success_email, send_payments_email, deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user, get_fiskom_data
+from mojestado.transactions.functions import calculate_hash, define_invoice_user, generate_random_string, \
+    register_guest_user, create_invoices, populate_item_data, send_email, send_success_email, send_payments_email, \
+    deactivate_animals, deactivate_products, send_payment_order_insert, send_payment_order_confirm, edit_guest_user, get_fiskom_data
 
 
 transactions = Blueprint('transactions', __name__)
@@ -421,13 +423,9 @@ def callback_url():
             app.logger.info(f'{invoice_id=}')
 
             deactivate_products(invoice_id)
-            #! da li da se ovde implementira generisanje fiskalnog računa?
             
-            # Slanje email-a korisniku
-            # user = User.query.get(invoice.user_id)
-            # if user:
-                # send_email(user, invoice_id) #! treba da se promeni da stiže samo mejl o potvrdi kupovine za proizvode (ako ima životinja to ide na drugom mestu)
-                # send_success_email(invoice_id)
+            #! Slanje email-a PG o kupovini proizvoda preko kartice
+            send_email(invoice_id)
             app.logger.info(f'Callback_url: Uspešna transakcija za fakturu {invoice_id}')
         else:
             invoice.status = 'failed'
@@ -474,7 +472,11 @@ def success_url():
 
     clear_cart_session(product=True, animal=False)  # Brisanje korpe iz sesije
     #! da li da se ovde implementira generisanje fiskalnog računa?
-    fiskom_data = get_fiskom_data(invoice, invoice_items)
+    #! pošto je fiskom idalje u razvoju dodajem ovaj if blok da se ne bi videlo na produkciji
+    if os.environ.get('ENVIRONMENT') == 'development':
+        fiskom_data = get_fiskom_data(invoice, invoice_items)
+    else:
+        fiskom_data = None
     send_success_email(invoice, auth_number, transaction_id, total_price, fiskom_data)
 
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')

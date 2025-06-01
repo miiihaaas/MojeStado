@@ -1107,65 +1107,59 @@ def send_payments_email(user, invoice_id):
 
 
 
-def send_email(user, invoice_id):
-    app.logger.info(f'Započinjem slanje email-a za korisnika {user.email}, faktura {invoice_id}')
+def send_email(invoice_id):
+    app.logger.info(f'Započinjem slanje emailova za stavke iz fakture: {invoice_id}')
     
-    payment_slips = [] 
     invoice_items = InvoiceItems.query.filter_by(invoice_id=invoice_id).all()
     app.logger.debug(f'Pronađeno {len(invoice_items)} stavki fakture')
     
     for invoice_item in invoice_items:
-        if invoice_item.invoice_item_type in [2, 3, 4]:
-            create_debt(user, invoice_item)
-            new_payment_slip = generate_payment_slips_attach(invoice_item)
-            app.logger.debug(f'Generisana uplatnica: {new_payment_slip}')
-            payment_slips.append(new_payment_slip)
-        elif invoice_item.invoice_item_type == 1:
+        if invoice_item.invoice_item_type == 1:
             app.logger.info(f'Slanje mejla za ažuriranje količine proizvoda za stavku {invoice_item.id}')
             send_email_to_update_product_quantity(invoice_item)
         
-    app.logger.debug(f'Generisane uplatnice: {payment_slips}')
+    # app.logger.debug(f'Generisane uplatnice: {payment_slips}')
     
-    to = [user.email]
-    bcc = [os.environ.get('MAIL_ADMIN')]
-    subject = 'Potvrda kupovine na portalu "Moje stado"'
+    # to = [user.email]
+    # bcc = [os.environ.get('MAIL_ADMIN')]
+    # subject = 'Potvrda kupovine na portalu "Moje stado"'
 
-    if payment_slips:
-        app.logger.info('Faktura je na rate - prilažem uplatnice')
-        attachments = payment_slips
-        na_rate = True
-    else:
-        app.logger.info('Faktura nije na rate - prilažem samo fakturu')
-        attachments = [invoice_attach]
-        na_rate = False
+    # if payment_slips:
+    #     app.logger.info('Faktura je na rate - prilažem uplatnice')
+    #     attachments = payment_slips
+    #     na_rate = True
+    # else:
+    #     app.logger.info('Faktura nije na rate - prilažem samo fakturu')
+    #     attachments = [invoice_attach]
+    #     na_rate = False
         
-    message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
-    message.html = render_template('message_html_confirm_invoice.html', na_rate=na_rate)
+    # message = Message(subject=subject, sender=os.environ.get('MAIL_DEFAULT_SENDER'), recipients=to, bcc=bcc)
+    # message.html = render_template('message_html_confirm_invoice.html', na_rate=na_rate)
     
-    app.logger.debug(f'Prilozi za slanje: {attachments}')
+    # app.logger.debug(f'Prilozi za slanje: {attachments}')
     
-    # Provera postojanja fajlova pre pripajanja
-    for attachment in attachments:
-        if not os.path.exists(attachment):
-            app.logger.error(f'Fajl {attachment} ne postoji!')
-            continue
+    # # Provera postojanja fajlova pre pripajanja
+    # for attachment in attachments:
+    #     if not os.path.exists(attachment):
+    #         app.logger.error(f'Fajl {attachment} ne postoji!')
+    #         continue
             
-        try:
-            with open(attachment, 'rb') as f:
-                file_content = f.read()
-                app.logger.debug(f'Uspešno pročitan fajl: {attachment}, veličina: {len(file_content)} bajtova')
-                message.attach(os.path.basename(attachment), "application/pdf", file_content)
-                app.logger.debug(f'Uspešno dodat prilog: {os.path.basename(attachment)}')
-        except Exception as e:
-            app.logger.error(f'Greška prilikom dodavanja priloga: {attachment}. Greška: {str(e)}')
+    #     try:
+    #         with open(attachment, 'rb') as f:
+    #             file_content = f.read()
+    #             app.logger.debug(f'Uspešno pročitan fajl: {attachment}, veličina: {len(file_content)} bajtova')
+    #             message.attach(os.path.basename(attachment), "application/pdf", file_content)
+    #             app.logger.debug(f'Uspešno dodat prilog: {os.path.basename(attachment)}')
+    #     except Exception as e:
+    #         app.logger.error(f'Greška prilikom dodavanja priloga: {attachment}. Greška: {str(e)}')
     
-    try:
-        mail.send(message)
-        app.logger.info(f'Email uspešno poslat na: {to}')
-        return True
-    except Exception as e:
-        app.logger.error(f'Greška prilikom slanja mejla: {str(e)}')
-        return False
+    # try:
+    #     mail.send(message)
+    #     app.logger.info(f'Email uspešno poslat na: {to}')
+    #     return True
+    # except Exception as e:
+    #     app.logger.error(f'Greška prilikom slanja mejla: {str(e)}')
+    #     return False
 
 
 def send_email_to_update_product_quantity(invoice_item):
@@ -1173,7 +1167,7 @@ def send_email_to_update_product_quantity(invoice_item):
     Prilikom svake kupovine stiže mejl sa informacijama o prodatoj količini i o trenutnom stanju količine proizvoda na portalu, 
     sa molbom da se količine ažuriraju po potrebi. U mejlu se nalazi i link za ažuriranje stanja gotovih proizvoda.
     '''
-    print(f'send_email > proizvod > slanje mejla PG ako je proizvod da ažurira količine proizvoda na portalu')
+    app.logger.info(f'send_email > proizvod > slanje mejla PG ako je proizvod da ažurira količine proizvoda na portalu')
     farm = Farm.query.filter_by(id=invoice_item.farm_id).first()
     farmer = User.query.get(farm.user_id)
     farmer_email = farmer.email
