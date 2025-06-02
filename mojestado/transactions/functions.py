@@ -1846,8 +1846,16 @@ def log_payspot_request_response(merchant_order_id, payload, response=None, requ
 def get_fiskom_data(invoice, invoice_items):
     '''
     funkcija koja prima fakturu i stavke fakture i vraća podatke o fiskalnom računu
+    dokumentacija: https://fiscal.readme.io/reference/normalcontroller_createnewinvoice
     '''
     total_price = sum(item.invoice_item_details["total_price"] for item in invoice_items)
+    
+    if os.environ.get('ENVIRONMENT') == 'development':
+        fiskom_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
+        fiskom_label = "Ж"
+    else:
+        fiskom_api_key = os.environ.get('FISKOM_PRODUCTION_API_KEY')
+        fiskom_label = "А"
     
     fiskom_items = []
     for item in invoice_items:
@@ -1860,7 +1868,7 @@ def get_fiskom_data(invoice, invoice_items):
         fiskom_items.append({
             "name": name,
             "unitPrice": float(unit_price),
-            "labels": ["Ж"],
+            "labels": [fiskom_label],
             "quantity": quantity,
             "totalAmount": float(item.invoice_item_details.get("total_price", 0))
         })
@@ -1881,11 +1889,10 @@ def get_fiskom_data(invoice, invoice_items):
         "invoiceNumber": invoice.invoice_number,
         "items": fiskom_items
     }
-    fiskom_sandbox_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "authorization": f"Bearer {fiskom_sandbox_api_key}"
+        "authorization": f"Bearer {fiskom_api_key}"
     }
     response = requests.post(url, json=payload, headers=headers)
     app.logger.info(
