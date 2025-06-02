@@ -533,11 +533,14 @@ def fiskom_test():
             }
         ]
     }
-    fiskom_sandbox_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
+    if os.environ.get('ENVIRONMENT') == 'development':
+        fiskom_api_key = os.environ.get('FISKOM_SANDBOX_API_KEY')
+    else:
+        fiskom_api_key = os.environ.get('FISKOM_PRODUCTION_API_KEY')
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "authorization": f"Bearer {fiskom_sandbox_api_key}"
+        "authorization": f"Bearer {fiskom_api_key}"
     }
 
     response = requests.post(url, json=payload, headers=headers)
