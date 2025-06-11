@@ -471,12 +471,7 @@ def success_url():
     app.logger.info(f'Uspesno zavrsena transakcija')
 
     clear_cart_session(product=True, animal=False)  # Brisanje korpe iz sesije
-    #! da li da se ovde implementira generisanje fiskalnog računa?
-    #! pošto je fiskom idalje u razvoju dodajem ovaj if blok da se ne bi videlo na produkciji
-    if os.environ.get('ENVIRONMENT') == 'development':
-        fiskom_data = get_fiskom_data(invoice, invoice_items)
-    else:
-        fiskom_data = None
+    fiskom_data = get_fiskom_data(invoice, invoice_items)
     send_success_email(invoice, auth_number, transaction_id, total_price, fiskom_data)
 
     flash('Transakcija je uspešna. Račun vaše platne kartice je zadužen.', 'success')
