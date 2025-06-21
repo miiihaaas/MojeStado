@@ -61,7 +61,12 @@ def livestock_market(animal_category_id):
             
         # Učitavanje potkategorija i životinja
         animal_subcategories = AnimalCategorization.query.filter_by(animal_category_id=animal_category_id).all()
-        animals = Animal.query.filter_by(animal_category_id=animal_category_id, active=True).all()
+        # Filtriranje životinja čije farme pripadaju aktivnim korisnicima (user_type='farm_active')
+        animals = Animal.query.join(Farm, Animal.farm_id == Farm.id).join(User, Farm.user_id == User.id).filter(
+            Animal.animal_category_id == animal_category_id,
+            Animal.active == True,
+            User.user_type == 'farm_active'
+        ).all()
         
         # Podešavanje filtera za masu
         weight_filter = False
