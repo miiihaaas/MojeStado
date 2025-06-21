@@ -260,8 +260,11 @@ def products_market(product_category_id):
             flash('Kategorija nije pronađena.', 'danger')
             return redirect(url_for('marketplace.products_market', product_category_id=0))
             
-        # Učitavanje proizvoda i njihovih kategorija
-        products = Product.query.filter_by(product_category_id=product_category_id).all()
+        # Učitavanje proizvoda i njihovih kategorija (samo za aktivne farme)
+        products = Product.query.join(Farm, Product.farm_id == Farm.id).join(User, Farm.user_id == User.id).filter(
+            Product.product_category_id == product_category_id,
+            User.user_type == 'farm_active'
+        ).all()
         products = [product for product in products if float(product.quantity) > 0]
         product_categories = None
         product_subcategories = ProductSubcategory.query.filter_by(product_category_id=product_category_id).all()
