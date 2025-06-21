@@ -168,6 +168,12 @@ def farm_list():
 def farm_detail(farm_id):
     route_name = request.endpoint
     farm = Farm.query.get_or_404(farm_id)
+    
+    # Provera da li je farma aktivna
+    farm_user = User.query.get(farm.user_id)
+    if farm_user.user_type != 'farm_active':
+        flash('Izabrana farma nije aktivna.', 'warning')
+        return redirect(url_for('farms.farm_list'))
     animals = Animal.query.filter_by(farm_id=farm_id, active=True).all()
     #! samo životinje koje nisu u tovu
     animals = [animal for animal in animals if animal.fattening == False]
